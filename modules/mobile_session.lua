@@ -2,7 +2,8 @@ require('atf.util')
 local expectations = require('expectations')
 local events       = require('events')
 local config       = require('config')
-local functionId  = require('function_id')
+local functionId   = require('function_id')
+local json         = require('json')
 local Expectation  = expectations.Expectation
 local Event        = events.Event
 local SUCCESS      = expectations.SUCCESS
@@ -126,7 +127,7 @@ function mt.__index:SendRPC(func, arguments, fileName)
     rpcType          = 0,
     rpcFunctionId    = functionId[func],
     rpcCorrelationId = self.correlationId,
-    payload          = arguments
+    payload          = json.encode(arguments)
   }
   if fileName then
     local f = assert(io.open(fileName))

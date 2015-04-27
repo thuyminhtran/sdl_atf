@@ -118,7 +118,7 @@ function mt.__index:Compose(message)
     payload = rpcPayload(message.rpcType,
                          message.rpcFunctionId,
                          message.rpcCorrelationId,
-                         json.encode(message.payload))
+                         message.payload)
   end
 
   if message.binaryData then
