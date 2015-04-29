@@ -241,37 +241,39 @@ function module:InitHMI_onReady()
     language = "EN-US",
     wersCountryCode = "wersCountryCode"
   })
-  ExpectRequest("UI.GetLanguage", false, { language = "EN-US" })
+  ExpectRequest("UI.GetLanguage", true, { language = "EN-US" })
+  ExpectRequest("VR.GetLanguage", true, { language = "EN-US" })
+  ExpectRequest("TTS.GetLanguage", true, { language = "EN-US" })
   ExpectRequest("UI.ChangeRegistration", false, { }):Pin()
   ExpectRequest("TTS.SetGlobalProperties", false, { }):Pin()
   ExpectRequest("BasicCommunication.UpdateDeviceList", false, { }):Pin()
   ExpectRequest("VR.ChangeRegistration", false, { }):Pin()
   ExpectRequest("TTS.ChangeRegistration", false, { }):Pin()
-  ExpectRequest("VR.GetSupportedLanguages", false, {
+  ExpectRequest("VR.GetSupportedLanguages", true, {
     languages =
     {
       "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
       "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
       "PT-BR","CS-CZ","DA-DK","NO-NO"
     }
-  }):Pin()
-  ExpectRequest("TTS.GetSupportedLanguages", false, {
+  })
+  ExpectRequest("TTS.GetSupportedLanguages", true, {
     languages =
     {
       "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
       "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
       "PT-BR","CS-CZ","DA-DK","NO-NO"
     }
-  }):Pin()
-  ExpectRequest("TTS.GetSupportedLanguages", false, {
+  })
+  ExpectRequest("UI.GetSupportedLanguages", true, {
     languages =
     {
       "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
       "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
       "PT-BR","CS-CZ","DA-DK","NO-NO"
     }
-  }):Pin()
-  ExpectRequest("VehicleInfo.GetVehicleType", false, {
+  })
+  ExpectRequest("VehicleInfo.GetVehicleType", true, {
     vehicleType =
     {
       make = "Ford",
@@ -279,8 +281,8 @@ function module:InitHMI_onReady()
       modelYear = "2013",
       trim = "SE"
     }
-  }):Pin()
-  ExpectRequest("VehicleInfo.GetVehicleData", false, { vin = "52-452-52-752" }):Pin()
+  })
+  ExpectRequest("VehicleInfo.GetVehicleData", true, { vin = "52-452-52-752" })
 
   local function button_capability(name, shortPressAvailable, longPressAvailable, upDownAvailable)
     return
@@ -313,9 +315,9 @@ function module:InitHMI_onReady()
     },
     presetBankCapabilities = { onScreenPresetsAvailable = true }
   }
-  ExpectRequest("Buttons.GetCapabilities", true, buttons_capabilities):Pin()
-  ExpectRequest("VR.GetCapabilities", false, { vrCapabilities = { "TEXT" } }):Pin()
-  ExpectRequest("TTS.GetCapabilities", false, {
+  ExpectRequest("Buttons.GetCapabilities", true, buttons_capabilities)
+  ExpectRequest("VR.GetCapabilities", true, { vrCapabilities = { "TEXT" } })
+  ExpectRequest("TTS.GetCapabilities", true, {
     speechCapabilities = { "TEXT", "PRE_RECORDED" },
     prerecordedSpeechCapabilities =
     {
@@ -325,7 +327,7 @@ function module:InitHMI_onReady()
         "POSITIVE_JINGLE",
         "NEGATIVE_JINGLE"
     }
-  }):Pin()
+  })
 
   local function text_field(name, characterSet, width, rows)
     return
@@ -355,7 +357,7 @@ function module:InitHMI_onReady()
 
   end
 
-  ExpectRequest("UI.GetCapabilities", false, {
+  ExpectRequest("UI.GetCapabilities", true, {
     displayCapabilities =
     {
       displayType = "GEN2_8_DMA",
@@ -441,7 +443,7 @@ function module:InitHMI_onReady()
       upDownAvailable = true,
       imageSupported = true
     }
-  }):Pin()
+  })
 
   ExpectRequest("VR.IsReady", true, { available = true })
   ExpectRequest("TTS.IsReady", true, { available = true })
@@ -460,7 +462,6 @@ function module:InitHMI_onReady()
         end)
 
   self.hmiConnection:SendNotification("BasicCommunication.OnReady")
-
 end
 
 function module:ConnectMobile()
