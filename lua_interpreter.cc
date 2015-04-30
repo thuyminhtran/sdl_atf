@@ -1,4 +1,4 @@
-#line 93 "main.nw"
+#line 121 "main.nw"
 #include <time.h> // for clock_gettime
 #include <locale.h> // for setlocale()
 #include "lua_interpreter.h"
@@ -15,14 +15,14 @@ extern "C" {
 #include <lua5.2/lualib.h>
 #include <lua5.2/lauxlib.h>
 }
-#line 104 "main.nw"
+#line 132 "main.nw"
 #include <QObject>
 #include <QTimer>
 #include <QCoreApplication>
 #include <QStringList>
 
 namespace {
-#line 114 "main.nw"
+#line 142 "main.nw"
 int app_quit(lua_State *L) {
   lua_getglobal(L, "interp");
   LuaInterpreter *li = *static_cast<LuaInterpreter**>(lua_touserdata(L, -1));
@@ -42,12 +42,18 @@ int timestamp(lua_State *L) {
 }
 
 int arguments(lua_State *L) {
-  QStringList args = QCoreApplication::arguments();
-  lua_createtable(L, args.count() - 2, 0);
+  QStringList args = QCoreApplication::instance()->arguments();
+  lua_createtable(L, args.count(), 0);
+  int i = 1;
+  for (auto& arg : args)
+  {
+    lua_pushstring(L, arg.toUtf8().constData());
+    lua_rawseti(L, -2, i++);
+  }
   return 1;
 }
 }  // anonymous namespace
-LuaInterpreter::LuaInterpreter(QObject *parent)
+LuaInterpreter::LuaInterpreter(QObject *parent, const QStringList::iterator& args, const QStringList::iterator& args_end)
   : QObject(parent) {
   lua_state = luaL_newstate();
 
@@ -63,7 +69,7 @@ LuaInterpreter::LuaInterpreter(QObject *parent)
   luaL_requiref(lua_state, "os", &luaopen_os, 1);
   luaL_requiref(lua_state, "bit32", &luaopen_bit32, 1);
   luaL_requiref(lua_state, "qt", &luaopen_qt, 1);
-#line 158 "main.nw"
+#line 192 "main.nw"
   // extend package.cpath
   lua_getglobal(lua_state, "package");
   assert(!lua_isnil(lua_state, -1));
@@ -92,7 +98,17 @@ LuaInterpreter::LuaInterpreter(QObject *parent)
   QObject **p = static_cast<QObject**>(lua_newuserdata(lua_state, sizeof(QObject*)));
   *p = this;
   lua_setglobal(lua_state, "interp");
+
+  // Adding global 'argv'
+  lua_createtable(lua_state, 0, 0);
+  int i = 1;
+  for (auto p = args; p != args_end; ++p) {
+    lua_pushstring(lua_state, p->toUtf8().constData());
+    lua_rawseti(lua_state, -2, i++);
+  }
+  lua_setglobal(lua_state, "argv");
 }
+
 int LuaInterpreter::load(const char *filename) {
 
   int res = luaL_dofile(lua_state, filename);
