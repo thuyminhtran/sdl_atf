@@ -11,8 +11,8 @@
 ]]
 
 
-local base           = require "stdlib.std.base"
-local debug          = require "stdlib.std.debug"
+local base           = require "atf.stdlib.std.base"
+local debug          = require "atf.stdlib.std.debug"
 
 local catfile, escape_pattern, invert =
   base.catfile, base.escape_pattern, base.invert

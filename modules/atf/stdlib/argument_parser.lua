@@ -1,9 +1,25 @@
-local std = require "stdlib.std"
-local table = require "stdlib.std.table"
+local std = require "atf.stdlib.std"
+local table = require "atf.stdlib.std.table"
 
 local validOptList = {  }  
 local errors = {}
 
+local usage = [[
+   ATF 2.2
+
+   Usage: atf script.lua [OPTIONS]
+   
+   ]]
+
+local help = {}
+
+local fotter = [[
+-v,--version          display version information, then exit
+   -h,--help             display this help, then exit   
+   ]]
+
+local version = "ATF 2.2"   
+   
 local optparser = std.optparse [[
    ATF 2.2
    Additional lines of text to show when the --version
@@ -11,7 +27,7 @@ local optparser = std.optparse [[
 
    Several lines or paragraphs are permitted.
 
-   Usage: atf [OPTIONS]  script1 .. script(n)
+   Usage: atf script.lua  [OPTIONS]  
    ]]
 
 local module = { 
@@ -55,13 +71,13 @@ function module.getopt(argv, opts)
   local script,options = parse(argv) 
   
   if (script[1]:sub(1,1)~= "-") then
-      res.opts = table.merge(validOptList, options)
+      res = table.merge(validOptList, options)
       for i = 1 , #script do
-        local n = table.size(res.opts)           
-        res.opts[n+1] = script[i]
+        local n = table.size(res)
+        res[n+1] = script[i]
       end
   else
-     res.error = "undefined option: '" .. script[1] .. "'"
+     res = "undefined option: '" .. script[1] .. "'"
   end
   
   setmetatable(res, module.mt)
@@ -69,13 +85,16 @@ function module.getopt(argv, opts)
   return res
 end
 function module.declare_opt (shortname, longname, argument, description)
+local arg = ''  
     if argument == module.RequiredArgument then 
-        optparser:on (table.pack(shortname, longname), optparser.required,checkReqOpt)        
+        optparser:on (table.pack(shortname, longname), optparser.required,checkReqOpt)       
     elseif  argument == module.OptionalArgument then
         optparser:on (table.pack(shortname, longname), optparser.optional)        
     else
         optparser:on (table.pack(shortname, longname), optparser.flag)        
     end
+    arg = string.format("   %s", description or 'value')
+    table.insert(help, shortname .. longname .. arg  )
 end
 function module.declare_short_opt(shortname, argument, description)
     module.declare_opt (shortname, '' , argument, description)
@@ -84,21 +103,17 @@ function module.declare_long_opt(longname, argument, description)
     module.declare_opt('' ,longname , argument, description)
 end
 function module.PrintUsage()
-    local usage = [[
-   ATF 2.2
-   Additional lines of text to show when the --version
-   option is passed.
-
-   Several lines or paragraphs are permitted.
-
-   Usage: atf [OPTIONS]  script1 .. script(n)
-   ]]
-   print(usage)
-  os.exit (2)
+    local _usage = usage
+     for _, opt in ipairs(help) do
+      _usage = _usage ..  opt .. '\n' .. '   '
+     end
+     
+    _usage = _usage .. '\n' ..'   ' .. fotter
+   print(_usage)
+  os.exit (2)   
 end
 function module.PrintVersion()
-  print("ATF 2.2")
-  os.exit (2)
+  print(version)
 end
 
 return module

@@ -29,8 +29,8 @@
 ]]
 
 
-local debug_init = require "stdlib.std.debug_init"
-local base       = require "stdlib.std.base"
+local debug_init = require "atf.stdlib.std.debug_init"
+local base       = require "atf.stdlib.std.base"
 
 local _DEBUG = debug_init._DEBUG
 local argerror, raise = base.argerror, base.raise

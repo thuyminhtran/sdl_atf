@@ -13,8 +13,8 @@
 
 local core = _G.table
 
-local base  = require "stdlib.std.base"
-local debug = require "stdlib.std.debug"
+local base  = require "atf.stdlib.std.base"
+local debug = require "atf.stdlib.std.debug"
 
 local argerror      = debug.argerror
 local collect       = base.collect

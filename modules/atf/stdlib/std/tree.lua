@@ -17,10 +17,10 @@
  @see std.container
 ]]
 
-local base      = require "stdlib.std.base"
-local operator  = require "stdlib.std.operator"
+local base      = require "atf.stdlib.std.base"
+local operator  = require "atf.stdlib.std.operator"
 
-local Container = require "stdlib.std.container" {}
+local Container = require "atf.stdlib.std.container" {}
 
 local ielems, ipairs, leaves, pairs, prototype =
   base.ielems, base.ipairs, base.leaves, base.pairs, base.prototype

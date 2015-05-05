@@ -4,7 +4,7 @@
  @module std.operator
 ]]
 
-local base = require "stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
 local pairs, prototype, tostring =
   base.pairs, base.prototype, base.tostring

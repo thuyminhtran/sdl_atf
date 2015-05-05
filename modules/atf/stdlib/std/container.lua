@@ -31,10 +31,10 @@
 ]]
 
 
-local _DEBUG = require "stdlib.std.debug_init"._DEBUG
+local _DEBUG = require "atf.stdlib.std.debug_init"._DEBUG
 
-local base  = require "stdlib.std.base"
-local debug = require "stdlib.std.debug"
+local base  = require "atf.stdlib.std.base"
+local debug = require "atf.stdlib.std.debug"
 
 local ipairs, pairs, okeys = base.ipairs, base.pairs, base.okeys
 local insert, len, maxn = base.insert, base.len, base.maxn

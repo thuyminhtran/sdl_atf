@@ -10,10 +10,10 @@
  @module std.string
 ]]
 
-local base   = require "stdlib.std.base"
-local debug  = require "stdlib.std.debug"
+local base   = require "atf.stdlib.std.base"
+local debug  = require "atf.stdlib.std.debug"
 
-local StrBuf = require "stdlib.std.strbuf" {}
+local StrBuf = require "atf.stdlib.std.strbuf" {}
 
 local copy          = base.copy
 local getmetamethod = base.getmetamethod

@@ -12,10 +12,10 @@
 ]]
 
 
-local base    = require "stdlib.std.base"
-local debug   = require "stdlib.std.debug"
+local base    = require "atf.stdlib.std.base"
+local debug   = require "atf.stdlib.std.debug"
 
-local Object  = require "stdlib.std.object" {}
+local Object  = require "atf.stdlib.std.object" {}
 
 local ipairs, pairs = base.ipairs, base.pairs
 local len       = base.len

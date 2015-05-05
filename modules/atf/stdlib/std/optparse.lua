@@ -12,9 +12,9 @@
 ]=]
 
 
-local base = require "stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
-local Object = require "stdlib.std.object" {}
+local Object = require "atf.stdlib.std.object" {}
 
 local ipairs, pairs = base.ipairs, base.pairs
 local insert, last, len = base.insert, base.last, base.len
@@ -447,7 +447,7 @@ local function on (self, opts, handler, value)
   end
 
   -- strip leading '-', and convert non-alphanums to '_'
-  local key = last (normal):match ("^%-*(.*)$"):gsub ("%W", "_")
+  local key = last (normal):match ("^%-*(.*)$"):gsub ("%W", "-")
 
   for _, opt in ipairs (normal) do
     self[opt] = { key = key, handler = handler, value = value }

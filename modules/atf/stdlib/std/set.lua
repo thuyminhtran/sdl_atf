@@ -17,9 +17,9 @@
  @see std.container
  ]]
 
-local base      = require "stdlib.std.base"
+local base      = require "atf.stdlib.std.base"
 
-local Container = require "stdlib.std.container" {}
+local Container = require "atf.stdlib.std.container" {}
 
 local ielems, pairs, prototype = base.ielems, base.pairs, base.prototype
 

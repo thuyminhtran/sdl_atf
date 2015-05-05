@@ -1,4 +1,4 @@
-local stdutils = require("stdlib.argument_parser")
+local stdutils = require("atf.stdlib.argument_parser")
 
 local _G = _G
 

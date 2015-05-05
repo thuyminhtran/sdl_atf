@@ -11,7 +11,7 @@
 ]]
 
 
-local base  = require "stdlib.std.base"
+local base  = require "atf.stdlib.std.base"
 
 local M
 

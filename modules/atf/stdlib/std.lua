@@ -23,7 +23,7 @@
 ]]
 
 
-local base = require "stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
 local M, monkeys
 
@@ -80,7 +80,7 @@ end
 -- @field version release version string
 
 local function X (decl, fn)
-  return require "stdlib.std.debug".argscheck ("std." .. decl, fn)
+  return require "atf.stdlib.std.debug".argscheck ("std." .. decl, fn)
 end
 
 M = {
@@ -295,7 +295,7 @@ return setmetatable (M, {
   -- local std = require "std"
   -- local prototype = std.object.prototype
   __index = function (self, name)
-              local ok, t = pcall (require, "stdlib.std." .. name)
+              local ok, t = pcall (require, "atf.stdlib.std." .. name)
               if ok then
 		rawset (self, name, t)
 		return t

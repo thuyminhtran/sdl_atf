@@ -30,8 +30,8 @@
 -- Container is derived from it.  Confused? ;-)
 
 
-local base      = require "stdlib.std.base"
-local container = require "stdlib.std.container"
+local base      = require "atf.stdlib.std.base"
+local container = require "atf.stdlib.std.container"
 
 local Container = container {}
 local getmetamethod, prototype = base.getmetamethod, base.prototype

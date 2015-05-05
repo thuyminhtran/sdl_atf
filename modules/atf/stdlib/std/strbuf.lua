@@ -21,10 +21,10 @@
  @classmod std.strbuf
 ]]
 
-local base   = require "stdlib.std.base"
-local debug  = require "stdlib.std.debug"
+local base   = require "atf.stdlib.std.base"
+local debug  = require "atf.stdlib.std.debug"
 
-local Object = require "stdlib.std.object" {}
+local Object = require "atf.stdlib.std.object" {}
 
 local ielems, insert, prototype = base.ielems, base.insert, base.prototype
 
