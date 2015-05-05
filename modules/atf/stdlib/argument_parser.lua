@@ -48,8 +48,9 @@ local function errmsg (msg)
 end
 
 local function checkReqOpt(self, arg, val)
-  if val:sub (1, 2) == "--" then
-     errmsg ("Not correct argument '" .. val .. "' for key '" .. arg .. "'")
+  if val:sub (1, 1) == "-" then
+     errmsg ("Option '" .. arg .. "' requires an argument.")
+     os.exit (2)       
   else
      validOptList[self[arg].key] = val
   end     
@@ -60,6 +61,7 @@ function module.getopt(argv, opts)
   local res = {}
   if (argv[1] == nil) then module.PrintUsage() end
   
+  optparser:on ({"--"}, optparser.finished)
   optparser:on ({"-?"}, optparser.optional,module.PrintUsage)      
   optparser:on ({"-h","--help"}, optparser.optional,module.PrintUsage)      
   optparser:on ({"-v","--version"}, optparser.optional,module.PrintVersion)          
@@ -93,8 +95,14 @@ local arg = ''
     else
         optparser:on (table.pack(shortname, longname), optparser.flag)        
     end
+
     arg = string.format("   %s", description or 'value')
-    table.insert(help, shortname .. longname .. arg  )
+    if (shortname:len() > 0  and longname:len() >  0) then 
+      table.insert(help, shortname .. ',' .. longname .. arg  )
+    else
+      table.insert(help, shortname .. longname .. arg  )
+    end
+      
 end
 function module.declare_short_opt(shortname, argument, description)
     module.declare_opt (shortname, '' , argument, description)
