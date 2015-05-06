@@ -2,6 +2,8 @@ local utils = require ("atf.cmdutils")
 arguments = {}
 
 utils.declare_opt("-c", "--config-file", utils.RequiredArgument, "Config file")
+--utils.declare_opt("-c", "--config-file", utils.OptionArgument, "Config file")
+--utils.declare_opt("-f", "--file", utils.OptionalArgument, "Config file")
 utils.declare_long_opt("--mobile-connection", utils.RequiredArgument, "Mobile connection IP")
 utils.declare_long_opt("--mobile-connection-port", utils.RequiredArgument, "Mobile connection port")
 utils.declare_long_opt("--hmi-connection", utils.RequiredArgument, "HMI connection IP")
@@ -27,10 +29,10 @@ end
 function hmi_connection_port(src)
     print("HMI Connection port: ".. src)
 end
-function prefLog_connection(str)
+function perflog_connection(str)
     print("PerfLog connection string: ".. str)
 end
-function prefLog_connection_port(str)
+function perflog_connection_port(str)
     print("PerfLog connection port: ".. str)
 end
 function report_path(src)
@@ -53,7 +55,7 @@ function d.cmd_test()
 	    _G[k](v)
 	else
 	    if k >= 2 and v ~= "test/cmd_test.lua" then
-	test_keys(v)
+    	    test_keys(v)
 	    end
 	end 
     end

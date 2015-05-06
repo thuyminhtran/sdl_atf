@@ -44,13 +44,13 @@ local function errmsg (msg)
     if msg:match ("%.$") == nil then msg = msg .. "." end
     io.stderr:write (prog .. ": error: " .. msg .. "\n")
     io.stderr:write (prog .. ": Try '" .. prog .. " --help' for help.\n")
---    os.exit (2)
+    quit(2)
 end
 
 local function checkReqOpt(self, arg, val)
   if val:sub (1, 1) == "-" then
      errmsg ("Option '" .. arg .. "' requires an argument.")
-     os.exit (2)       
+     quit(2)
   else
      validOptList[self[arg].key] = val
   end     
@@ -62,24 +62,24 @@ function module.getopt(argv, opts)
   if (argv[1] == nil) then module.PrintUsage() end
   
   optparser:on ({"--"}, optparser.finished)
-  optparser:on ({"-?"}, optparser.optional,module.PrintUsage)      
-  optparser:on ({"-h","--help"}, optparser.optional,module.PrintUsage)      
-  optparser:on ({"-v","--version"}, optparser.optional,module.PrintVersion)          
+  optparser:on ({"-?"}, optparser.optional,module.PrintUsage)
+  optparser:on ({"-h","--help"}, optparser.optional,module.PrintUsage)
+  optparser:on ({"-v","--version"}, optparser.optional,module.PrintVersion)
   
   local function parse(argv)
       return optparser:parse (argv)
   end 
 
-  local script,options = parse(argv) 
+  local unrecognized_options,options = parse(argv) 
   
-  if (script[1]:sub(1,1)~= "-") then
+  if (unrecognized_options[1]:sub(1,1)~= "-") then
       res = table.merge(validOptList, options)
-      for i = 1 , #script do
+      for i = 1 , #unrecognized_options do
         local n = table.size(res)
-        res[n+1] = script[i]
+	  table.insert(res,unrecognized_options[i])
       end
   else
-     res = "undefined option: '" .. script[1] .. "'"
+     res = "undefined option: '" .. unrecognized_options[1] .. "'"
   end
   
   setmetatable(res, module.mt)
@@ -88,12 +88,12 @@ function module.getopt(argv, opts)
 end
 function module.declare_opt (shortname, longname, argument, description)
 local arg = ''  
-    if argument == module.RequiredArgument then 
-        optparser:on (table.pack(shortname, longname), optparser.required,checkReqOpt)       
-    elseif  argument == module.OptionalArgument then
-        optparser:on (table.pack(shortname, longname), optparser.optional)        
+    if (argument == module.RequiredArgument) then 
+        optparser:on (table.pack(shortname, longname), optparser.required,checkReqOpt)
+    elseif (argument == module.OptionalArgument) then
+        optparser:on (table.pack(shortname, longname), optparser.optional)
     else
-        optparser:on (table.pack(shortname, longname), optparser.flag)        
+        optparser:on (table.pack(shortname, longname), optparser.flag)
     end
 
     arg = string.format("   %s", description or 'value')
@@ -118,7 +118,7 @@ function module.PrintUsage()
      
     _usage = _usage .. '\n' ..'   ' .. fotter
    print(_usage)
-  os.exit (2)   
+   quit()
 end
 function module.PrintVersion()
   print(version)
