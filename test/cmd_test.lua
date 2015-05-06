@@ -2,8 +2,6 @@ local utils = require ("atf.cmdutils")
 arguments = {}
 
 utils.declare_opt("-c", "--config-file", utils.RequiredArgument, "Config file")
---utils.declare_opt("-c", "--config-file", utils.OptionArgument, "Config file")
---utils.declare_opt("-f", "--file", utils.OptionalArgument, "Config file")
 utils.declare_long_opt("--mobile-connection", utils.RequiredArgument, "Mobile connection IP")
 utils.declare_long_opt("--mobile-connection-port", utils.RequiredArgument, "Mobile connection port")
 utils.declare_long_opt("--hmi-connection", utils.RequiredArgument, "HMI connection IP")
@@ -45,21 +43,22 @@ function test_keys(src)
     print("Test file: ".. src)
 end
 
-
 d = qt.dynamic()
 function d.cmd_test()
     arguments = utils.getopt(argv, opts)
-    for k,v in pairs(arguments) do
-	if type(k) ~= 'number' then
-	    k = (k):match ("^%-*(.*)$"):gsub ("%W", "_")
-	    _G[k](v)
-	else
-	    if k >= 2 and v ~= "test/cmd_test.lua" then
-    	    test_keys(v)
-	    end
-	end 
+    if (arguments) then
+        for k,v in pairs(arguments) do
+    	    if type(k) ~= 'number' then
+		k = (k):match ("^%-*(.*)$"):gsub ("%W", "_")
+		_G[k](v)
+	    else
+		if k >= 2 and v ~= "test/cmd_test.lua" then
+    		    test_keys(v)
+		end
+	    end 
+	end
     end
---	utils.PrintUsage()
+-- utils.PrintUsage()
 
     quit()
 end

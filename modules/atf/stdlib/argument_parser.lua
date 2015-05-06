@@ -7,8 +7,8 @@ local errors = {}
 local usage = [[
    ATF 2.2
 
-   Usage: atf script.lua [OPTIONS]
-   
+   Usage: atf cmd_test.lua [OPTIONS] script.lua
+
    ]]
 
 local help = {}
@@ -27,7 +27,7 @@ local optparser = std.optparse [[
 
    Several lines or paragraphs are permitted.
 
-   Usage: atf script.lua  [OPTIONS]  
+   Usage: atf cmd_test.lua  [OPTIONS]  script.lua
    ]]
 
 local module = { 
@@ -39,11 +39,11 @@ local module = {
    
 
 local function errmsg (msg)
-    local prog = "ATF"
+    local prog = "ATF 2.2"
     -- Ensure final period.
     if msg:match ("%.$") == nil then msg = msg .. "." end
-    io.stderr:write (prog .. ": error: " .. msg .. "\n")
-    io.stderr:write (prog .. ": Try '" .. prog .. " --help' for help.\n")
+    print (prog .. ": error: " .. msg .. "\n")
+    print (prog .. ": Try '" .. prog .. " --help' for help.")
     quit(2)
 end
 
@@ -53,9 +53,8 @@ local function checkReqOpt(self, arg, val)
      quit(2)
   else
      validOptList[self[arg].key] = val
-  end     
+  end
 end  
-
 
 function module.getopt(argv, opts)
   local res = {}
@@ -71,23 +70,23 @@ function module.getopt(argv, opts)
   end 
 
   local unrecognized_options,options = parse(argv) 
-  
-  if (unrecognized_options[1]:sub(1,1)~= "-") then
-      res = table.merge(validOptList, options)
-      for i = 1 , #unrecognized_options do
-        local n = table.size(res)
-	  table.insert(res,unrecognized_options[i])
-      end
-  else
-     res = "undefined option: '" .. unrecognized_options[1] .. "'"
-  end
+
+    res = table.merge(validOptList, options)
+    for i = 1 , #unrecognized_options do
+         if (unrecognized_options[i]:sub(1,1)~= "-") then
+	     table.insert(res,unrecognized_options[i])
+	 else
+            errmsg("undefined option: '" .. unrecognized_options[i] .. "'")
+	    return nil
+	 end
+     end
   
   setmetatable(res, module.mt)
   
   return res
 end
 function module.declare_opt (shortname, longname, argument, description)
-local arg = ''  
+    local arg = ''
     if (argument == module.RequiredArgument) then 
         optparser:on (table.pack(shortname, longname), optparser.required,checkReqOpt)
     elseif (argument == module.OptionalArgument) then
