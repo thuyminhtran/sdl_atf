@@ -38,7 +38,7 @@ libqttest.so: $(SOURCES) test/Makefile
 	make -C test
 	ln -sf test/libqttest.so.1.0.0 libqttest.so
 
-test: interp libqttest.so test/testbase.lua \
+test: interp libqttest.so test/testbase.lua modules/libxml.so \
 	    test/dynamic.lua test/connect.lua test/network.lua
 	./run_tests.sh
 
