@@ -113,7 +113,7 @@ int LuaInterpreter::load(const char *filename) {
 
   int res = luaL_dofile(lua_state, filename);
   if (res != 0) {
-    std::cerr << lua_tostring(lua_state, -1) << std::endl;
+    std::cerr << "Lua error:" << std::endl << lua_tostring(lua_state, -1) << std::endl;
   }
   return quitCalled ? retCode : res;
 }
