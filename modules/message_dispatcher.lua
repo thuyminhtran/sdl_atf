@@ -27,6 +27,7 @@ function module.FileStream(filename, sessionId, service, bandwidth, chunksize)
   return res
 end
 function fbuffer_mt.__index:KeepMessage(msg)
+  --print(debug.traceback())
   self.keep = msg
 end
 function fstream_mt.__index:KeepMessage(msg)
@@ -124,14 +125,15 @@ function module.MessageDispatcher(connection)
           res.connection:Send({ msg })
           break
         else
-          res.generators[res.idx].KeepMessage(msg)
+          res.generators[res.idx]:KeepMessage(msg)
         end
       elseif timeout then
         res.timer:start(timeout)
       end
     end
   end
-  qt.connect(res.connection.socket, "bytesWritten(qint64)", res._d, "bytesWritten(qint64)")
+  res.connection:OnDataSent(function(self, num) res._d:bytesWritten(num) end)
+  --qt.connect(res.connection.socket, "bytesWritten(qint64)", res._d, "bytesWritten(qint64)")
   qt.connect(res.timer, "timeout()", res._d, "timeout()")
   setmetatable(res, module.mt)
   return res

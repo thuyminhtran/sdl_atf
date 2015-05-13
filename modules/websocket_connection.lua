@@ -36,6 +36,14 @@ function module.mt.__index:OnInputData(func)
   end
   qt.connect(self.socket, "textMessageReceived(QString)", d, "textMessageReceived(QString)")
 end
+function module.mt.__index:OnDataSent(func)
+  local d = qt.dynamic()
+  local this = self
+  function d:bytesWritten(num)
+    func(this, num)
+  end
+  qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
+end
 function module.mt.__index:OnConnected(func)
   if self.qtproxy.connected then
     error("Websocket connection: connected signal is handled already")

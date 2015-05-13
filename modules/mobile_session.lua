@@ -216,7 +216,7 @@ function module.MobileSession(exp_list, connection, regAppParams)
   res.messageId  = 1
   res.sessionId  = 0
   res.correlationId = 1
-  res.version = 2
+  res.version = config.defaultProtocolVersion or 2
   res.hashCode = 0
   setmetatable(res, mt)
   return res

@@ -37,6 +37,9 @@ end
 function module.mt.__index:OnInputData(func)
   self.connection:OnInputData(func)
 end
+function module.mt.__index:OnDataSent(func)
+  self.connection:OnDataSent(func)
+end
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(func)
 end

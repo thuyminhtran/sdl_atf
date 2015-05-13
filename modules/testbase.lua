@@ -85,6 +85,16 @@ local function CheckStatus()
   control:next()
 end
 
+local function FailTestCase(self, cause)
+  module.expectations_list:Clear()
+  local exp = expectations.Expectation(cause)
+  exp.status = FAILED
+  exp.errorMessage = { ["AutoFail"] = cause }
+  module.expectations_list:Add(exp)
+  CheckStatus()
+end
+rawset(module, "FailTestCase", FailTestCase)
+
 event_dispatcher = ed.EventDispatcher()
 event_dispatcher:OnPostEvent(CheckStatus)
 timeoutTimer = timers.Timer()
