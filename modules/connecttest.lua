@@ -455,6 +455,7 @@ function module:InitHMI_onReady()
   ExpectRequest("BasicCommunication.UpdateAppList", false, { })
     :Pin()
     :Do(function(_, data)
+          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { })
           self.applications = { }
           for _, app in pairs(data.params.applications) do
             self.applications[app.appName] = app.appID
@@ -467,15 +468,15 @@ end
 function module:ConnectMobile()
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
-    self.expectations_list,
+    self,
     self.mobileConnection,
     config.application1.registerAppInterfaceParams)
   self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")
   self.mobileConnection:Connect()
 end
 
-function module:startSession(session)
-  session:Start()
+function module:StartSession()
+  self.mobileSession:Start()
   EXPECT_HMICALL("BasicCommunication.UpdateAppList")
     :Do(function(_, data)
           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { })
@@ -484,48 +485,6 @@ function module:startSession(session)
             self.applications[app.appName] = app.appID
           end
         end)
-  session.heartbeatEnabled = true
-  if session.version > 2 then
-    local event = events.Event()
-    event.matches = function(s, data)
-                       return data.frameType == 0 and data.serviceType == 0 and data.frameInfo == 0 and session.sessionId == data.sessionId
-                    end
-    session:ExpectEvent(event, "Heartbeat")
-      :Pin()
-      :Times(AnyNumber())
-      :Do(function(data)            
-            if session.heartbeatEnabled then
-              print("Heartbeart from SDL came: " .. session.sessionId)
-              session:Send( { frameType = 0, serviceType = 0, frameInfo = 0xFF } )
-            end
-          end)
-
-    local d = qt.dynamic()
-    local heartbeatToSDLTimer = timers.Timer()
-    local heartbeatFromSDLTimer = timers.Timer()
-    
-    function d.SendHeartbeat()
-      print("HB to SDL: " .. session.sessionId)
-      --АТФ ничего не слал, шлем ХБ
-      session:Send( { frameType = 0, serviceType = 0, frameInfo = 0 } )      
-    end
-    function d.CloseSession()
-      print("No HB from SDL")
-      --СДЛ ничего не шлет, рвем соединение
-      session:StopService(7)
-      module:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " . Closing connection.")
-    end
-    session.connection:OnInputData(function() heartbeatFromSDLTimer:reset() end)
-    session.connection:OnDataSent(function() heartbeatToSDLTimer:reset() end)
-    qt.connect(heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
-    qt.connect(heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")    
-    heartbeatToSDLTimer:start(config.heartbeatTimeout)
-    heartbeatFromSDLTimer:start(config.heartbeatTimeout + 100)             
-  end
-end
-
-function module:StartSession()
-  self:startSession(self.mobileSession)
 end
 
 return module

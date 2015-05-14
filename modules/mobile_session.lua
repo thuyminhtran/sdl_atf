@@ -1,9 +1,10 @@
 require('atf.util')
-local expectations = require('expectations')
-local events       = require('events')
-local config       = require('config')
-local functionId   = require('function_id')
-local json         = require('json')
+local expectations  = require('expectations')
+local events        = require('events')
+local config        = require('config')
+local functionId    = require('function_id')
+local json          = require('json')
+local expectations   = require('expectations')
 local Expectation  = expectations.Expectation
 local Event        = events.Event
 local SUCCESS      = expectations.SUCCESS
@@ -204,15 +205,55 @@ function mt.__index:Start()
   return
   self:StartService(7)
     :Do(function()
+          -- Heartbeat
+          self.heartbeatEnabled = true
+          if self.version > 2 then
+            local event = events.Event()
+            event.matches = function(s, data)
+                               return data.frameType == 0 and data.serviceType == 0 and data.frameInfo == 0 and self.sessionId == data.sessionId
+                            end
+            self:ExpectEvent(event, "Heartbeat")
+              :Pin()
+              :Times(AnyNumber())
+              :Do(function(data)            
+                    if self.heartbeatEnabled then
+                      print("Heartbeart from SDL came: " .. self.sessionId)
+                      self:Send( { frameType = 0, serviceType = 0, frameInfo = 0xFF } )
+                    end
+                  end)
+        
+            local d = qt.dynamic()
+            local heartbeatToSDLTimer = timers.Timer()
+            local heartbeatFromSDLTimer = timers.Timer()
+            
+            function d.SendHeartbeat()
+              print("HB to SDL: " .. self.sessionId)
+              --АТФ ничего не слал, шлем ХБ
+              self:Send( { frameType = 0, serviceType = 0, frameInfo = 0 } )      
+            end
+            function d.CloseSession()
+              print("No HB from SDL")
+              --СДЛ ничего не шлет, рвем соединение
+              self:StopService(7)
+              self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " . Closing connection.")
+            end
+            self.connection:OnInputData(function() heartbeatFromSDLTimer:reset() end)
+            self.connection:OnDataSent(function() heartbeatToSDLTimer:reset() end)
+            qt.connect(heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
+            qt.connect(heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")    
+            heartbeatToSDLTimer:start(config.heartbeatTimeout)
+            heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)             
+          end                    
+          
           local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)
           self:ExpectResponse(correlationId, { success = true })
         end)
 end
-function module.MobileSession(exp_list, connection, regAppParams)
+function module.MobileSession(test, connection, regAppParams)
   local res = { }
   res.regAppParams = regAppParams
   res.connection = connection
-  res.exp_list = exp_list
+  res.exp_list = test.expectations_list
   res.messageId  = 1
   res.sessionId  = 0
   res.correlationId = 1
