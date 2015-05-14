@@ -201,10 +201,10 @@ function mt.__index:StopService(service)
   return ret
 end
 function mt.__index:Start()
+  return
   self:StartService(7)
     :Do(function()
           local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)
-
           self:ExpectResponse(correlationId, { success = true })
         end)
 end

@@ -72,11 +72,11 @@ local function CheckStatus()
     if e.status ~= SUCCESS then
       success = false
     end
-    if not e.pinned then
+    if not e.pinned and e.connection then
       event_dispatcher:RemoveEvent(e.connection, e.event)
     end
     for k, v in pairs(e.errorMessage) do
-      errorMessage[k] = v
+      errorMessage[e.name .. ": " .. k] = v
     end
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
