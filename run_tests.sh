@@ -18,6 +18,7 @@ run_test "Dynamic object test" dynamic 3
 run_test "Dynamic object test2" dynamic2 3
 run_test "Qt Connect test" connect 3
 run_test "Network test" network 3
+run_test "Xml test" xmltest 3
 
 #../interp testbase.lua
 #../interp dynamic.lua

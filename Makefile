@@ -13,10 +13,13 @@ SOURCES= lua_interpreter.cc \
          qtlua.cc \
          timers.cc
 
-all: interp
+all: interp modules/libxml.so
 
 interp: $(PROJECT).mk $(SOURCES)
 	make -f $<
+
+modules/libxml.so: lua_xml.cc
+	$(CXX) $(CXXFLAGS) -shared -std=c++11 $< -o modules/libxml.so -g -I/usr/include/libxml2 -llua5.2 -lxml2 -fPIC
 
 clean:
 	rm -f $(PROJECT).mk
@@ -35,7 +38,7 @@ libqttest.so: $(SOURCES) test/Makefile
 	make -C test
 	ln -sf test/libqttest.so.1.0.0 libqttest.so
 
-test: interp libqttest.so test/testbase.lua \
+test: interp libqttest.so test/testbase.lua modules/libxml.so \
 	    test/dynamic.lua test/connect.lua test/network.lua
 	./run_tests.sh
 
