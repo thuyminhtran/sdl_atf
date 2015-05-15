@@ -198,9 +198,27 @@ function mt.__index:StopService(service)
                if data.frameInfo == 5 then return true
                else return false, "EndService NACK received" end
              end)
-
+  self:StopHeartbeat()
   return ret
 end
+
+function module:StopHeartbeat()
+  self.heartbeatEnabled = false
+  self.heartbeatToSDLTimer:stop()
+  self.heartbeatFromSDLTimer:stop()  
+end
+
+function module:StartHeartbeat()
+  self.heartbeatEnabled = true
+  self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
+  self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
+end
+
+function module:SetHeartbeatTimeout(timeout)
+  self.heartbeatToSDLTimer:setInterval(timeout)
+  self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
+end
+
 function mt.__index:Start()
   return
   self:StartService(7)
@@ -217,32 +235,28 @@ function mt.__index:Start()
               :Times(AnyNumber())
               :Do(function(data)            
                     if self.heartbeatEnabled then
-                      print("Heartbeart from SDL came: " .. self.sessionId)
                       self:Send( { frameType = 0, serviceType = 0, frameInfo = 0xFF } )
                     end
                   end)
         
             local d = qt.dynamic()
-            local heartbeatToSDLTimer = timers.Timer()
-            local heartbeatFromSDLTimer = timers.Timer()
+            self.heartbeatToSDLTimer = timers.Timer()
+            self.heartbeatFromSDLTimer = timers.Timer()
             
             function d.SendHeartbeat()
-              print("HB to SDL: " .. self.sessionId)
-              --АТФ ничего не слал, шлем ХБ
               self:Send( { frameType = 0, serviceType = 0, frameInfo = 0 } )      
             end
             function d.CloseSession()
-              print("No HB from SDL")
-              --СДЛ ничего не шлет, рвем соединение
               self:StopService(7)
               self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " . Closing connection.")
+              self.heartbeatFromSDLTimer:stop()
             end
-            self.connection:OnInputData(function() heartbeatFromSDLTimer:reset() end)
-            self.connection:OnDataSent(function() heartbeatToSDLTimer:reset() end)
-            qt.connect(heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
-            qt.connect(heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")    
-            heartbeatToSDLTimer:start(config.heartbeatTimeout)
-            heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)             
+            self.connection:OnInputData(function() self.heartbeatFromSDLTimer:reset() end)
+            self.connection:OnDataSent(function() self.heartbeatToSDLTimer:reset() end)
+            qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
+            qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")    
+            self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
+            self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)             
           end                    
           
           local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)

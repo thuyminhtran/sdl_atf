@@ -4,6 +4,8 @@ config.hmiUrl = "ws://localhost"
 config.hmiPort = 8087
 config.mobileHost = "localhost"
 config.mobilePort = 12345
+config.heartbeatTimeout = 7000
+config.defaultProtocolVersion = 3
 
 config.application1 =
 {
