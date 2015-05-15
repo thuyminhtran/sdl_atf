@@ -24,6 +24,7 @@ local mt =
   {
     test_cases = { },
     case_names = { },
+    descriptions = { },
     current_case_name = nil,
     current_case_index = 0,
     current_case_mandatory = false,
@@ -38,8 +39,20 @@ local mt =
   __newindex = function(t, k, v)
                  local firstLetter = string.sub(k, 1, 1)
                  if type(v) == "function" and isCapital(firstLetter)then
-                   table.insert(t.test_cases, v)
-                   t.case_names[v] = k
+                   local function testcase(test)
+                     function description(desc)
+                       t.descriptions[k] = desc
+                     end
+                     function critical(val)
+                       t.current_case_mandatory = val
+                     end
+                     t.current_case_name = k
+                     t.current_case_mandatory = false
+                     v(test)
+                     t.ts = timestamp()
+                   end
+                   t.case_names[testcase] = k
+                   table.insert(t.test_cases, testcase)
                  else
                    rawset(t, k, v)
                  end
@@ -48,11 +61,9 @@ local mt =
 }
 
 function control.runNextCase()
-  module.ts = timestamp()
   module.current_case_index = module.current_case_index + 1
   local testcase = module.test_cases[module.current_case_index]
   if testcase then
-    module.current_case_name = module.case_names[testcase]
     testcase(module)
   else
     quit()
@@ -82,6 +93,9 @@ local function CheckStatus()
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
   module.expectations_list:Clear()
   module.current_case_name = nil
+  if module.current_case_mandatory and not success then
+    quit()
+  end
   control:next()
 end
 

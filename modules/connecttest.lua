@@ -167,6 +167,7 @@ function EXPECT_HMIEVENT(event, name)
 end
 
 function module:InitHMI()
+  critical(true)
   local function registerComponent(name, subscriptions)
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
     local exp = EXPECT_HMIRESPONSE(rid)
@@ -211,6 +212,7 @@ function module:InitHMI()
 end
 
 function module:InitHMI_onReady()
+  critical(true)
   local function ExpectRequest(name, mandatory, params)
     local event = events.Event()
     event.level = 2
@@ -465,6 +467,7 @@ function module:InitHMI_onReady()
 end
 
 function module:ConnectMobile()
+  critical(true)
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
     self.expectations_list,

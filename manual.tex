@@ -50,6 +50,13 @@ The base test creates two connection to SDL --- mobile connection and HMI
 connection, and initializes them.
 Then an application is registered using {\tt RegisterAppInterface} call.
 
+\section{Test cases}
+Test cases are functions, belonging to the Test table. Their name must begin
+with a capital letter. To describe the purpose of the test case, use
+{\tt desciption(str)} function. It takes one string argument -- description.
+To make a test case critical -- that is, if this case fails, the Test will
+not continue execution, call {\tt critical(true)}.
+
 \section{Expectations creating}
 To specify what data is expected to be received from SDL, the Expectations
 Table\label{expectations table} is used.
