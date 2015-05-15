@@ -17,13 +17,29 @@ function Test:WaitActivation()
         end)
 end
 
+function Test:Heartbeat()
+  self.mobileSession2 = mobile_session.MobileSession(
+    self,
+    self.mobileConnection,
+    config.application2.registerAppInterfaceParams)
+  self.mobileSession2:Start()
+    :Do(function()
+          self.mobileSession2:StopHeartbeat()
+          self.mobileSession2:StartHeartbeat()
+          self.mobileSession2:SetHeartbeatTimeout(8000)
+          self.mobileSession2:Stop()
+        end)
+end
+
+
 function Test:DelayedExp()
   local event = events.Event()
   event.matches = function(self, e) return self == e end
   EXPECT_EVENT(event, "Delayed event")
+    :Timeout(20000)
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
-            end, 2000)
+            end, 15000)
 end
 
 function Test:Case_GetVehicleDataTest()

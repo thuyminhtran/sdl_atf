@@ -198,23 +198,23 @@ function mt.__index:StopService(service)
                if data.frameInfo == 5 then return true
                else return false, "EndService NACK received" end
              end)
-  self:StopHeartbeat()
+  if service == 7 then self:StopHeartbeat() end
   return ret
 end
 
-function module:StopHeartbeat()
+function mt.__index:StopHeartbeat()
   self.heartbeatEnabled = false
   self.heartbeatToSDLTimer:stop()
-  self.heartbeatFromSDLTimer:stop()  
+  self.heartbeatFromSDLTimer:stop()
 end
 
-function module:StartHeartbeat()
+function mt.__index:StartHeartbeat()
   self.heartbeatEnabled = true
   self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
   self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
 end
 
-function module:SetHeartbeatTimeout(timeout)
+function mt.__index:SetHeartbeatTimeout(timeout)
   self.heartbeatToSDLTimer:setInterval(timeout)
   self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
 end
@@ -224,7 +224,6 @@ function mt.__index:Start()
   self:StartService(7)
     :Do(function()
           -- Heartbeat
-          self.heartbeatEnabled = true
           if self.version > 2 then
             local event = events.Event()
             event.matches = function(s, data)
@@ -233,7 +232,7 @@ function mt.__index:Start()
             self:ExpectEvent(event, "Heartbeat")
               :Pin()
               :Times(AnyNumber())
-              :Do(function(data)            
+              :Do(function(data)
                     if self.heartbeatEnabled then
                       self:Send( { frameType = 0, serviceType = 0, frameInfo = 0xFF } )
                     end
@@ -246,15 +245,16 @@ function mt.__index:Start()
             function d.SendHeartbeat()
               self:Send( { frameType = 0, serviceType = 0, frameInfo = 0 } )      
             end
+            
             function d.CloseSession()
               self:StopService(7)
-              self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " . Closing connection.")
-              self.heartbeatFromSDLTimer:stop()
+              self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " msecs. Closing session № " .. self.sessionId)
             end
-            self.connection:OnInputData(function() self.heartbeatFromSDLTimer:reset() end)
-            self.connection:OnDataSent(function() self.heartbeatToSDLTimer:reset() end)
+            
+            self.connection:OnInputData(function() if self.heartbeatEnabled then self.heartbeatFromSDLTimer:reset() end end)
+            self.connection:OnDataSent(function() if self.heartbeatEnabled then self.heartbeatToSDLTimer:reset() end end)
             qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
-            qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")    
+            qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")
             self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
             self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)             
           end                    
@@ -263,8 +263,14 @@ function mt.__index:Start()
           self:ExpectResponse(correlationId, { success = true })
         end)
 end
+
+function mt.__index:Stop()
+  self:StopService(7)
+end
+
 function module.MobileSession(test, connection, regAppParams)
   local res = { }
+  res.test = test
   res.regAppParams = regAppParams
   res.connection = connection
   res.exp_list = test.expectations_list
@@ -273,7 +279,9 @@ function module.MobileSession(test, connection, regAppParams)
   res.correlationId = 1
   res.version = config.defaultProtocolVersion or 2
   res.hashCode = 0
+  res.heartbeatEnabled = true
   setmetatable(res, mt)
   return res
 end
+
 return module

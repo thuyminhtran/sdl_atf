@@ -33,4 +33,30 @@ config.application1 =
   }
 }
 
+config.application2 =
+{
+  registerAppInterfaceParams =
+  {
+    syncMsgVersion =
+    {
+      majorVersion = 3,
+      minorVersion = 0
+    },
+    appName = "Test Application2",
+    isMediaApplication = true,
+    languageDesired = 'EN-US',
+    hmiDisplayLanguageDesired = 'EN-US',
+    appHMIType = { "NAVIGATION" },
+    appID = "8675348",
+    deviceInfo =
+    {
+      os = "Android",
+      carrier = "Megafon",
+      firmwareRev = "Name: Linux, Version: 3.4.0-perf",
+      osVersion = "4.4.2",
+      maxNumberRFCOMMPorts = 1
+    }
+  }
+}
+
 return config
