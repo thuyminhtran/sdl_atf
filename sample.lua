@@ -31,7 +31,6 @@ function Test:Heartbeat()
         end)
 end
 
-
 function Test:DelayedExp()
   local event = events.Event()
   event.matches = function(self, e) return self == e end

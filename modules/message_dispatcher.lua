@@ -1,4 +1,4 @@
-local ph = require('protocol_handler')
+local ph = require('protocol_handler/protocol_handler')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
@@ -27,7 +27,6 @@ function module.FileStream(filename, sessionId, service, bandwidth, chunksize)
   return res
 end
 function fbuffer_mt.__index:KeepMessage(msg)
-  --print(debug.traceback())
   self.keep = msg
 end
 function fstream_mt.__index:KeepMessage(msg)
@@ -133,7 +132,6 @@ function module.MessageDispatcher(connection)
     end
   end
   res.connection:OnDataSent(function(self, num) res._d:bytesWritten(num) end)
-  --qt.connect(res.connection.socket, "bytesWritten(qint64)", res._d, "bytesWritten(qint64)")
   qt.connect(res.timer, "timeout()", res._d, "timeout()")
   setmetatable(res, module.mt)
   return res
