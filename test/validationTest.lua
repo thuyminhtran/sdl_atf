@@ -1,21 +1,4 @@
 local validator = require("schema_validation")
-Test = require('connecttest')
-require('cardinalities')
-local config = require('config')
-
-
-local function dump(o)
-   if type(o) == 'table' then
-      local s = '{ '
-      for k,v in pairs(o) do
-         if type(k) ~= 'number' then k = '"'..k..'"' end
-         s = s .. '['..k..'] = ' .. dump(v) .. ','
-      end
-      return s .. '} \n'
-   else
-      return tostring(o)
-   end
-end
 
 local json_hmi_tbl = { numTicks = 7,position = 6,sliderHeader ="sliderHeader",
 	sliderFooter = 
@@ -31,15 +14,24 @@ local json_hmi_tbl = { numTicks = 7,position = 6,sliderHeader ="sliderHeader",
 	timeout = 3000,
         }
 
-local json_mob_tbl =  { success = "true", resultCode = {"SUCCESS"} }
-local _res, _err = validator.compare('hmi', 'Slider', 'request', json_hmi_tbl)
+local json_registreAppInterface = {
+                success = true,
+                resultCode = "SUCCESS",
+                vehicleType = {
+                        make = "Ford from policy",
+                        model = "Fiesta from policy",
+                        modelYear = "2222"
+                        } }
 
-if (not _res) then  print(_err)
-else  print (_res) end
+local json_mob_tbl =  { success = true, resultCode = {"SUCCESS"} }
 
-_res, _err = validator.compare('mobile', 'Slider', 'response',json_mob_tbl,true)
+local _res, _err = validator.validate_hmi_request('Slider', json_hmi_tbl)
+if (not _res) then  print(_err) else  print (_res) end
 
-if (not _res) then  print(_err)
-else  print (_res) end
+_res, _err = validator.validate_mobile_response('Slider',json_mob_tbl,true)
+if (not _res) then  print(_err) else  print (_res) end
+
+_res, _err = validator.validate_mobile_response( 'Slider',{ success = 'true', resultCode = {"SUCCESS"} },true)
+if (not _res) then  print(_err) else  print (_res) end
 
 quit()
