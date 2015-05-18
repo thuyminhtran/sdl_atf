@@ -1,3 +1,4 @@
+local config = require('config')
 local module = { }
 console = require('console')
 function module.PrintCaseResult(caseName, success, errorMessage, timespan)
@@ -7,15 +8,26 @@ function module.PrintCaseResult(caseName, success, errorMessage, timespan)
   else
     caseName = caseName .. string.rep(' ', 35 - #caseName)
   end
-  str = string.format("%s    %s (%d ms)", caseName, console.setattr(
-     success and "[SUCCESS]" or "[FAIL]",
-     success and "green"     or "red",
-     2, false),
-     timespan)
-  print(str)
+
+  local result
+  if config.color then
+    result = console.setattr(
+      success and "[SUCCESS]" or "[FAIL]",
+      success and "green"     or "red",
+      2, false)
+  else
+    result = success and "[SUCCESS]" or "[FAIL]"
+  end
+
+  print(string.format("%s    %s (%d ms)", caseName, result, timespan))
   if not success and errorMessage then
     for k, v in pairs(errorMessage) do
-      print(console.setattr("  " .. k .. ": " .. v, "cyan", 1))
+      local errmsg = "  " .. k .. ": " .. v
+      if config.color then
+        print(console.setattr(errmsg, "cyan", 1))
+      else
+        print(errmsg)
+      end
     end
   end
   return module

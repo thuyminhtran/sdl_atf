@@ -1,5 +1,6 @@
 local config = { }
 
+config.color  = true
 config.hmiUrl = "ws://localhost"
 config.hmiPort = 8087
 config.mobileHost = "localhost"

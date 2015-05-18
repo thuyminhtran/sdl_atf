@@ -3,6 +3,7 @@ local events       = require("events")
 local expectations = require('expectations')
 local console      = require('console')
 local fmt          = require('format')
+local config       = require('config')
 
 local module = { }
 
@@ -70,9 +71,21 @@ function control.runNextCase()
   end
 end
 
+function control:start()
+  if is_redirected then
+    print("config.color = false")
+    config.color = false
+  else
+    print("config.color = true")
+  end
+  self:next()
+end
+
 setmetatable(module, mt)
 
 qt.connect(control, "next()", control, "runNextCase()")
+qt.connect(control, "init()", control, "start()")
+
 local function CheckStatus()
   if module.current_case_name == nil or module.current_case_name == '' then return end
   -- Check the test status
@@ -108,5 +121,5 @@ function control:checkstatus()
   CheckStatus()
 end
 timeoutTimer:start(400)
-control:next()
+control:init()
 return module

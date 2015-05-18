@@ -1,5 +1,7 @@
 #include <time.h> // for clock_gettime
 #include <locale.h> // for setlocale()
+#include <stdio.h>
+#include <unistd.h> // for isatty()
 #include "lua_interpreter.h"
 #include "qtdynamic.h"
 #include "network.h"
@@ -34,18 +36,6 @@ int timestamp(lua_State *L) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   lua_pushnumber(L, ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
-  return 1;
-}
-
-int arguments(lua_State *L) {
-  QStringList args = QCoreApplication::instance()->arguments();
-  lua_createtable(L, args.count(), 0);
-  int i = 1;
-  for (auto& arg : args)
-  {
-    lua_pushstring(L, arg.toUtf8().constData());
-    lua_rawseti(L, -2, i++);
-  }
   return 1;
 }
 }  // anonymous namespace
@@ -86,8 +76,8 @@ LuaInterpreter::LuaInterpreter(QObject *parent, const QStringList::iterator& arg
   lua_pushcfunction(lua_state, &timestamp);
   lua_setglobal(lua_state, "timestamp");
 
-  lua_pushcfunction(lua_state, &arguments);
-  lua_setglobal(lua_state, "arguments");
+  lua_pushboolean(lua_state, !isatty(fileno(stdout)));
+  lua_setglobal(lua_state, "is_redirected");
 
   // Adding global 'interp'
   QObject **p = static_cast<QObject**>(lua_newuserdata(lua_state, sizeof(QObject*)));
