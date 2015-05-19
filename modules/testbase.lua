@@ -72,12 +72,9 @@ function control.runNextCase()
 end
 
 function control:start()
-  if is_redirected then
-    print("config.color = false")
-    config.color = false
-  else
-    print("config.color = true")
-  end
+  -- if 'color' is not set, it is true as default value
+  if config.color == nil then config.color = true end
+  if is_redirected then config.color = false end
   self:next()
 end
 
