@@ -1,4 +1,9 @@
-true
-true
+validate_hmi_request:true
+validate_mobile_response:true
+validate_mobile_response:false ==> not valid type 'success': current type - 'string' ; Avalible - 'Boolean'
 
-not valid type 'success': current type - 'string' ; Avalible - 'Boolean'
+validate_hmi_notification:true
+validate_hmi_notification:false ==> not present : requestType
+
+json_validate:false ==> Missing: 'success'
+json_validate:true

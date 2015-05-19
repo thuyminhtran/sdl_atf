@@ -14,11 +14,8 @@ module.classes =
 module.enum = { }
 module.struct = { }
 
-local hmi_api = xml.open("data/HMI_API.xml")
-if not hmi_api then error("HMI_API.xml not found") end
-
-function loadEnums(api)
-  local enums = api:xpath("/interfaces/interface/enum")
+local function loadEnums(api, xpath_str)
+  local enums = api:xpath(string.format("%s/enum",xpath_str ))
   for _, e in ipairs(enums) do
     local enum = { }
     local i = 1
@@ -26,25 +23,21 @@ function loadEnums(api)
       enum[item:attr("name")] = i
       i = i + 1
     end
---    print(e:parent():attr("name") .. "." .. e:attr("name"))
---    module.enum[e:parent():attr("name") .. "." .. e:attr("name")] = enum
     module.enum[e:attr("name")] = enum
   end
 end
 
-function loadStructs(api)
-  local structs = api:xpath("/interfaces/interface/struct")
+local function loadStructs(api, xpath_str)
+  local structs = api:xpath(string.format("%s/struct", xpath_str))
   for _, s in ipairs(structs) do
     local struct = { }
     for _, item in ipairs(s:children("param")) do
       struct[item:attr("name")] = item:attributes()
     end
---    module.struct[s:parent():attr("name") .. "." .. s:attr("name")] = struct
     module.struct[s:attr("name")] = struct
   end
 
---  while true do
---    local has_unresolved = false
+    local has_unresolved = false
     local unresolved = ""
     for n, s in pairs(module.struct) do
       for _, p in pairs(s) do
@@ -64,17 +57,22 @@ function loadStructs(api)
             p.class = module.classes.Struct
             p.type = module.struct[p.type]
           else
---            has_unresolved = true
+            has_unresolved = true
             unresolved = p.type
           end
         end
       end
     end
---    if not has_unresolved then break end
---  end
 end
 
-loadEnums(hmi_api)
-loadStructs(hmi_api)
+function module.init(path)
+  local _api = xml.open(path)
+  if not _api then error(path .. " not found") end
+  local root_xpath_str = (string.find(path:lower(),"hmi")) and "/interfaces/interface" or "/interface"
+    
+  loadEnums(_api, root_xpath_str)
+  loadStructs(_api, root_xpath_str)
+  return module
+end  
 
 return module

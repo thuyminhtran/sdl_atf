@@ -1,6 +1,7 @@
 local xml = require("xml")
-local mob_types = require("mob_validation")
-local hmi_types = require("hmi_validation")
+local api = require("api_loader")
+local mob_types = api.init("data/HMI_API.xml")
+local hmi_types = api.init("data/MOBILE_API.xml")
 
 hmi_api = xml.open("data/HMI_API.xml")
 mobile_api = xml.open("data/MOBILE_API.xml")
@@ -26,6 +27,7 @@ local function dump(o)
       return tostring(o)
    end
 end
+
 
 local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
@@ -81,9 +83,9 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     if type(tbl) == 'table' then
       for _,v in pairs(tbl) do
         if type(v) == 'table' then
-          tmp = tmp ..'\n'..errorMsgToString(v) end
+          tmp = tmp ..errorMsgToString(v) ..'\n'
         else
-          tmp = tmp ..'\n'..v
+          tmp = tmp ..v ..'\n'
         end       
       end
       return tmp
@@ -142,26 +144,26 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     end
   end
 
-  local function schemaCompare(t1,t2)
-    if (type(t1)~="table") then 
+  local function schemaCompare(xml_table,user_data)
+    if (type(xml_table)~="table") then 
       return nil, "Empty Data" 
     end
     
     if (not mandatory_check) then
-      for k2,v2 in pairs(t2) do
-        if(t1[k2] ~= 'nil') then
-          nodeVerify(t1[k2], t2[k2], k2)
+      for k2,v2 in pairs(user_data) do
+        if(xml_table[k2]) then
+          nodeVerify(xml_table[k2], user_data[k2], k2)
         else
           bool_result = false
           errorMessage[ k2 ] = "not valid property: ".. k2
         end
       end
     else
-      for k1,v1 in pairs(t1) do
-        if(t2[k1]) then
-          nodeVerify(t1[k1], t2[k1], k1)
+      for k1,v1 in pairs(xml_table) do
+        if(user_data[k1]) then
+          nodeVerify(xml_table[k1], user_data[k1], k1)
         else
-          if(t1[k1].mandatory == 'true') then
+          if(xml_table[k1].mandatory == 'true') then
             bool_result = false
             errorMessage[ k1 ] = "not present : ".. k1
         end
@@ -172,7 +174,7 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
   return bool_result, errorMsgToString(errorMessage)
 end
 
-function module.schema_eq(table1, table2)
+function module.json_validate(table1, table2)
    local avoid_loops = {}
    local function recurse(t1, t2)
       if (type(t1) ~= type(t2)) then return false end
@@ -187,12 +189,12 @@ function module.schema_eq(table1, table2)
          if type(k) == "table" then table.insert(t2tablekeys, k) end
          t2keys[k] = true
       end
-      
+    
       for k1, v1 in pairs(t1) do
          local v2 = t2[k1]
          if (type(k1) == "table") then
             local ok = false
-            for i, tk in ipairs(t2tablekeys) do
+            for i, tk in ipairs(t2tablekeys) do          
                if table_eq(k1, tk) then
                   table.remove(t2tablekeys, i)
                   t2keys[tk] = nil
@@ -200,16 +202,21 @@ function module.schema_eq(table1, table2)
                   break
                end
             end
-            if not ok then return false end
+            if not ok then return false,"Missing one or more fields" end
          else
-            if v2 == nil then return false end
-            t2keys[k1] = nil
+           if (t2keys[k1]) then
+              if v2 == nil then return false, string.format("Missing value for: '%s'",k1) end
+              t2keys[k1] = nil
+           else
+              t2keys[k1] = v1
+              return false, string.format("Missing: '%s'",k1)
+           end  
          end
       end
-      if (next(t2keys)) then return false end
+  
+      if (next(t2keys)) then return false,"Missing one or more fields" end
       return true
    end
-   
    return recurse(table1, table2)
 end
    
@@ -255,13 +262,13 @@ function module.validate_mobile_response(function_id,user_data, strong_validate)
   return compare(module.HMI,function_id, 'response',user_data, mandatory_check)  
 end  
 
-function module.validate_mobile_notify(function_id,user_data, strong_validate)
+function module.validate_mobile_notification(function_id,user_data, strong_validate)
   local mandatory_check = false
   if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
   return compare(module.HMI,function_id, 'notification',user_data, mandatory_check)  
 end  
 
-function module.validate_hmi_notify(function_id,user_data, strong_validate)
+function module.validate_hmi_notification(function_id,user_data, strong_validate)
   local mandatory_check = false
   if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
   return compare(module.HMI,function_id, 'notification',user_data, mandatory_check)
