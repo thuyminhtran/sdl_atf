@@ -14,8 +14,8 @@ module.classes =
 module.enum = { }
 module.struct = { }
 
-local function loadEnums(api, xpath_str)
-  local enums = api:xpath(string.format("%s/enum",xpath_str ))
+local function loadEnums(api)
+  local enums = api:xpath("//interface/enum")
   for _, e in ipairs(enums) do
     local enum = { }
     local i = 1
@@ -27,8 +27,8 @@ local function loadEnums(api, xpath_str)
   end
 end
 
-local function loadStructs(api, xpath_str)
-  local structs = api:xpath(string.format("%s/struct", xpath_str))
+local function loadStructs(api)
+  local structs = api:xpath("//interface/struct")
   for _, s in ipairs(structs) do
     local struct = { }
     for _, item in ipairs(s:children("param")) do
@@ -37,8 +37,6 @@ local function loadStructs(api, xpath_str)
     module.struct[s:attr("name")] = struct
   end
 
-    local has_unresolved = false
-    local unresolved = ""
     for n, s in pairs(module.struct) do
       for _, p in pairs(s) do
         if type(p.type) == 'string' then
@@ -56,9 +54,6 @@ local function loadStructs(api, xpath_str)
           elseif module.struct[p.type] then
             p.class = module.classes.Struct
             p.type = module.struct[p.type]
-          else
-            has_unresolved = true
-            unresolved = p.type
           end
         end
       end
@@ -68,10 +63,9 @@ end
 function module.init(path)
   local _api = xml.open(path)
   if not _api then error(path .. " not found") end
-  local root_xpath_str = (string.find(path:lower(),"hmi")) and "/interfaces/interface" or "/interface"
-    
-  loadEnums(_api, root_xpath_str)
-  loadStructs(_api, root_xpath_str)
+
+  loadEnums(_api)
+  loadStructs(_api)
   return module
 end  
 

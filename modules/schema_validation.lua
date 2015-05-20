@@ -3,8 +3,8 @@ local api = require("api_loader")
 local mob_types = api.init("data/HMI_API.xml")
 local hmi_types = api.init("data/MOBILE_API.xml")
 
-hmi_api = xml.open("data/HMI_API.xml")
-mobile_api = xml.open("data/MOBILE_API.xml")
+if (not hmi_aip) then  hmi_api = xml.open("data/HMI_API.xml") end
+if (not mobile_api) then mobile_api = xml.open("data/MOBILE_API.xml") end
 
 local module = {
 		 
