@@ -6,6 +6,10 @@ config.hmiPort = 8087
 config.mobileHost = "localhost"
 config.mobilePort = 12345
 
+config.pathToSDL = "../reserv/applink/bin"
+config.ExitOnCrash = true
+config.stopSDLAfterATF = true
+
 config.application1 =
 {
   registerAppInterfaceParams =

@@ -4,6 +4,7 @@ local expectations = require('expectations')
 local console      = require('console')
 local fmt          = require('format')
 local config       = require('config')
+local SDL          = require('SDL')
 
 local module = { }
 
@@ -67,6 +68,9 @@ function control.runNextCase()
   if testcase then
     testcase(module)
   else
+    if config.stopSDLAfterATF and SDL.autoRun then
+      SDL:StopSDL()
+    end
     quit()
   end
 end
@@ -86,9 +90,14 @@ qt.connect(control, "init()", control, "start()")
 local function CheckStatus()
   if module.current_case_name == nil or module.current_case_name == '' then return end
   -- Check the test status
-  if module.expectations_list:Any(function(e) return not e.status end) then return end
   local success = true
   local errorMessage = {}
+  if SDL:CheckStatusSDL() == "Crash" then
+    success = false
+    print(console.setattr("SDL has unexpectedly crashed or stop responding!", "cyan", 1))   
+    critical(SDL.exitOnCrash)
+    SDL:DeleteFile() 
+  elseif module.expectations_list:Any(function(e) return not e.status end) then return end
   for _, e in ipairs(module.expectations_list) do
     if e.status ~= SUCCESS then
       success = false

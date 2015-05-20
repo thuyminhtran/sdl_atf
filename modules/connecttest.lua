@@ -10,6 +10,8 @@ local events         = require("events")
 local expectations   = require('expectations')
 local config         = require('config')
 local functionId     = require('function_id')
+local console        = require('console')
+local SDL            = require('SDL')
 local Event = events.Event
 
 local Expectation = expectations.Expectation
@@ -166,7 +168,45 @@ function EXPECT_HMIEVENT(event, name)
   return ret
 end
 
+function module:RunSDL()
+  self:runSDL()
+end
+
 function module:InitHMI()
+  self:initHMI()
+end
+
+function module:InitHMI_onReady()
+  self:initHMI_onReady()
+end
+
+function module:ConnectMobile()
+  self:connectMobile()
+end
+
+function module:StartSession()
+  self:startSession()
+end
+
+function module:runSDL()
+  critical(true)
+  local event = events.Event()
+  event.matches = function(self, e) return self == e end
+  EXPECT_EVENT(event, "Delayed event")
+  RUN_AFTER(function()
+              RAISE_EVENT(event, event)
+            end, 4000)
+  SDL.autoRun = true 
+  local result, errmsg
+  result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
+  if result == nil then 
+    print(console.setattr(errmsg, "cyan", 1))
+    SDL:DeleteFile()
+    quit()
+  end
+end
+
+function module:initHMI()
   critical(true)
   local function registerComponent(name, subscriptions)
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
@@ -211,7 +251,7 @@ function module:InitHMI()
   self.hmiConnection:Connect()
 end
 
-function module:InitHMI_onReady()
+function module:initHMI_onReady()
   critical(true)
   local function ExpectRequest(name, mandatory, params)
     local event = events.Event()
@@ -466,7 +506,7 @@ function module:InitHMI_onReady()
   self.hmiConnection:SendNotification("BasicCommunication.OnReady")
 end
 
-function module:ConnectMobile()
+function module:connectMobile()
   critical(true)
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
@@ -476,7 +516,7 @@ function module:ConnectMobile()
   self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")
   self.mobileConnection:Connect()
 end
-function module:StartSession()
+function module:startSession()
   self.mobileSession:Start()
   EXPECT_HMICALL("BasicCommunication.UpdateAppList")
     :Do(function(_, data)
