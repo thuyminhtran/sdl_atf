@@ -3,17 +3,16 @@ local api = require("api_loader")
 local mob_types = api.init("data/HMI_API.xml")
 local hmi_types = api.init("data/MOBILE_API.xml")
 
-if (not hmi_aip) then  hmi_api = xml.open("data/HMI_API.xml") end
+if (not hmi_api) then  hmi_api = xml.open("data/HMI_API.xml") end
 if (not mobile_api) then mobile_api = xml.open("data/MOBILE_API.xml") end
 
 local module = {
-		 
-		mt = {__index = { } },
-		api_type= {
-			    HMI = 1,
-			    MOBILE= 2
-          }
-		}
+                mt = {__index = { } },
+                        api_type= {
+                            HMI = 1,
+                            MOBILE= 2
+                     }
+              }
 
 local function dump(o)
    if type(o) == 'table' then
@@ -57,7 +56,8 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
                   tmp['type'] = string.format("%s",class_type)
                 end
 
-                tmp['mandatory'] = (v2:attr('mandatory')) and v2:attr('mandatory') or 'true'
+--                tmp['mandatory'] = (v2:attr('mandatory')) and v2:attr('mandatory') or 'true'
+                tmp['mandatory'] = v2:attr('mandatory') or 'true'
                 if (v2:attr('array')) then tmp['array'] = v2:attr('array') end
                 if (v2:attr('minsize') and v2:attr('maxsize')) then
                     tmp['minsize'] = v2:attr('minsize')
@@ -194,7 +194,7 @@ function module.json_validate(table1, table2)
          local v2 = t2[k1]
          if (type(k1) == "table") then
             local ok = false
-            for i, tk in ipairs(t2tablekeys) do          
+            for i, tk in ipairs(t2tablekeys) do
                if table_eq(k1, tk) then
                   table.remove(t2tablekeys, i)
                   t2keys[tk] = nil
@@ -238,39 +238,27 @@ end
   
 end 
 
-function module.validate_hmi_request(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
+function module.validate_hmi_request(function_id,user_data, mandatory_check)
   return compare(module.HMI,function_id, 'request',user_data, mandatory_check)
-end  
+end
 
-function module.validate_mobile_request(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
-  return compare(module.HMI,function_id, 'request',user_data, mandatory_check)  
-end  
+function module.validate_mobile_request(function_id,user_data, mandatory_check)
+  return compare(module.MOBILE,function_id, 'request',user_data, mandatory_check)
+end
 
-function module.validate_hmi_response(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
+function module.validate_hmi_response(function_id,user_data, mandatory_check)
   return compare(module.HMI,function_id, 'response',user_data, mandatory_check)
+end
+
+function module.validate_mobile_response(function_id,user_data, mandatory_check)
+  return compare(module.MOBILE,function_id, 'response',user_data, mandatory_check)
 end  
 
-function module.validate_mobile_response(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
-  return compare(module.HMI,function_id, 'response',user_data, mandatory_check)  
+function module.validate_mobile_notification(function_id,user_data, mandatory_check)
+  return compare(module.MOBILE,function_id, 'notification',user_data, mandatory_check)
 end  
 
-function module.validate_mobile_notification(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
-  return compare(module.HMI,function_id, 'notification',user_data, mandatory_check)  
-end  
-
-function module.validate_hmi_notification(function_id,user_data, strong_validate)
-  local mandatory_check = false
-  if (type(strong_validate) == 'boolean' ) then  mandatory_check = strong_validate end
+function module.validate_hmi_notification(function_id,user_data, mandatory_check)
   return compare(module.HMI,function_id, 'notification',user_data, mandatory_check)
 end  
 
