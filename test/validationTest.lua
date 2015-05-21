@@ -28,8 +28,11 @@ if (not _res) then  print("validate_mobile_response:"..tostring(_res).." ==> "..
 _res, _err = validator.validate_hmi_notification( 'OnSystemRequest', { requestType = {"PROPRIETARY"}, urlSchema = "default"})
 if (not _res) then  print("validate_hmi_notification:"..tostring(_res).." ==> ".._err) else  print ("validate_hmi_notification:"..tostring(_res)) end
 
-_res, _err = validator.validate_hmi_notification( 'OnSystemRequest', { urlSchema = "default"}, true)
+_res, _err = validator.validate_hmi_notification( 'OnSystemRequest', { urlSchema = "default"},true)
 if (not _res) then  print("validate_hmi_notification:"..tostring(_res).." ==> ".._err) else  print ("validate_hmi_notification:"..tostring(_res)) end
+
+_res, _err = validator.validate_mobile_notification( "OnHMIStatus", {hmiLevel = "FULL"}) 
+if (not _res) then  print("validate_mobile_notification:"..tostring(_res).." ==> ".._err) else  print ("validate_modile_notification:"..tostring(_res)) end
 
 _res, _err = validator.json_validate(json_mob_tbl, {resultCode = {"SUCCESS"} })
 if (not _res) then  print("json_validate:"..tostring(_res).." ==> ".._err) else  print ("json_validate:"..tostring(_res)) end

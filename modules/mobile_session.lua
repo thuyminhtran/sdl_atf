@@ -4,6 +4,7 @@ local events       = require('events')
 local config       = require('config')
 local functionId   = require('function_id')
 local json         = require('json')
+local validator      = require('schema_validation')
 local Expectation  = expectations.Expectation
 local Event        = events.Event
 local SUCCESS      = expectations.SUCCESS
@@ -63,6 +64,7 @@ function mt.__index:ExpectAny()
   return ret
 end
 function mt.__index:ExpectNotification(funcName, ...)
+    print(type(...))
   local args = table.pack(...)
   local event = events.Event()
   event.matches = function(_, data)
@@ -78,6 +80,8 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
+--                    local _res, _err = validator.validate_mobile_notification(funcName, ...)
+--                    if (not _res) then  return _res,_err end
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end

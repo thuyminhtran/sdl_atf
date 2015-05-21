@@ -10,6 +10,7 @@ local events         = require("events")
 local expectations   = require('expectations')
 local config         = require('config')
 local functionId     = require('function_id')
+local validator      = require('schema_validation')
 local Event = events.Event
 
 local Expectation = expectations.Expectation
@@ -48,7 +49,7 @@ function EXPECT_HMINOTIFICATION(name)
 end
 
 function EXPECT_HMICALL(methodName, ...)
-  local args = table.pack(...)
+    local args = table.pack(...)
   -- TODO: Avoid copy-paste
   local event = events.Event()
   event.matches =
@@ -62,7 +63,10 @@ function EXPECT_HMICALL(methodName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   return compareValues(arguments, data.params, "params")
+                    local _,short_name = methodName:match("([^.]+).([^.]+)")
+                    local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
+                    if (not _res) then  return _res,_err end
+                    return compareValues(arguments, data.params, "params")
                 end)
   end
   ret.event = event
