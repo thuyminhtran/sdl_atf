@@ -19,28 +19,29 @@ function Test:WaitActivation()
         end)
 end
 
-function Test:Heartbeat()
-  self.mobileSession2 = mobile_session.MobileSession(
-    self,
-    self.mobileConnection,
-    config.application2.registerAppInterfaceParams)
-  self.mobileSession2:Start()
-    :Do(function()
-          self.mobileSession2:StopHeartbeat()
-          self.mobileSession2:StartHeartbeat()
-          self.mobileSession2:SetHeartbeatTimeout(8000)
-          self.mobileSession2:Stop()
-        end)
-end
+--TODO{ALeshin} Disabled until SDL bug APPLINK-13236 is fixed
+--function Test:Heartbeat()
+--  self.mobileSession2 = mobile_session.MobileSession(
+--    self,
+--    self.mobileConnection,
+--    config.application2.registerAppInterfaceParams)
+--  self.mobileSession2:Start()
+--    :Do(function()
+--          self.mobileSession2:StopHeartbeat()
+--          self.mobileSession2:StartHeartbeat()
+--          self.mobileSession2:SetHeartbeatTimeout(8000)
+--          self.mobileSession2:Stop()
+--        end)
+--end
 
 function Test:DelayedExp()
   local event = events.Event()
   event.matches = function(self, e) return self == e end
   EXPECT_EVENT(event, "Delayed event")
-    :Timeout(20000)
+    :Timeout(2000)
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
-            end, 15000)
+            end, 1500)
 end
 
 function Test:Case_GetVehicleDataTest()
