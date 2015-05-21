@@ -1,5 +1,6 @@
-local module = {}
-local json = require("json")
+local module    = {}
+local json      = require("json")
+local constants = require('protocol_handler/ford_protocol_constants')
 local mt = { __index = { } }
 function module.ProtocolHandler()
   ret =
@@ -70,15 +71,16 @@ function mt.__index:Parse(binary)
     msg.messageId   = bytesToInt32(self.buffer, 9)
     msg.binaryData  = string.sub(self.buffer, 13, msg.size + 12)
     self.buffer     = string.sub(self.buffer, msg.size + 13)
-    if #msg.binaryData == 0 or msg.frameType == 0 then
+    if #msg.binaryData == 0 or msg.frameType == constants.FRAME_TYPE.CONTROL_FRAME then
       table.insert(res, msg)
     else
-      if msg.frameType == 1 or (msg.frameType == 3 and msg.frameInfo == 0) then
-        if msg.frameType == 3 then
+      if msg.frameType == constants.FRAME_TYPE.SINGLE_FRAME or 
+        (msg.frameType == constants.FRAME_TYPE.CONSECUTIVE_FRAME and msg.frameInfo == constants.FRAME_INFO.LAST_FRAME) then
+        if msg.frameType == constants.FRAME_TYPE.CONSECUTIVE_FRAME then
           msg.binaryData = self.frames[msg.messageId] .. msg.binaryData
           self.frames[msg.messageId] = nil
         end
-        if msg.serviceType == 7 then
+        if msg.serviceType == constants.SERVICE_TYPE.RPC then
           msg.rpcType          = bit32.rshift(string.byte(msg.binaryData, 1), 4)
           msg.rpcFunctionId    = bit32.band(bytesToInt32(msg.binaryData, 1), 0x0fffffff)
           msg.rpcCorrelationId = bytesToInt32(msg.binaryData, 5)
@@ -93,9 +95,9 @@ function mt.__index:Parse(binary)
           end
         end
         table.insert(res, msg)
-      elseif msg.frameType == 2 then
+      elseif msg.frameType == constants.FRAME_TYPE.FIRST_FRAME then
         self.frames[msg.messageId] = ""
-      elseif msg.frameType == 3 then
+      elseif msg.frameType == constants.FRAME_TYPE.CONSECUTIVE_FRAME then
         self.frames[msg.messageId] = self.frames[msg.messageId] .. msg.binaryData
       end
     end
@@ -114,7 +116,7 @@ function mt.__index:Compose(message)
   local res = {}
   local multiframe_payloads = {}
 
-  if message.frameType ~= 0 and message.serviceType == 7 and message.payload then
+  if message.frameType ~= constants.FRAME_TYPE.CONTROL_FRAME and message.serviceType == constants.SERVICE_TYPE.RPC and message.payload then
     payload = rpcPayload(message.rpcType,
                          message.rpcFunctionId,
                          message.rpcCorrelationId,

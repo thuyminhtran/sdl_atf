@@ -1,4 +1,4 @@
-local ph = require('protocol_handler')
+local ph = require('protocol_handler/protocol_handler')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
@@ -124,14 +124,14 @@ function module.MessageDispatcher(connection)
           res.connection:Send({ msg })
           break
         else
-          res.generators[res.idx].KeepMessage(msg)
+          res.generators[res.idx]:KeepMessage(msg)
         end
       elseif timeout then
         res.timer:start(timeout)
       end
     end
   end
-  qt.connect(res.connection.socket, "bytesWritten(qint64)", res._d, "bytesWritten(qint64)")
+  res.connection:OnDataSent(function(self, num) res._d:bytesWritten(num) end)
   qt.connect(res.timer, "timeout()", res._d, "timeout()")
   setmetatable(res, module.mt)
   return res
