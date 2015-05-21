@@ -107,21 +107,22 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local function nodeVerify(xmlNode,dataNode, key)
     if (xmlNode.class == 'enum') then
-      if (not types.enum[ dataNode ] and type(dataNode) ~= 'table') then
-		    bool_result = false 
-		    errorMessage[ key ] = "expected: '" .. key .."' with type  [ Enum ]"
-	    end
-	  elseif (xmlNode.class == 'struct') then
-      if (not types.struct[ dataNode ] and type(dataNode) ~= 'table') then
-		    bool_result = false 
-		    errorMessage[ key ] = "expected: '" .. key .."' with type  [ Struct ]"
-	    end
+      if (not types.enum[xmlNode['type'] ][dataNode]) then
+		    print(dump(dataNode))
+                    bool_result = false 
+                    errorMessage[ key ] = "expected: '" .. key .."' with type  [ Enum ]"
+      end
+    elseif (xmlNode.class == 'struct') then
+      if (not types.struct[xmlNode['type'] ][dataNode]) then
+                    bool_result = false 
+                    errorMessage[ key ] = "expected: '" .. key .."' with type  [ Struct ]"
+      end
     elseif xmlNode.array == 'true' then
 	    if (type(dataNode) == 'table' ) then
 		    for _,arrElement in ipairs(dataNode) do
 		      while true do
-            if (xmlNode.class == 'Enum' and types.enum[ dataNode ] ) then break
-            elseif (xmlNode.class == 'Struct' and types.struct[ dataNode ] ) then break
+            if (xmlNode.class == 'Enum' and types.enum[xmlNode['type'] ][dataNode] ) then break
+            elseif (xmlNode.class == 'Struct' and types.struct[xmlNode['type'] ][dataNode] ) then break
             elseif(compare_type(string.lower(type(arrElement)), xmlNode.class)) then break
             else
 	    		    bool_result = false
@@ -235,7 +236,7 @@ end
   end
 
   local xml_schema = get_xml_shema_validation(doc,types,function_id,msgType)  
- 
+
   return schemaCompare(xml_schema,user_data)
   
 end 

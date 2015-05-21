@@ -53,8 +53,11 @@ function control.runNextCase()
   local testcase = module.test_cases[module.current_case_index]
   if testcase then
     module.current_case_name = module.case_names[testcase]
+    xmlLogger.AddCase(module.current_case_name)
     testcase(module)
   else
+    module.current_case_name = nil
+    xmlLogger:finalize()
     quit()
   end
 end
@@ -72,18 +75,30 @@ local function CheckStatus()
     if e.status ~= SUCCESS then
       success = false
     end
-    if not e.pinned then
+    if not e.pinned and e.connection then
       event_dispatcher:RemoveEvent(e.connection, e.event)
     end
     for k, v in pairs(e.errorMessage) do
-      errorMessage[k] = v
+      errorMessage[e.name .. ": " .. k] = v
     end
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
+  xmlLogger.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
+  if (not success) then  xmlLogger.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   module.expectations_list:Clear()
   module.current_case_name = nil
   control:next()
 end
+
+local function FailTestCase(self, cause)
+  module.expectations_list:Clear()
+  local exp = expectations.Expectation(cause)
+  exp.status = FAILED
+  exp.errorMessage = { ["AutoFail"] = cause }
+  module.expectations_list:Add(exp)
+  CheckStatus()
+end
+rawset(module, "FailTestCase", FailTestCase)
 
 event_dispatcher = ed.EventDispatcher()
 event_dispatcher:OnPostEvent(CheckStatus)
@@ -95,4 +110,5 @@ function control:checkstatus()
 end
 timeoutTimer:start(400)
 control:next()
+
 return module

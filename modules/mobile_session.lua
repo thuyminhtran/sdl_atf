@@ -1,9 +1,9 @@
 require('atf.util')
 local expectations = require('expectations')
 local events       = require('events')
-local config       = require('config')
 local functionId   = require('function_id')
 local json         = require('json')
+local validator      = require('schema_validation')
 local Expectation  = expectations.Expectation
 local Event        = events.Event
 local SUCCESS      = expectations.SUCCESS
@@ -42,6 +42,7 @@ function mt.__index:ExpectResponse(arg1, ...)
                    else
                      arguments = args[self.occurences]
                    end
+                   xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -78,6 +79,9 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
+--                    local _res, _err = validator.validate_mobile_notification(funcName, ...)
+--                    if (not _res) then  return _res,_err end
+                  xmlLogger.AddMessage("EXPECT_NOTIFICATION","AVALIABLE_RESULT", data.payload) 
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -111,6 +115,20 @@ function mt.__index:Send(message)
       binaryData       = message.binaryData
     }
   })
+  xmlLogger.AddMessage("mobile_connection","Send",
+                        {
+                         version          = message.version or self.version,
+                         encryption       = message.encryption or false,
+                         frameType        = message.frameType or 1,
+                         serviceType      = message.serviceType,
+                         frameInfo        = message.frameInfo,
+                         sessionId        = self.sessionId,
+                         messageId        = self.messageId,
+                         rpcType          = message.rpcType,
+                         rpcFunctionId    = message.rpcFunctionId,
+                         rpcCorrelationId = message.rpcCorrelationId
+                        }
+  )
 end
 function mt.__index:StartStreaming(service, filename, bandwidth)
   self.connection:StartStreaming(self.sessionId, service, filename, bandwidth)
