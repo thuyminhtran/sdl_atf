@@ -68,7 +68,7 @@ function control.runNextCase()
   if testcase then
     testcase(module)
   else
-    if config.stopSDLAfterATF and SDL.autoRun then
+    if SDL.autoStarted then
       SDL:StopSDL()
     end
     quit()
@@ -79,6 +79,7 @@ function control:start()
   -- if 'color' is not set, it is true as default value
   if config.color == nil then config.color = true end
   if is_redirected then config.color = false end
+  SDL:DeleteFile()
   self:next()
 end
 
@@ -113,7 +114,7 @@ local function CheckStatus()
   module.expectations_list:Clear()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then
-    quit()
+    quit(1)
   end
   control:next()
 end

@@ -196,14 +196,14 @@ function module:runSDL()
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
             end, 4000)
-  SDL.autoRun = true 
   local result, errmsg
   result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
-  if result == nil then 
+  if not result then
     print(console.setattr(errmsg, "cyan", 1))
     SDL:DeleteFile()
-    quit()
+    quit(1)
   end
+  SDL.autoStarted = true
 end
 
 function module:initHMI()
@@ -508,16 +508,26 @@ end
 
 function module:connectMobile()
   critical(true)
-  -- Connected expectation
+  -- Disconnected expectation
+  EXPECT_EVENT(events.disconnectedEvent, "Disconnected")
+    :Pin()
+    :Times(AnyNumber())
+    :Do(function()
+          print("Disconnected!!!")
+          quit(1)
+        end)
+  self.mobileConnection:Connect()
+  return EXPECT_EVENT(events.connectedEvent, "Connected")
+end
+
+function module:startSession()
   self.mobileSession = mobile_session.MobileSession(
     self.expectations_list,
     self.mobileConnection,
     config.application1.registerAppInterfaceParams)
-  self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")
-  self.mobileConnection:Connect()
-end
-function module:startSession()
+
   self.mobileSession:Start()
+
   EXPECT_HMICALL("BasicCommunication.UpdateAppList")
     :Do(function(_, data)
           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { })

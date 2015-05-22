@@ -49,7 +49,7 @@ function SDL:CheckStatusSDL()
 end
 
 function SDL:DeleteFile()
-  os.execute ('rm sdl.pid')
+  os.execute ('rm -f sdl.pid')
 end
 
 return SDL

@@ -10,13 +10,6 @@ function Test:WaitActivation()
   EXPECT_NOTIFICATION("OnHMIStatus")
   local rid = self.hmiConnection:SendRequest("SDL.ActivateApp", { appID = self.applications["Test Application"]})
   EXPECT_HMIRESPONSE(rid)
-  self.mobileSession:ExpectEvent(events.disconnectedEvent, "Connection started")
-    :Pin()
-    :Times(AnyNumber())
-    :Do(function()
-          print("Disconnected!!!")
-          quit()
-        end)
 end
 
 function Test:DelayedExp()

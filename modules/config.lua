@@ -6,9 +6,9 @@ config.hmiPort = 8087
 config.mobileHost = "localhost"
 config.mobilePort = 12345
 
-config.pathToSDL = "../reserv/applink/bin"
+config.pathToSDL = "/home/dchmerev/qtHMI/bin"
 config.ExitOnCrash = true
-config.stopSDLAfterATF = true
+config.autorunSDL = true
 
 config.application1 =
 {
