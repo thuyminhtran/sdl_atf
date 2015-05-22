@@ -204,20 +204,28 @@ function mt.__index:StopService(service)
 end
 
 function mt.__index:StopHeartbeat()
-  self.heartbeatEnabled = false
-  self.heartbeatToSDLTimer:stop()
-  self.heartbeatFromSDLTimer:stop()
+  if self.heartbeatToSDLTimer then
+    self.heartbeatEnabled = false
+    self.heartbeatToSDLTimer:stop()
+    self.heartbeatFromSDLTimer:stop()
+  else
+    
+  end
 end
 
 function mt.__index:StartHeartbeat()
-  self.heartbeatEnabled = true
-  self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
-  self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
+  if self.heartbeatToSDLTimer then
+    self.heartbeatEnabled = true
+    self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
+    self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
+  end
 end
 
 function mt.__index:SetHeartbeatTimeout(timeout)
-  self.heartbeatToSDLTimer:setInterval(timeout)
-  self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
+  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then 
+    self.heartbeatToSDLTimer:setInterval(timeout)
+    self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
+  end
 end
 
 function mt.__index:Start()
