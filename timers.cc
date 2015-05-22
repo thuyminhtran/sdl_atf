@@ -1,4 +1,3 @@
-#line 12 "timers.nw"
 #include "timers.h"
 #include <QTimer>
 
@@ -26,6 +25,14 @@ int timer_stop(lua_State *L) {
   QTimer *timer =
     *static_cast<QTimer**>(luaL_checkudata(L, 1, "timers.Timer"));
   timer->stop();
+  return 0;
+}
+
+int timer_reset(lua_State *L) {
+  QTimer *timer =
+	*static_cast<QTimer**>(luaL_checkudata(L, 1, "timers.Timer"));
+  timer->stop();
+  timer->start();
   return 0;
 }
 
@@ -61,6 +68,7 @@ int luaopen_timers(lua_State *L) {
   luaL_Reg timer_functions[] = {
     { "start", &timer_start },
     { "stop", &timer_stop },
+    { "reset", &timer_reset },
     { "setInterval", &timer_set_interval },
     { "setSingleShot", &timer_set_single_shot },
     { NULL, NULL }

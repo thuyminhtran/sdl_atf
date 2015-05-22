@@ -1,7 +1,6 @@
-local ph = require("protocol_handler")
+local ph = require('protocol_handler/protocol_handler')
 local file_connection = require("file_connection")
 local module = { mt = { __index = {} } }
-local protocol_handler = ph.ProtocolHandler()
 
 function module.MobileConnection(connection)
   res = { }
@@ -14,6 +13,7 @@ function module.mt.__index:Connect()
 end
 function module.mt.__index:Send(data)
   local messages = { }
+  local protocol_handler = ph.ProtocolHandler()
   for _, msg in ipairs(data) do
     local msgs = protocol_handler:Compose(msg)
     for _, m in ipairs(msgs) do
@@ -33,14 +33,18 @@ function module.mt.__index:StopStreaming(filename)
 end
 function module.mt.__index:OnInputData(func)
   local this = self
+  local protocol_handler = ph.ProtocolHandler()
   local f =
-  function(self, binary)
-    local msg = protocol_handler:Parse(binary)
+    function(self, binary)
+      local msg = protocol_handler:Parse(binary)
     for _, v in ipairs(msg) do
       func(this, v)
     end
   end
   self.connection:OnInputData(f)
+end
+function module.mt.__index:OnDataSent(func)
+  self.connection:OnDataSent(func)
 end
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)

@@ -49,7 +49,7 @@ function EXPECT_HMINOTIFICATION(name)
 end
 
 function EXPECT_HMICALL(methodName, ...)
-    local args = table.pack(...)
+  local args = table.pack(...)
   -- TODO: Avoid copy-paste
   local event = events.Event()
   event.matches =
@@ -63,10 +63,10 @@ function EXPECT_HMICALL(methodName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                    local _,short_name = methodName:match("([^.]+).([^.]+)")
-                    local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
-                    if (not _res) then  return _res,_err end
-                    return compareValues(arguments, data.params, "params")
+                   local _,short_name = methodName:match("([^.]+).([^.]+)")
+                   local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
+                   if (not _res) then  return _res,_err end
+                   return compareValues(arguments, data.params, "params")
                 end)
   end
   ret.event = event
@@ -76,7 +76,7 @@ function EXPECT_HMICALL(methodName, ...)
 end
 
 function EXPECT_NOTIFICATION(func, ...)
-  return module.mobileSession:ExpectNotification(func, ...)
+  return module.mobileSession:ExpectNotification(func, unpack(...))
 end
 
 function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
@@ -119,7 +119,7 @@ function RUN_AFTER(func, timeout)
 end
 
 function EXPECT_RESPONSE(correlationId, ...)
-  return module.mobileSession:ExpectResponse(correlationId, ...)
+  return module.mobileSession:ExpectResponse(correlationId, unpack(...))
 end
 
 function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
@@ -459,6 +459,7 @@ function module:InitHMI_onReady()
   ExpectRequest("BasicCommunication.UpdateAppList", false, { })
     :Pin()
     :Do(function(_, data)
+          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { })
           self.applications = { }
           for _, app in pairs(data.params.applications) do
             self.applications[app.appName] = app.appID
@@ -471,12 +472,13 @@ end
 function module:ConnectMobile()
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
-    self.expectations_list,
+    self,
     self.mobileConnection,
     config.application1.registerAppInterfaceParams)
   self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")
   self.mobileConnection:Connect()
 end
+
 function module:StartSession()
   self.mobileSession:Start()
   EXPECT_HMICALL("BasicCommunication.UpdateAppList")
