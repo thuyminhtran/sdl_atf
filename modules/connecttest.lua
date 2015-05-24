@@ -168,6 +168,24 @@ function EXPECT_HMIEVENT(event, name)
   return ret
 end
 
+function StartSDL()
+--need to do connection
+        module.hmiConnection = hmi_connection.Connection(websocket.WebSocketConnection(config.hmiUrl, config.hmiPort))
+        local tcpConnection = tcp.Connection(config.mobileHost, config.mobilePort)
+        local fileConnection = file_connection.FileConnection("mobile.out", tcpConnection)
+        module.mobileConnection = mobile.MobileConnection(fileConnection)
+        event_dispatcher:AddConnection(module.hmiConnection)
+        event_dispatcher:AddConnection(module.mobileConnection)
+	module:runSDL()
+	module:initHMI()
+	module:initHMI_onReady()
+	module:connectMobile()
+end
+
+function StopSDL()
+	SDL:StopSDL()
+end
+
 function module:RunSDL()
   self:runSDL()
 end
