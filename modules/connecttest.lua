@@ -168,23 +168,14 @@ function EXPECT_HMIEVENT(event, name)
   return ret
 end
 
-function StartSDL()
---need to do connection
-        module.hmiConnection = hmi_connection.Connection(websocket.WebSocketConnection(config.hmiUrl, config.hmiPort))
-        local tcpConnection = tcp.Connection(config.mobileHost, config.mobilePort)
-        local fileConnection = file_connection.FileConnection("mobile.out", tcpConnection)
-        module.mobileConnection = mobile.MobileConnection(fileConnection)
-        event_dispatcher:AddConnection(module.hmiConnection)
-        event_dispatcher:AddConnection(module.mobileConnection)
-	module:runSDL()
-	module:initHMI()
-	module:initHMI_onReady()
-	module:connectMobile()
+function StartSDL(pathToSDL, exitOnCrash)
+  return SDL:StartSDL(pathToSDL, exitOnCrash)
 end
 
 function StopSDL()
-	SDL:StopSDL()
+  return SDL:StopSDL()
 end
+
 
 function module:RunSDL()
   self:runSDL()
@@ -207,7 +198,6 @@ function module:StartSession()
 end
 
 function module:runSDL()
-  critical(true)
   local event = events.Event()
   event.matches = function(self, e) return self == e end
   EXPECT_EVENT(event, "Delayed event")
@@ -217,7 +207,6 @@ function module:runSDL()
   local result, errmsg
   result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
   if not result then
-    print(console.setattr(errmsg, "cyan", 1))
     SDL:DeleteFile()
     quit(1)
   end
@@ -530,10 +519,10 @@ function module:connectMobile()
   EXPECT_EVENT(events.disconnectedEvent, "Disconnected")
     :Pin()
     :Times(AnyNumber())
-    :Do(function()
+    --[[:Do(function()
           print("Disconnected!!!")
           quit(1)
-        end)
+        end)]]
   self.mobileConnection:Connect()
   return EXPECT_EVENT(events.connectedEvent, "Connected")
 end

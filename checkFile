@@ -1,3 +1,0 @@
-#!/bin/bash
-test -e sdl.pid && exit 0
-exit 1

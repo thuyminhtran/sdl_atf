@@ -1,4 +1,4 @@
-local os         = require('os')
+require('os')
 
 local SDL = { }
 
@@ -15,14 +15,19 @@ function SDL:StartSDL(pathToSDL, ExitOnCrash)
     if result then
       return true
     else
-      return nil, "SDL had already started from not ATF" 
+      local msg = "SDL had already started  not from ATF" 
+      print(console.setattr(msg, "cyan", 1))
+      return nil, msg
     end
   else
-    return nil, "SDL had already started from ATF"
+    local msg = "SDL had already started from ATF"
+    print(console.setattr(msg, "cyan", 1))
+    return nil, msg
   end
 end
 
 function SDL:StopSDL()
+  self.autoStarted = false
   local status = self:CheckStatusSDL()
   if status == "Running" then
     local result = os.execute ('./StopSDL')
@@ -30,15 +35,17 @@ function SDL:StopSDL()
       return true
     end
   else
-    return nil, "SDL had already stopped"
+    local msg = "SDL had already stopped"
+    print(console.setattr(msg, "cyan", 1))
+    return nil, msg
   end
 end
 
 function SDL:CheckStatusSDL()
-  local result1 = os.execute ('./checkFile')
+  local result1 = os.execute ('test -e sdl.pid')
   if result1 then 
-    local result2 = os.execute ('./checkCrash')
-    if result2 then
+    local result2 = os.execute ('test -e /proc/$(cat sdl.pid)')
+    if not result2 then
       return "Crash"
     else
       return "Running"
