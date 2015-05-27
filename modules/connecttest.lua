@@ -173,6 +173,7 @@ function StartSDL(pathToSDL, exitOnCrash)
 end
 
 function StopSDL()
+  event_dispatcher:Clear()
   return SDL:StopSDL()
 end
 
@@ -519,10 +520,10 @@ function module:connectMobile()
   EXPECT_EVENT(events.disconnectedEvent, "Disconnected")
     :Pin()
     :Times(AnyNumber())
-    --[[:Do(function()
+    :Do(function()
           print("Disconnected!!!")
           quit(1)
-        end)]]
+        end)
   self.mobileConnection:Connect()
   return EXPECT_EVENT(events.connectedEvent, "Connected")
 end

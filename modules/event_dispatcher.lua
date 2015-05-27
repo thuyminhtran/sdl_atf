@@ -4,7 +4,7 @@ local module = {}
 
 local mt = { __index = { } }
 
-function mt.__index:GetHandler(conn, ev)
+function mt.__index:GetHandler(conn, ev) 
   res = self._pool3[conn][ev] or
         self._pool2[conn][ev] or
         self._pool1[conn][ev]
@@ -130,6 +130,11 @@ function mt.__index:RemoveEvent(connection, event)
   self._pool3[connection][event] = nil
   self._pool2[connection][event] = nil
   self._pool1[connection][event] = nil
+end
+function mt.__index:Clear()
+  for c, pool in pairs(self._pool3) do self._pool3[c] = { } end
+  for c, pool in pairs(self._pool2) do self._pool2[c] = { } end
+  for c, pool in pairs(self._pool1) do self._pool1[c] = { } end
 end
 function module.EventDispatcher()
   local res =
