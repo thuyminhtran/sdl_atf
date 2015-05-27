@@ -168,8 +168,8 @@ function EXPECT_HMIEVENT(event, name)
   return ret
 end
 
-function StartSDL(pathToSDL, exitOnCrash)
-  return SDL:StartSDL(pathToSDL, exitOnCrash)
+function StartSDL(SDLPathName, ExitOnCrash)
+  return SDL:StartSDL(SDLPathName, ExitOnCrash)
 end
 
 function StopSDL()

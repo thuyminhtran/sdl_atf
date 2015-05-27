@@ -50,14 +50,14 @@ function Test:GetVehicleData()
   EXPECT_RESPONSE("GetVehicleData", { success = true, speed = 1.2 })
 end
 
-function Test:PutFile()
+--[[function Test:PutFile()
   local cid = self.mobileSession:SendRPC("PutFile",
   {
     syncFileName = "icon.png",
     fileType = "GRAPHIC_PNG"
   }, "icon.png")
   EXPECT_RESPONSE(cid, { success = true })
-end
+end]]
 
 --[[ Disabled until APPLINK-12709 is fixed
 
@@ -359,6 +359,34 @@ function Test:IncorrectMobileJSON()
   EXPECT_RESPONSE(self.mobileSession.correlationId, { success = false, resultCode = "INVALID_DATA" })
 end
 
+function Test:StopSDL()
+  StopSDL()
+end
+
+function Test:StartSDL()
+  StartSDL(config.pathToSDL, config.ExitOnCrash)
+end
+
+function Test:InitHMI2()
+  self:initHMI()
+end
+
+function Test:InitHMI_onReady2()
+  self:initHMI_onReady()
+end
+
+function Test:ConnectMobile2()
+  self:connectMobile()
+end
+
+function Test:StartSession2()
+  self:startSession()
+end
+
 function Test:Stop()
   self.mobileSession:StopService(7)
+end
+
+function Test:StopSDL2()
+  StopSDL()
 end
