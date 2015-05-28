@@ -66,7 +66,7 @@ function parse_cmdl()
 	        for k,v in pairs(arguments) do
 	            if (type(k) ~= 'number') then
 	                if ( k ~= 'config-file') then
-	                    k = (k):match ("^%-*(.*)$"):gsub ("%W", "_")
+	                    k = (k):gsub ("%W", "_")
                         module[k](v)
 		            end
 		       else
