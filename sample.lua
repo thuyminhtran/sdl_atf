@@ -50,14 +50,14 @@ function Test:GetVehicleData()
   EXPECT_RESPONSE("GetVehicleData", { success = true, speed = 1.2 })
 end
 
---[[function Test:PutFile()
+function Test:PutFile()
   local cid = self.mobileSession:SendRPC("PutFile",
   {
     syncFileName = "icon.png",
     fileType = "GRAPHIC_PNG"
   }, "icon.png")
   EXPECT_RESPONSE(cid, { success = true })
-end]]
+end
 
 --[[ Disabled until APPLINK-12709 is fixed
 
