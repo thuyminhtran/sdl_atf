@@ -90,9 +90,6 @@ end
 function declare_short_opt(...)
 	utils.declare_short_opt(...)
 end
-function split_script_name(str)
-	return table.pack(string.match(str, "(.-)([^/]-([^%.]+))$"))
-end
 function script_execute(script_name)
 	xmlLogger = xmlLogger.init(tostring(script_name))
   dofile(script_name)
