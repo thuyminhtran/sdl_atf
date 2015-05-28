@@ -11,8 +11,7 @@ NoArgument       = utils.NoArgument
 
 
 local function file_exists(name)
-	local f=io.open(name,"r")
-	if f~=nil then io.close(f) return true else return false end
+	if io.open(name,"r") ~=nil then io.close(f) return true else return false end
 end
 
 function module.config_file(config_file)
@@ -20,7 +19,6 @@ function module.config_file(config_file)
 	    config_file = config_file:gsub('%.', " ")
 	    config_file = config_file:gsub("/", ".")
 	    config_file = config_file:gsub("[%s]lua$", "")
-	--        print(string.format("Use new config file:%s \n", config_file))
         config = require(tostring(config_file))
 	else
     	print("Incorrect config file type")
@@ -52,7 +50,7 @@ end
 function module.report_mark(str)
 	config.reportMark=str
 end
-function module.test_keys(src)
+function module.add_script(src)
   table.insert(script_files,src)
 end
 function module.storeFullSDLLogs(str)
@@ -73,7 +71,7 @@ function parse_cmdl()
 		            end
 		       else
 	                if k >= 2 and v ~= "modules/launch.lua" then
-		                module.test_keys(v)
+		                module.add_script(v)
 		            end
 		       end
 		    end

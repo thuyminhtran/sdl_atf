@@ -23,9 +23,8 @@ local function dump(o)
       return s .. '}'
    elseif string.match(tostring(o),"[%Wxyz]") then 
     return ''
-   else
-      return tostring(o)
    end
+  return tostring(o)
 end
 function module.AddCase(name)
    module.curr_node = module.root:addChild(name) 
