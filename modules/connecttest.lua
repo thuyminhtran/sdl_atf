@@ -8,7 +8,6 @@ local websocket      = require('websocket_connection')
 local hmi_connection = require('hmi_connection')
 local events         = require("events")
 local expectations   = require('expectations')
-local config         = require('config')
 local functionId     = require('function_id')
 local validator      = require('schema_validation')
 local Event = events.Event
@@ -35,10 +34,12 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id)
 end
 
 function EXPECT_HMIRESPONSE(id)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Id"] = tostring(id)})
   return module.hmiConnection:EXPECT_HMIRESPONSE(id)
 end
 
 function EXPECT_HMINOTIFICATION(name)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Name"] = tostring(name)})
   local event = events.Event()
   event.matches = function(self, data) return data.method == name end
   local ret = Expectation("HMI notification " .. name, module.hmiConnection)
@@ -49,7 +50,7 @@ function EXPECT_HMINOTIFICATION(name)
 end
 
 function EXPECT_HMICALL(methodName, ...)
-  local args = table.pack(...)
+ local args = table.pack(...)
   -- TODO: Avoid copy-paste
   local event = events.Event()
   event.matches =
@@ -63,10 +64,12 @@ function EXPECT_HMICALL(methodName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   local _,short_name = methodName:match("([^.]+).([^.]+)")
-                   local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
+                    local _,short_name = methodName:match("([^.]+).([^.]+)")
+                    local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
+                     xmlLogger.AddMessage("EXPECT_HMICALL", "EXPECTED_RESULT",arguments) 
+                     xmlLogger.AddMessage("EXPECT_HMICALL", "AVALIABLE_RESULT",data.params)
                    if (not _res) then  return _res,_err end
-                   return compareValues(arguments, data.params, "params")
+                    return compareValues(arguments, data.params, "params")
                 end)
   end
   ret.event = event
@@ -76,7 +79,8 @@ function EXPECT_HMICALL(methodName, ...)
 end
 
 function EXPECT_NOTIFICATION(func, ...)
-  return module.mobileSession:ExpectNotification(func, unpack(...))
+   xmlLogger.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... ) 
+  return module.mobileSession:ExpectNotification(func, ...)
 end
 
 function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
@@ -94,7 +98,9 @@ function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   return compareValues(arguments, data.payload, "payload")
+                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "EXPECTED_RESULT", arguments)
+                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "AVALIABLE_RESULT", data.payload)
+                 return compareValues(arguments, data.payload, "payload")
                  end)
   end
   ret.event = event
@@ -106,6 +112,7 @@ end
 module.timers = { }
 
 function RUN_AFTER(func, timeout)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(func), {["Timeout"] = tostring(timeout)})
   local d = qt.dynamic()
   d.timeout = function(self)
                 func()
@@ -119,10 +126,12 @@ function RUN_AFTER(func, timeout)
 end
 
 function EXPECT_RESPONSE(correlationId, ...)
-  return module.mobileSession:ExpectResponse(correlationId, unpack(...))
+   xmlLogger.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
+  return module.mobileSession:ExpectResponse(correlationId, ...)
 end
 
 function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["CorrelationId"] = tostring(correlationId)})
   local args = table.pack(...)
   local event = events.Event()
   event.matches = function(_, data)
@@ -137,6 +146,8 @@ function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
                    else
                      arguments = args[self.occurences]
                    end
+                   xmlLogger.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "EXPECTED_RESULT", arguments)
+                   xmlLogger.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "AVALIABLE_RESULT", data.payload)
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -147,10 +158,12 @@ function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
 end
 
 function EXPECT_ANY()
+   xmlLogger.AddMessage(debug.getinfo(1, "n").name, '')
   return module.mobileSession:ExpectAny()
 end
 
 function EXPECT_EVENT(event, name)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
   local ret = Expectation(name, module.mobileConnection)
   ret.event = event
   event_dispatcher:AddEvent(module.mobileConnection, event, ret)
@@ -159,10 +172,12 @@ function EXPECT_EVENT(event, name)
 end
 
 function RAISE_EVENT(event, data)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(event))
   event_dispatcher:RaiseEvent(module.mobileConnection, event, data)
 end
 
 function EXPECT_HMIEVENT(event, name)
+  xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
   local ret = Expectation(name, module.hmiConnection)
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
@@ -172,6 +187,7 @@ end
 
 function module:InitHMI()
   local function registerComponent(name, subscriptions)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, name);
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
     local exp = EXPECT_HMIRESPONSE(rid)
     if subscriptions then
@@ -216,6 +232,7 @@ end
 
 function module:InitHMI_onReady()
   local function ExpectRequest(name, mandatory, params)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     local event = events.Event()
     event.level = 2
     event.matches = function(self, data) return data.method == name end
@@ -228,6 +245,7 @@ function module:InitHMI_onReady()
   end
 
   local function ExpectNotification(name, mandatory)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     local event = events.Event()
     event.level = 2
     event.matches = function(self, data) return data.method == name end
@@ -289,6 +307,7 @@ function module:InitHMI_onReady()
   ExpectRequest("VehicleInfo.GetVehicleData", true, { vin = "52-452-52-752" })
 
   local function button_capability(name, shortPressAvailable, longPressAvailable, upDownAvailable)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,
@@ -334,6 +353,7 @@ function module:InitHMI_onReady()
   })
 
   local function text_field(name, characterSet, width, rows)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,
@@ -343,6 +363,7 @@ function module:InitHMI_onReady()
     }
   end
   local function image_field(name, width, heigth)
+    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,
@@ -459,7 +480,6 @@ function module:InitHMI_onReady()
   ExpectRequest("BasicCommunication.UpdateAppList", false, { })
     :Pin()
     :Do(function(_, data)
-          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { })
           self.applications = { }
           for _, app in pairs(data.params.applications) do
             self.applications[app.appName] = app.appID
@@ -472,13 +492,12 @@ end
 function module:ConnectMobile()
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
-    self,
+    self.expectations_list,
     self.mobileConnection,
     config.application1.registerAppInterfaceParams)
   self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")
   self.mobileConnection:Connect()
 end
-
 function module:StartSession()
   self.mobileSession:Start()
   EXPECT_HMICALL("BasicCommunication.UpdateAppList")

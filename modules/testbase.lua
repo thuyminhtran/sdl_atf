@@ -53,8 +53,11 @@ function control.runNextCase()
   local testcase = module.test_cases[module.current_case_index]
   if testcase then
     module.current_case_name = module.case_names[testcase]
+    xmlLogger.AddCase(module.current_case_name)
     testcase(module)
   else
+    module.current_case_name = nil
+    xmlLogger:finalize()
     quit()
   end
 end
@@ -80,6 +83,8 @@ local function CheckStatus()
     end
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
+  xmlLogger.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
+  if (not success) then  xmlLogger.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   module.expectations_list:Clear()
   module.current_case_name = nil
   control:next()
@@ -105,4 +110,5 @@ function control:checkstatus()
 end
 timeoutTimer:start(400)
 control:next()
+
 return module

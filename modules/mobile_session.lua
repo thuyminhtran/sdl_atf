@@ -1,7 +1,6 @@
 require('atf.util')
 local expectations   = require('expectations')
 local events         = require('events')
-local config         = require('config')
 local functionId     = require('function_id')
 local json           = require('json')
 local expectations   = require('expectations')
@@ -45,6 +44,7 @@ function mt.__index:ExpectResponse(arg1, ...)
                    else
                      arguments = args[self.occurences]
                    end
+                   xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
                    if type(arg1) == 'string' then
                        local _res, _err = validator.validate_mobile_response(funcName, unpack(args) )
                        if (not _res) then  return _res,_err end
@@ -85,8 +85,9 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   local _res, _err = validator.validate_mobile_notification(funcName, unpack(args) )
-                   if (not _res) then  return _res,_err end
+--                    local _res, _err = validator.validate_mobile_notification(funcName, ...)
+--                    if (not _res) then  return _res,_err end
+                  xmlLogger.AddMessage("EXPECT_NOTIFICATION","AVALIABLE_RESULT", data.payload) 
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -120,6 +121,20 @@ function mt.__index:Send(message)
       binaryData       = message.binaryData
     }
   })
+  xmlLogger.AddMessage("mobile_connection","Send",
+                        {
+                         version          = message.version or self.version,
+                         encryption       = message.encryption or false,
+                         frameType        = message.frameType or 1,
+                         serviceType      = message.serviceType,
+                         frameInfo        = message.frameInfo,
+                         sessionId        = self.sessionId,
+                         messageId        = self.messageId,
+                         rpcType          = message.rpcType,
+                         rpcFunctionId    = message.rpcFunctionId,
+                         rpcCorrelationId = message.rpcCorrelationId
+                        }
+  )
 end
 function mt.__index:StartStreaming(service, filename, bandwidth)
   self.connection:StartStreaming(self.sessionId, service, filename, bandwidth)
@@ -206,95 +221,28 @@ function mt.__index:StopService(service)
                if data.frameInfo == 5 then return true
                else return false, "EndService NACK received" end
              end)
-  if service == 7 then self:StopHeartbeat() end
+
   return ret
 end
-
-function mt.__index:StopHeartbeat()
-  self.heartbeatEnabled = false
-  self.heartbeatToSDLTimer:stop()
-  self.heartbeatFromSDLTimer:stop()
-end
-
-function mt.__index:StartHeartbeat()
-  self.heartbeatEnabled = true
-  self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
-  self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
-end
-
-function mt.__index:SetHeartbeatTimeout(timeout)
-  self.heartbeatToSDLTimer:setInterval(timeout)
-  self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
-end
-
 function mt.__index:Start()
-  return  self:StartService(7)
-          :Do(function()
-                -- Heartbeat
-                if self.version > 2 then
-                  local event = events.Event()
-                  event.matches = function(s, data)
-                                     return data.frameType   == constants.FRAME_TYPE.CONTROL_FRAME and 
-                                            data.serviceType == constants.SERVICE_TYPE.CONTROL     and
-                                            data.frameInfo   == constants.FRAME_INFO.HEARTBEAT     and 
-                                            self.sessionId   == data.sessionId
-                                  end
-                  self:ExpectEvent(event, "Heartbeat")
-                    :Pin()
-                    :Times(AnyNumber())
-                    :Do(function(data)
-                          if self.heartbeatEnabled then
-                            self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
-                                         serviceType = constants.SERVICE_TYPE.CONTROL, 
-                                         frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
-                          end
-                        end)
-              
-                  local d = qt.dynamic()
-                  self.heartbeatToSDLTimer = timers.Timer()
-                  self.heartbeatFromSDLTimer = timers.Timer()
-                  
-                  function d.SendHeartbeat()
-                    self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
-                                 serviceType = constants.SERVICE_TYPE.CONTROL, 
-                                 frameInfo   = constants.FRAME_INFO.HEARTBEAT } )
-                  end
-                  
-                  function d.CloseSession()
-                    self:StopService(7)
-                    self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " msecs. Closing session # " .. self.sessionId)
-                  end
-                  
-                  self.connection:OnInputData(function() if self.heartbeatEnabled then self.heartbeatFromSDLTimer:reset() end end)
-                  self.connection:OnDataSent(function() if self.heartbeatEnabled then self.heartbeatToSDLTimer:reset() end end)
-                  qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
-                  qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")
-                  self:StartHeartbeat()            
-                end                    
-                
-                local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)
-                self:ExpectResponse(correlationId, { success = true })
-              end)
-end
+  self:StartService(7)
+    :Do(function()
+          local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)
 
-function mt.__index:Stop()
-  self:StopService(7)
+          self:ExpectResponse(correlationId, { success = true })
+        end)
 end
-
-function module.MobileSession(test, connection, regAppParams)
+function module.MobileSession(exp_list, connection, regAppParams)
   local res = { }
-  res.test = test
   res.regAppParams = regAppParams
   res.connection = connection
-  res.exp_list = test.expectations_list
+  res.exp_list = exp_list
   res.messageId  = 1
   res.sessionId  = 0
   res.correlationId = 1
-  res.version = config.defaultProtocolVersion or 2
+  res.version = 2
   res.hashCode = 0
-  res.heartbeatEnabled = true
   setmetatable(res, mt)
   return res
 end
-
 return module

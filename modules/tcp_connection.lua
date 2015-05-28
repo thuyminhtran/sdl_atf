@@ -29,17 +29,19 @@ local function checkSelfArg(s)
   end
 end
 function module.mt.__index:Connect()
+  xmlLogger.AddMessage("tcp_connection","Connect")
   checkSelfArg(self)
   self.socket:connect(self.host, self.port)
 end
 function module.mt.__index:Send(data)
-  checkSelfArg(self)
+ xmlLogger.AddMessage("tcp_connection","Send")
+ checkSelfArg(self)
   for _, c in ipairs(data) do
     self.socket:write(c)
   end
 end
 function module.mt.__index:OnInputData(func)
-  checkSelfArg(self)
+ checkSelfArg(self)
   local d = qt.dynamic()
   local this = self
   function d:inputData(data)
@@ -56,7 +58,7 @@ function module.mt.__index:OnDataSent(func)
   qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
 end
 function module.mt.__index:OnConnected(func)
-  checkSelfArg(self)
+ checkSelfArg(self)
   if self.qtproxy.connected then
     error("Tcp connection: connected signal is handled already")
   end
@@ -65,7 +67,7 @@ function module.mt.__index:OnConnected(func)
   qt.connect(self.socket, "connected()", self.qtproxy, "connected()")
 end
 function module.mt.__index:OnDisconnected(func)
-  checkSelfArg(self)
+ checkSelfArg(self)
   if self.qtproxy.disconnected then
     error("Tcp connection: disconnected signal is handled already")
   end
@@ -74,7 +76,8 @@ function module.mt.__index:OnDisconnected(func)
   qt.connect(self.socket, "disconnected()", self.qtproxy, "disconnected()")
 end
 function module.mt.__index:Close()
-  checkSelfArg(self)
+ xmlLogger.AddMessage("tcp_connection","Close")
+ checkSelfArg(self)
   self.socket:close();
 end
 return module
