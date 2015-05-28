@@ -5,12 +5,16 @@ local SDL = { }
 SDL.exitOnCrash = true
 SDL.autoRun = false
 
+SDL.STOPPED = 0
+SDL.RUNNING = 1
+SDL.CRASH = -1
+
 function SDL:StartSDL(pathToSDL, ExitOnCrash)
   if ExitOnCrash ~= nil then
     self.exitOnCrash = ExitOnCrash
   end
   local status = self:CheckStatusSDL()
-  if status == "Stopped" then
+  if status == self.STOPPED then
     local result = os.execute ('./StartSDL ' .. pathToSDL)
     if result then
       return true
@@ -29,7 +33,7 @@ end
 function SDL:StopSDL()
   self.autoStarted = false
   local status = self:CheckStatusSDL()
-  if status == "Running" then
+  if status == self.RUNNING then
     local result = os.execute ('./StopSDL')
     if result then 
       return true
@@ -46,12 +50,12 @@ function SDL:CheckStatusSDL()
   if result1 then 
     local result2 = os.execute ('test -e /proc/$(cat sdl.pid)')
     if not result2 then
-      return "Crash"
+      return self.CRASH
     else
-      return "Running"
+      return self.RUNNING
     end
   else
-    return "Stopped"
+    return self.STOPPED
   end
 end
 

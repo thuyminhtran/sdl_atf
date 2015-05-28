@@ -12,6 +12,10 @@ local Expectation = expectations.Expectation
 local SUCCESS     = expectations.SUCCESS
 local FAILED      = expectations.FAILED
 
+local STOPPED = SDL.STOPPED 
+local RUNNING = SDL.RUNNING 
+local CRASH = SDL.CRASH
+
 local control     = qt.dynamic()
 
 local function isCapital(c)
@@ -93,7 +97,7 @@ local function CheckStatus()
   -- Check the test status
   local success = true
   local errorMessage = {}
-  if SDL:CheckStatusSDL() == "Crash" then
+  if SDL:CheckStatusSDL() == CRASH then
     success = false
     print(console.setattr("SDL has unexpectedly crashed or stop responding!", "cyan", 1))   
     critical(SDL.exitOnCrash)
