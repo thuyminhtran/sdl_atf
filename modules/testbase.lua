@@ -54,6 +54,7 @@ function control.runNextCase()
   if testcase then
     module.current_case_name = module.case_names[testcase]
     xmlLogger.AddCase(module.current_case_name)
+    xmlLogger:finalize()
     testcase(module)
   else
     module.current_case_name = nil

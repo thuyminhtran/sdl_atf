@@ -480,6 +480,7 @@ function module:InitHMI_onReady()
   ExpectRequest("BasicCommunication.UpdateAppList", false, { })
     :Pin()
     :Do(function(_, data)
+          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", { }) 
           self.applications = { }
           for _, app in pairs(data.params.applications) do
             self.applications[app.appName] = app.appID
@@ -492,7 +493,7 @@ end
 function module:ConnectMobile()
   -- Connected expectation
   self.mobileSession = mobile_session.MobileSession(
-    self.expectations_list,
+    self,
     self.mobileConnection,
     config.application1.registerAppInterfaceParams)
   self.mobileSession:ExpectEvent(events.connectedEvent, "Connection started")

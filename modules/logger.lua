@@ -78,8 +78,11 @@ function module.init(_name)
    local curr_sdl_log_dir = ''
    if (module.timestamp == '') then module.timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
    if (config.reportPath ~= nil and config.reportPath ~= '') then
-	    curr_report_dir  = config.reportPath .. '/TestingReports'
+        curr_report_dir  = config.reportPath .. '/TestingReports'
         curr_sdl_log_dir = config.reportPath .. '/SDLLogs'
+   else                                                                                                                              ││                                                                                                                                      │
+        curr_report_dir  = 'TestingReports'                                                                                          ││                                                                                                                                      │
+        curr_sdl_log_dir = 'SDLLogs'                                                                                                 ││                                                                                                                                      │
    end
 
    local curr_report_path = io.catdir(curr_report_dir .."_"..module.timestamp, io.catdir(io.dirname(_name)))
