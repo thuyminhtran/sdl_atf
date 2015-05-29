@@ -154,9 +154,11 @@ function mt.__index:SendRPC(func, arguments, fileName)
     payload          = json.encode(arguments)
   }
   if fileName then
-    local f = assert(io.open(fileName))
-    msg.binaryData = f:read("*all")
-    io.close(f)
+    if (is_file_exists(fileName)) then
+        local f = assert(io.open(fileName))
+        msg.binaryData = f:read("*all")
+        io.close(f)
+    end
   end
   self:Send(msg)
   return self.correlationId
