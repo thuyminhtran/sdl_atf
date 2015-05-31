@@ -173,7 +173,7 @@ function StartSDL(SDLPathName, ExitOnCrash)
 end
 
 function StopSDL()
-  event_dispatcher:Clear()
+  event_dispatcher:ClearEventsAfterDisconnect()
   return SDL:StopSDL()
 end
 
@@ -205,8 +205,7 @@ function module:runSDL()
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
             end, 4000)
-  local result, errmsg
-  result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
+  local result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
   if not result then
     SDL:DeleteFile()
     quit(1)
@@ -215,7 +214,7 @@ function module:runSDL()
 end
 
 function module:initHMI()
-  critical(true)
+ -- critical(true)
   local function registerComponent(name, subscriptions)
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
     local exp = EXPECT_HMIRESPONSE(rid)
@@ -260,7 +259,7 @@ function module:initHMI()
 end
 
 function module:initHMI_onReady()
-  critical(true)
+ -- critical(true)
   local function ExpectRequest(name, mandatory, params)
     local event = events.Event()
     event.level = 2
@@ -515,7 +514,7 @@ function module:initHMI_onReady()
 end
 
 function module:connectMobile()
-  critical(true)
+  --critical(true)
   -- Disconnected expectation
   EXPECT_EVENT(events.disconnectedEvent, "Disconnected")
     :Pin()

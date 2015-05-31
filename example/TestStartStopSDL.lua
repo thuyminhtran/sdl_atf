@@ -10,9 +10,9 @@ function Test:WaitActivation()
 end
 
 function Test:Any_Test()
-	EXPECT_HMICALL("UI.Slider", 
+  EXPECT_HMICALL("UI.Slider", 
 	{ 		
-	  numTicks = 2,
+	numTicks = 2,
   	position = 2,
   	sliderHeader = "Slider Header",
   	timeout = 5000,
@@ -33,11 +33,11 @@ function Test:Any_Test()
 end
 
 function Test:StopSDL()
-        StopSDL()
+  StopSDL()
 end 
 
 function Test:StartSDL()
-	StartSDL(config.pathToSDL, config.ExitOnCrash)
+  StartSDL(config.pathToSDL, config.ExitOnCrash)
 end
 
 function module:InitHMI2()
@@ -57,8 +57,8 @@ function module:StartSession2()
 end
 
 function Test:Any_test2(_)
-	EXPECT_HMICALL("UI.Slider", 
-	{ 		
+  EXPECT_HMICALL("UI.Slider", 
+  { 		
     numTicks = 26,
     position = 26,
     sliderHeader = "Header",
@@ -80,21 +80,20 @@ function Test:Any_test2(_)
 end 
 
 function Test:StopSDL()
-        StopSDL()
+  StopSDL()
 end
 
 function Test:StopAlreadyStopedSDL()
-        StopSDL()
+  StopSDL()
 end
 
 function Test:StartSDL()
-        StartSDL(config.pathToSDL, config.ExitOnCrash)
+  StartSDL(config.pathToSDL, config.ExitOnCrash)
 end
 
 function Test:RunAlreadyStartSDL()
-        StartSDL()
+  StartSDL()
 end
-
 function Test:DelayedExp()
   local event = events.Event()
   event.matches = function(self, e) return self == e end
@@ -105,5 +104,5 @@ function Test:DelayedExp()
 end
 
 function Test:StopSDL()
-        StopSDL()
+  StopSDL()
 end

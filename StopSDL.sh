@@ -1,4 +1,3 @@
-#!/bin/bash
 read pid < sdl.pid
 kill -TERM $pid
 rm sdl.pid

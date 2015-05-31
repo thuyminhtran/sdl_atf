@@ -1,9 +1,7 @@
-#!/bin/bash
 dirsSDL=$1
 dirsATF=$(pwd)
 cd $dirsSDL
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.
-export LD_LIBRARY_PATH
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:. export LD_LIBRARY_PATH
 xterm -e ./smartDeviceLinkCore &
 cd $dirsATF 
 touch sdl.pid

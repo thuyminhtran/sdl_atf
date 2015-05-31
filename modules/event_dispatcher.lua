@@ -131,7 +131,7 @@ function mt.__index:RemoveEvent(connection, event)
   self._pool2[connection][event] = nil
   self._pool1[connection][event] = nil
 end
-function mt.__index:Clear()
+function mt.__index:ClearEventsAfterDisconnect()
   for c, pool in pairs(self._pool3) do self._pool3[c] = { } end
   for c, pool in pairs(self._pool2) do self._pool2[c] = { } end
   for c, pool in pairs(self._pool1) do self._pool1[c] = { } end

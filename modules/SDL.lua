@@ -15,19 +15,18 @@ function SDL:StartSDL(pathToSDL, ExitOnCrash)
   end
   local status = self:CheckStatusSDL()
   if status == self.STOPPED then
-    local result = os.execute ('./StartSDL ' .. pathToSDL)
+    local result = os.execute ('./StartSDL.sh ' .. pathToSDL)
     if result then
       return true
     else
-      local msg = "SDL had already started  not from ATF" 
+      local msg = "SDL had already started not from ATF or unexpectedly crashed" 
       print(console.setattr(msg, "cyan", 1))
       return nil, msg
     end
-  else
-    local msg = "SDL had already started from ATF"
-    print(console.setattr(msg, "cyan", 1))
-    return nil, msg
   end
+  local msg = "SDL had already started from ATF"
+  print(console.setattr(msg, "cyan", 1))
+  return nil, msg
 end
 
 function SDL:StopSDL()
@@ -46,17 +45,15 @@ function SDL:StopSDL()
 end
 
 function SDL:CheckStatusSDL()
-  local result1 = os.execute ('test -e sdl.pid')
-  if result1 then 
-    local result2 = os.execute ('test -e /proc/$(cat sdl.pid)')
-    if not result2 then
+  local testFile = os.execute ('test -e sdl.pid')
+  if testFile then 
+    local testCatFile = os.execute ('test -e /proc/$(cat sdl.pid)')
+    if not testCatFile then
       return self.CRASH
-    else
-      return self.RUNNING
     end
-  else
-    return self.STOPPED
+    return self.RUNNING
   end
+  return self.STOPPED
 end
 
 function SDL:DeleteFile()
