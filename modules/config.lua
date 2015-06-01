@@ -6,7 +6,8 @@ config.hmiPort = 8087
 config.mobileHost = "localhost"
 config.mobilePort = 12345
 
-config.pathToSDL = "../../reserv/applink/bin"
+config.pathToSDL = "../../../applink-atf/applink/bin"
+config.SDL = "smartDeviceLinkCore"
 config.ExitOnCrash = true
 config.autorunSDL = true
 

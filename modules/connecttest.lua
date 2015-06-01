@@ -169,11 +169,11 @@ function EXPECT_HMIEVENT(event, name)
 end
 
 function StartSDL(SDLPathName, ExitOnCrash)
-  return SDL:StartSDL(SDLPathName, ExitOnCrash)
+  return SDL:StartSDL(SDLPathName, config.SDL, ExitOnCrash)
 end
 
 function StopSDL()
-  event_dispatcher:ClearEventsAfterDisconnect()
+  event_dispatcher:ClearEvents()
   return SDL:StopSDL()
 end
 
@@ -205,7 +205,7 @@ function module:runSDL()
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
             end, 4000)
-  local result, errmsg = SDL:StartSDL(config.pathToSDL, config.ExitOnCrash)
+  local result, errmsg = SDL:StartSDL(config.pathToSDL, config.SDL, config.ExitOnCrash)
   if not result then
     SDL:DeleteFile()
     quit(1)

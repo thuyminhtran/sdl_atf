@@ -11,25 +11,25 @@ end
 
 function Test:Any_Test()
   EXPECT_HMICALL("UI.Slider", 
-	{ 		
-	numTicks = 2,
-  	position = 2,
-  	sliderHeader = "Slider Header",
-  	timeout = 5000,
-  	sliderFooter = { "Slider Footer" }
+  { 		
+    numTicks = 2,
+    position = 2,
+    sliderHeader = "Slider Header",
+    timeout = 5000,
+    sliderFooter = { "Slider Footer" }
   })
-	:Do(function(_,data)
-          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
-        end)
-	  local cid = self.mobileSession:SendRPC("Slider", 
-	  {
-      numTicks = 2,
-      position = 2,
-      sliderHeader = "Slider Header",
-      timeout = 5000,
-      sliderFooter = { "Slider Footer" }
-	  })
-	EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
+  :Do(function(_,data)
+    self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
+  end)
+  local cid = self.mobileSession:SendRPC("Slider", 
+  {
+    numTicks = 2,
+    position = 2,
+    sliderHeader = "Slider Header",
+    timeout = 5000,
+    sliderFooter = { "Slider Footer" }
+  })
+  EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
 end
 
 function Test:StopSDL()
@@ -56,28 +56,28 @@ function module:StartSession2()
   self:startSession()
 end
 
-function Test:Any_test2(_)
+function Test:Any_Test2()
   EXPECT_HMICALL("UI.Slider", 
   { 		
-    numTicks = 26,
-    position = 26,
-    sliderHeader = "Header",
+    numTicks = 2,
+    position = 2,
+    sliderHeader = "Slider Header",
     timeout = 5000,
-    sliderFooter = { "Footer" }
+    sliderFooter = { "Slider Footer" }
   })
-	:Do(function(_,data)
-          self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
-      end)
+  :Do(function(_,data)
+    self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
+  end)
   local cid = self.mobileSession:SendRPC("Slider", 
   {
-    numTicks = 26,
-    position = 26,
-    sliderHeader = "Header",
+    numTicks = 2,
+    position = 2,
+    sliderHeader = "Slider Header",
     timeout = 5000,
-    sliderFooter = {"Footer"}
+    sliderFooter = { "Slider Footer" }
   })
-	EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
-end 
+  EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
+end
 
 function Test:StopSDL()
   StopSDL()

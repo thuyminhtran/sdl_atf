@@ -9,13 +9,13 @@ SDL.STOPPED = 0
 SDL.RUNNING = 1
 SDL.CRASH = -1
 
-function SDL:StartSDL(pathToSDL, ExitOnCrash)
+function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   if ExitOnCrash ~= nil then
     self.exitOnCrash = ExitOnCrash
   end
   local status = self:CheckStatusSDL()
   if status == self.STOPPED then
-    local result = os.execute ('./StartSDL.sh ' .. pathToSDL)
+    local result = os.execute ('./StartSDL.sh ' .. pathToSDL .. ' ' ..  smartDeviceLinkCore)
     if result then
       return true
     else
@@ -33,7 +33,7 @@ function SDL:StopSDL()
   self.autoStarted = false
   local status = self:CheckStatusSDL()
   if status == self.RUNNING then
-    local result = os.execute ('./StopSDL')
+    local result = os.execute ('./StopSDL.sh')
     if result then 
       return true
     end
