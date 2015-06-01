@@ -4,7 +4,7 @@ dirsATF=$(pwd)
 nameApplication=$2
 cd $dirsSDL
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:. export LD_LIBRARY_PATH
-xterm -e ./$nameApplication &
+./$nameApplication &
 cd $dirsATF 
 touch sdl.pid
 echo $! > sdl.pid
