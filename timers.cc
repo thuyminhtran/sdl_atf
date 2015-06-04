@@ -1,5 +1,6 @@
 #include "timers.h"
 #include <QTimer>
+#include <QDebug>
 
 int timer_create(lua_State *L) {
   QTimer **p = static_cast<QTimer**>(lua_newuserdata(L, sizeof(QTimer*)));
@@ -36,6 +37,13 @@ int timer_reset(lua_State *L) {
   return 0;
 }
 
+int timer_interval(lua_State *L) {
+  QTimer *timer =
+    *static_cast<QTimer**>(luaL_checkudata(L, 1, "timers.Timer"));
+  lua_pushinteger(L, timer->interval());
+  return 1;
+}
+
 int timer_set_interval(lua_State *L) {
   QTimer *timer =
     *static_cast<QTimer**>(luaL_checkudata(L, 1, "timers.Timer"));
@@ -67,6 +75,7 @@ int luaopen_timers(lua_State *L) {
   lua_newtable(L);
   luaL_Reg timer_functions[] = {
     { "start", &timer_start },
+    { "interval", &timer_interval },
     { "stop", &timer_stop },
     { "reset", &timer_reset },
     { "setInterval", &timer_set_interval },

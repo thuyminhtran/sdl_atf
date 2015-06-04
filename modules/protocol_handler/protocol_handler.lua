@@ -54,7 +54,7 @@ local function create_ford_header(version, encryption, frameType, serviceType, f
     int32ToBytes(messageId)
   return res
 end
-function mt.__index:Parse(binary)
+function mt.__index:Parse(binary, validateJson)
   self.buffer = self.buffer .. binary
   local res = { }
   while #self.buffer >= 12 do
@@ -86,9 +86,11 @@ function mt.__index:Parse(binary)
           msg.rpcCorrelationId = bytesToInt32(msg.binaryData, 5)
           msg.rpcJsonSize      = bytesToInt32(msg.binaryData, 9)
           if msg.rpcJsonSize > 0 then
-            msg.payload        = json.decode(string.sub(msg.binaryData, 13, msg.rpcJsonSize + 12))
+            if not validateJson then
+              msg.payload = json.decode(string.sub(msg.binaryData, 13, msg.rpcJsonSize + 12))
+            end
           end
-          if msg.size > msg.rpcJsonSize + 12 then
+          if msg.size > msg.rpcJsonSize + 12 then            
             msg.binaryData = string.sub(msg.binaryData, msg.rpcJsonSize + 13)
           else
             msg.binaryData = ""

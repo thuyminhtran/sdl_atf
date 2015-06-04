@@ -1,6 +1,7 @@
 local ph = require('protocol_handler/protocol_handler')
 local file_connection = require("file_connection")
 local module = { mt = { __index = {} } }
+local p = require('debug/print_table')
 
 function module.MobileConnection(connection)
   res = { }
@@ -37,14 +38,17 @@ function module.mt.__index:OnInputData(func)
   local f =
     function(self, binary)
       local msg = protocol_handler:Parse(binary)
-    for _, v in ipairs(msg) do
-      func(this, v)
+      for _, v in ipairs(msg) do
+        func(this, v)
+      end
     end
-  end
   self.connection:OnInputData(f)
 end
 function module.mt.__index:OnDataSent(func)
   self.connection:OnDataSent(func)
+end
+function module.mt.__index:OnMessageSent(func)
+  self.connection:OnMessageSent(func)
 end
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
