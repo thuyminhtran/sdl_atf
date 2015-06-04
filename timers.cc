@@ -1,6 +1,5 @@
 #include "timers.h"
 #include <QTimer>
-#include <QDebug>
 
 int timer_create(lua_State *L) {
   QTimer **p = static_cast<QTimer**>(lua_newuserdata(L, sizeof(QTimer*)));

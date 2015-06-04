@@ -1,6 +1,4 @@
 local module = { mt = { __index = {} } }
-local p = require('debug/print_table')
-local ph = require('protocol_handler/protocol_handler') 
 function module.Connection(host, port)
   local res =
   {
@@ -34,19 +32,10 @@ function module.mt.__index:Connect()
   checkSelfArg(self)
   self.socket:connect(self.host, self.port)
 end
-local phh = ph.ProtocolHandler()
 function module.mt.__index:Send(data)
-  checkSelfArg(self)
-  
-  for _, c in ipairs(data) do
-  
-    self.socket:write(c)
---    p.print_table(phh:Parse(c), 4)
-    
-    if self.onDataToBeSent then
-     -- print("?????")
-      self.onDataToBeSent(self, c)
-    end
+  checkSelfArg(self)  
+  for _, c in ipairs(data) do  
+    self.socket:write(c)    
   end
 end
 function module.mt.__index:OnInputData(func)
@@ -65,9 +54,6 @@ function module.mt.__index:OnDataSent(func)
     func(this, num)
   end
   qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
-end
-function module.mt.__index:OnDataToBeSent(func)
-  self.onDataToBeSent = func
 end
 function module.mt.__index:OnConnected(func)
   checkSelfArg(self)

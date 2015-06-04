@@ -1,8 +1,4 @@
 require('atf.util')
-
-local p = require('debug/print_table') --AWIODUAILSD
-
-
 local expectations   = require('expectations')
 local events         = require('events')
 local config         = require('config')
@@ -246,9 +242,7 @@ function mt.__index:Start()
                     :Pin()
                     :Times(AnyNumber())
                     :Do(function(data)
-                          print("QQQ", self.sessionId)
                           if self.heartbeatEnabled and not self.answerHeartbeatFromSDL then
-                            print("HB ACK", self.sessionId)
                             self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
                                          serviceType = constants.SERVICE_TYPE.CONTROL, 
                                          frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
@@ -261,7 +255,6 @@ function mt.__index:Start()
                   
                   function d.SendHeartbeat()                   
                     if self.heartbeatEnabled and self.sendHeartbeatToSDL then
-                       print("Send HB, session ", self.sessionId)
                       self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
                                    serviceType = constants.SERVICE_TYPE.CONTROL, 
                                    frameInfo   = constants.FRAME_INFO.HEARTBEAT } )

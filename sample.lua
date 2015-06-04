@@ -70,7 +70,7 @@ end
 function Test:Case_StartAudioStreaming()
   self.mobileSession:StartService(10)
    :Do(function()
-         self.mobileSession:StartStreaming(self.sessionId, 10, "video.mpg", 30 * 1024)
+         self.mobileSession:StartStreaming(10, "video.mpg", 30 * 1024)
        end)
 end
 
@@ -102,7 +102,7 @@ function Test:StopAudioStreaming()
              end)
 
 end
-]]--
+--]]
 
 
 function Test:Case_PerformAudioPassThruTest()

@@ -1,6 +1,5 @@
 local ph     = require('protocol_handler/protocol_handler')
 local config = require('config')
-local p = require('debug/print_table')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
@@ -107,7 +106,6 @@ function fbuffer_mt.__index:GetMessage()
   return header, nil
 end
 function module.MessageDispatcher(connection)
-  local protocol_handler = ph.ProtocolHandler()
   local res = {}
   res._d = qt.dynamic()
   res.generators = { }
