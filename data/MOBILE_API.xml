@@ -426,6 +426,15 @@
     <element name="PCM" />
   </enum>
 
+  <struct name="HMICapabilities">
+    <param name="navigation" type="Boolean" mandatory="false">
+      <description>Availability of build in Nav. True: Available, False: Not Available</description>
+    </param>
+    <param name="phoneCall" type="Boolean" mandatory="false">
+      <description>Availability of build in phone. True: Available, False: Not Available</description>
+    </param>
+  </struct>
+
   <struct name="AudioPassThruCapabilities">
     <description>Describes different audio type configurations for PerformAudioPassThru.</description>
     <description>e.g. {8kHz,8-bit,PCM}</description>
@@ -2063,6 +2072,7 @@
     <description>Enumeration listing possible keyboard events.</description>
     <element name="KEYPRESS" />
     <element name="ENTRY_SUBMITTED" />
+    <element name="ENTRY_VOICE" />
     <element name="ENTRY_CANCELLED" />
     <element name="ENTRY_ABORTED" />    
   </enum>
@@ -2119,6 +2129,18 @@
     <element name="PROPRIETARY" />
     <element name="QUERY_APPS" />
     <element name="LAUNCH_APP" />
+    <element name="LOCK_SCREEN_ICON_URL" />
+    <element name="TRAFFIC_MESSAGE_CHANNEL" />
+    <element name="DRIVER_PROFILE" />
+    <element name="VOICE_SEARCH" />
+    <element name="NAVIGATION" />
+    <element name="PHONE" />
+    <element name="CLIMATE" />
+    <element name="SETTINGS" />
+    <element name="VEHICLE_DIAGNOSTICS" />
+    <element name="EMERGENCY" />
+    <element name="MEDIA" />
+    <element name="FOTA" />
   </enum>
 
   <enum name="AppHMIType">
@@ -2181,7 +2203,8 @@
     <element name="SetDisplayLayoutID" value="36" hexvalue="24" />
     <element name="DiagnosticMessageID" value="37" hexvalue="25" />    
     <element name="SystemRequestID" value="38" hexvalue="26" /> 
-    <element name="SendLocationID" value="39" hexvalue="27" />  
+    <element name="SendLocationID" value="39" hexvalue="27" />
+    <element name="DialNumberID" value="40" hexvalue="28" />
 
 
 
@@ -2410,7 +2433,9 @@
       	If a mode outside this list is requested, it will be rejected.
       </description>
     </param>
-
+    <param name="hmiCapabilities" type="HMICapabilities" mandatory="false">
+      <description>Specifies the HMI’s capabilities. See HMICapabilities.</description>
+    </param>
   </function>
 
   <function name="UnregisterAppInterface" functionID="UnregisterAppInterfaceID" messagetype="request">
@@ -4626,6 +4651,13 @@
         <element name="REJECTED"/> 
         <element name="INVALID_CERT"/> 
         <element name="EXPIRED_CERT"/> 
+        <element name="UNSUPPORTED_REQUEST"/>
+        <element name="UNSUPPORTED_RESOURCE"/>
+        <element name="DISALLOWED"/>
+        <element name="ABORTED"/>
+        <element name="WARNINGS"/>
+        <element name="TIMED_OUT"/>
+        <element name="IGNORED"/>
      </param>
   </function> 
 
@@ -4680,6 +4712,32 @@
      </param> 
   </function>
 
+  <function name="DialNumber" functionID="DialNumberID" messagetype="request">
+    <description>Dials a phone number and switches to phone application.</description>
+    <param name="number" type="String" maxlength="40">
+      <description>Phone number is a string, which can be up to 40 chars.</description>
+    </param>
+  </function>
+
+  <function name="DialNumber" functionID="DialNumberID" messagetype="response">
+    <param name="success" type="Boolean" platform="documentation">
+    <description>true, if successful</description>
+    <description>false, if failed</description>
+    </param>
+    <param name="resultCode" type="Result" platform="documentation">
+      <description>See Result</description>
+    <element name="SUCCESS"/>
+    <element name="INVALID_DATA"/>
+    <element name="OUT_OF_MEMORY"/>
+    <element name="TOO_MANY_PENDING_REQUESTS"/>
+    <element name="APPLICATION_NOT_REGISTERED"/>
+    <element name="GENERIC_ERROR"/>
+    <element name="REJECTED"/>
+    </param>
+    <param name="info" type="String" maxlength="1000" mandatory="false" platform="documentation">
+      <description>Provides additional human readable info regarding the result.</description>
+    </param>
+  </function>
 
   <!-- Notifications -->
 

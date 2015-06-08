@@ -64,8 +64,7 @@ function EXPECT_HMICALL(methodName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                    local _,short_name = methodName:match("([^.]+).([^.]+)")
-                    local _res, _err = validator.validate_hmi_request(short_name, unpack(args) )
+                    local _res, _err = validator.validate_hmi_request(methodName, unpack(args) )
                      xmlLogger.AddMessage("EXPECT_HMICALL", "EXPECTED_RESULT",arguments) 
                      xmlLogger.AddMessage("EXPECT_HMICALL", "AVALIABLE_RESULT",data.params)
                    if (not _res) then  return _res,_err end

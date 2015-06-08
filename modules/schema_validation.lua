@@ -39,8 +39,16 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local function get_xml_shema_validation(doc,types,name, msg_type)
     local retval= {}
-      for _, v1 in ipairs(doc:xpath("//param/parent::function[@name='".. name .."']" )) do
-        if (v1:attr("messagetype") == msg_type) then
+    local class_, short_name
+    if (name == nil ) then return retval end
+    if (string.find(name, "%.")) then
+        class_, short_name = name:match("([^.]+).([^.]+)")  
+    else
+       class_ ='Ford Sync RAPI'
+       short_name = name
+    end
+     for _, v1 in ipairs(doc:xpath("//param/parent::function[@name='".. short_name .."']" )) do
+        if (v1:attr("messagetype") == msg_type and v1:parent():attr("name")== class_) then
           if (type(v1:children() == 'table')) then
             for _, v2 in ipairs(v1:children()) do 
               local class_type = v2:attr('type')
