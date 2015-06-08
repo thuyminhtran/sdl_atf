@@ -10,12 +10,13 @@ OptionalArgument = utils.OptionalArgument
 NoArgument       = utils.NoArgument
 
 
-local function file_exists(name)
-	if io.open(name,"r") ~=nil then io.close(f) return true else return false end
+local function is_file_exists(name)
+	local f = io.open(name,"r")
+	if f ~=nil then io.close(f) return true else return false end
 end
 
 function module.config_file(config_file)
-	if (file_exists(config_file)) then
+	if (is_file_exists(config_file)) then
 	    config_file = config_file:gsub('%.', " ")
 	    config_file = config_file:gsub("/", ".")
 	    config_file = config_file:gsub("[%s]lua$", "")
