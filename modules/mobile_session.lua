@@ -47,7 +47,7 @@ function mt.__index:ExpectResponse(arg1, ...)
                    xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
                    if type(arg1) == 'string' then
                        local _res, _err = validator.validate_mobile_response(funcName, unpack(args) )
-                       if (not _res) then  return _res,_err end
+--                       if (not _res) then  return _res,_err end
                    end
                    return compareValues(arguments, data.payload, "payload")
                  end)
