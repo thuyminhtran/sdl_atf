@@ -1,11 +1,11 @@
 require('atf.util')
 local expectations   = require('expectations')
 local events         = require('events')
-local config         = require('config')
 local functionId     = require('function_id')
 local json           = require('json')
 local expectations   = require('expectations')
 local constants      = require('protocol_handler/ford_protocol_constants')
+local validator      = require('schema_validation')
 local Expectation    = expectations.Expectation
 local Event          = events.Event
 local SUCCESS        = expectations.SUCCESS
@@ -44,6 +44,11 @@ function mt.__index:ExpectResponse(arg1, ...)
                    else
                      arguments = args[self.occurences]
                    end
+                   xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
+                   if type(arg1) == 'string' then
+                       local _res, _err = validator.validate_mobile_response(funcName, unpack(args) )
+--                       if (not _res) then  return _res,_err end
+                   end
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -80,6 +85,9 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
+--                    local _res, _err = validator.validate_mobile_notification(funcName, ...)
+--                    if (not _res) then  return _res,_err end
+                  xmlLogger.AddMessage("EXPECT_NOTIFICATION","AVALIABLE_RESULT", data.payload) 
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -113,6 +121,20 @@ function mt.__index:Send(message)
       binaryData       = message.binaryData
     }
   })
+  xmlLogger.AddMessage("mobile_connection","Send",
+                        {
+                         version          = message.version or self.version,
+                         encryption       = message.encryption or false,
+                         frameType        = message.frameType or 1,
+                         serviceType      = message.serviceType,
+                         frameInfo        = message.frameInfo,
+                         sessionId        = self.sessionId,
+                         messageId        = self.messageId,
+                         rpcType          = message.rpcType,
+                         rpcFunctionId    = message.rpcFunctionId,
+                         rpcCorrelationId = message.rpcCorrelationId
+                        }
+  )
 end
 function mt.__index:StartStreaming(service, filename, bandwidth)
   self.connection:StartStreaming(self.sessionId, service, filename, bandwidth)
@@ -132,9 +154,11 @@ function mt.__index:SendRPC(func, arguments, fileName)
     payload          = json.encode(arguments)
   }
   if fileName then
-    local f = assert(io.open(fileName))
-    msg.binaryData = f:read("*all")
-    io.close(f)
+    if (is_file_exists(fileName)) then
+        local f = assert(io.open(fileName))
+        msg.binaryData = f:read("*all")
+        io.close(f)
+    end
   end
   self:Send(msg)
   return self.correlationId
@@ -226,6 +250,21 @@ function mt.__index:SetHeartbeatTimeout(timeout)
     self.heartbeatToSDLTimer:setInterval(timeout)
     self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
   end
+=======
+  self.heartbeatEnabled = false
+  self.heartbeatToSDLTimer:stop()
+  self.heartbeatFromSDLTimer:stop()
+end
+
+function mt.__index:StartHeartbeat()
+  self.heartbeatEnabled = true
+  self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
+  self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
+end
+
+function mt.__index:SetHeartbeatTimeout(timeout)
+  self.heartbeatToSDLTimer:setInterval(timeout)
+  self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
 end
 
 function mt.__index:Start()
@@ -281,7 +320,6 @@ end
 function mt.__index:Stop()
   self:StopService(7)
 end
-
 function module.MobileSession(test, connection, regAppParams)
   local res = { }
   res.test = test

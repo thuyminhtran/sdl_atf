@@ -17,10 +17,9 @@ all: interp modules/libxml.so
 
 interp: $(PROJECT).mk $(SOURCES)
 	make -f $<
-	chrpath -r ./libs $@
 
 modules/libxml.so: lua_xml.cc
-	$(CXX) $(CXXFLAGS) -shared -std=c++11 $< -o modules/libxml.so -g -I/usr/include/libxml2 -llua5.2 -lxml2 -fPIC
+	$(CXX) $(CXXFLAGS) -shared -std=c++11 $< -o modules/libxml.so -g -I/usr/include/libxml2 /usr/lib/libavcall.a -llua5.2 -lxml2 -fPIC
 
 clean:
 	rm -f $(PROJECT).mk

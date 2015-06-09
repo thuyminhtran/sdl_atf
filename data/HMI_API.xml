@@ -64,6 +64,13 @@
     <element name="TRUNCATED_DATA" value="24"/>
 </enum>
 
+<enum name="TransportType">
+  <description>Lists of the transport types used for device connection to HU.</description>
+  <element name="BLUETOOTH"/>
+  <element name="USB"/>
+  <element name="WIFI"/>
+</enum>
+
 <enum name="ButtonName">
     <description>Defines the hard (physical) and soft (touchscreen) buttons available from SYNC</description>
     <element name="OK"/>
@@ -373,10 +380,16 @@
   <element name="DYNAMIC" />
 </enum>
 
-<enum name="ApplicationToNONEReason">
-  <description>Describes the reasons of moving the app to NONE.</description>
-  <element name="DRIVER_DISTRACTION_VIOLATION" />
-  <element name="USER_EXIT" />
+<enum name="ApplicationExitReason">
+  <element name="DRIVER_DISTRACTION_VIOLATION" >
+    <description>By getting this value, SDL puts the named app to NONE HMILevel</description>
+  </element>
+  <element name="USER_EXIT" >
+    <description>By getting this value, SDL puts the named app to NONE HMILevel</description>
+  </element>
+  <element name="UNAUTHORIZED_TRANSPORT_REGISTRATION">
+    <description>By getting this value, SDL unregisters the named application</description>
+  </element>
 </enum>
 
 <enum name="TextFieldName">
@@ -525,6 +538,12 @@
   <description>Enumeration that describes possible states of driver distraction.</description>
   <element name="DD_ON" />
   <element name="DD_OFF" />
+</enum>
+
+<enum name="EmergencyState">
+  <description>Enumeration that describes possible states of emergency event.</description>
+  <element name="EMERGENCY_ON" />
+  <element name="EMERGENCY_OFF" />
 </enum>
 
 <enum name="MediaClockFormat">
@@ -929,6 +948,7 @@
   <description>Enumeration listing possible keyboard events.</description>
   <element name="KEYPRESS" />
   <element name="ENTRY_SUBMITTED" />
+  <element name="ENTRY_VOICE" />
   <element name="ENTRY_CANCELLED" />
   <element name="ENTRY_ABORTED" />
 </enum>
@@ -971,13 +991,27 @@
 </enum>
 
 <enum name="RequestType">
-    <description>Enumeration listing possible asynchronous requests.</description>
-    <element name="HTTP" />
-    <element name="FILE_RESUME" />
-    <element name="AUTH_REQUEST" />
-    <element name="AUTH_CHALLENGE" />
-    <element name="AUTH_ACK" />
-    <element name="PROPRIETARY" />
+  <description>Enumeration listing possible asynchronous requests.</description>
+  <element name="HTTP" />
+  <element name="FILE_RESUME" />
+  <element name="AUTH_REQUEST" />
+  <element name="AUTH_CHALLENGE" />
+  <element name="AUTH_ACK" />
+  <element name="PROPRIETARY" />
+  <element name="QUERY_APPS" />
+  <element name="LAUNCH_APP" />
+  <element name="LOCK_SCREEN_ICON_URL" />
+  <element name="TRAFFIC_MESSAGE_CHANNEL" />
+  <element name="DRIVER_PROFILE" />
+  <element name="VOICE_SEARCH" />
+  <element name="NAVIGATION" />
+  <element name="PHONE" />
+  <element name="CLIMATE" />
+  <element name="SETTINGS" />
+  <element name="VEHICLE_DIAGNOSTICS" />
+  <element name="EMERGENCY" />
+  <element name="MEDIA" />
+  <element name="FOTA" />
 </enum>
 
 <enum name="ECallConfirmationStatus">
@@ -1116,6 +1150,7 @@
   <element name="ALERT" />
   <element name="SPEAK" />
   <element name="AUDIO_PASS_THRU" />
+  <element name="ALERT_MANEUVER" />
 </enum>
 
 <enum name="AlertType">
@@ -1174,9 +1209,6 @@
   <struct name="ServiceInfo">
     <param name="url" type="String" mandatory="true">
       <description>Get URL based on service type.</description>
-    </param>
-    <param name="policyAppID" type="String" mandatory="false">
-      <description>Used if URL needed are specific for application.</description>
     </param>
     <param name="appID" type="Integer" mandatory="false">
       <description>Internal ID of the application that corresponds to the policyAppID</description>
@@ -1270,6 +1302,21 @@
   </param>
 </struct>
 
+<struct name="DeviceInfo">
+  <param name="name" type="String" mandatory="true">
+    <description>The name of the device connected.</description>
+  </param>
+  <param name="id" type="Integer" mandatory="true">
+    <description>The ID of the device connected</description>
+  </param>
+  <param name="transportType" type="Common.TransportType" mandatory="false">
+    <description>The transport type the named-app's-device is connected over HU(BlueTooth, USB or WiFi). It must be provided in OnAppRegistered and in UpdateDeviceList</description>
+  </param>
+  <param name="isSDLAllowed" type="Boolean" mandatory="false">
+    <description>Sent by SDL in UpdateDeviceList. ’true’ – if device is allowed for PolicyTable Exchange; ‘false’ – if device is NOT allowed for PolicyTable Exchange </description>
+  </param>
+</struct>
+
 <struct name="SoftButton">
     <param name="type" type="Common.SoftButtonType" mandatory="true">
       <description>Describes, whether text, icon or both text and image should be displayed on the soft button. See softButtonType</description>
@@ -1314,8 +1361,11 @@
     <param name="icon" type="String" mandatory="false">
       <description>Path to application icon stored on HU.</description>
     </param>
-    <param name="deviceName" type="String" mandatory="true">
-      <description>The name of device which the provided application is running on.</description>
+    <param name="deviceInfo" type="Common.DeviceInfo" mandatory="true">
+      <description>The ID, serial number, transport type the named-app's-device is connected over to HU.</description>
+    </param>
+    <param name="policyAppID" type="String" maxlength="50" minlength="1" mandatory="true">
+      <description>Policy ID(=the appID the application registers with) of registered application.</description>
     </param>
     <param name="appID" type="Integer" mandatory="true">
       <description>Unique (during ignition cycle) id of the application. To be used in all RPCs sent by both HU system and SDL</description>
@@ -1329,6 +1379,13 @@
     <param name="appType" type="Common.AppHMIType" minsize="1" maxsize="100" array="true" mandatory="false">
       <description>List of all applicable app types stating which classifications to be given to the app.</description>
       <description>e.g. for platforms like GEN2, this determines which "corner(s)" the app can populate.</description>
+    </param>
+    <param name="requestType" type="Common.RequestType" minsize="0" maxsize="100" array="true" mandatory="false">
+      <description>The list of SystemRequest's RequestTypes allowed by policies for the named application</description>
+      <description>(the app's SystemRequest sent with RequestType out of this list will get 'disallowed' response from SDL).</description>
+      <description>If SDL sends an empty array - any RequestType is allowed for this app.</description>
+      <description>If SDL omits this parameter - none RequestType is allowed for this app</description>
+      <description>(either this is a pre-registered app or such is dictated by policies).</description>
     </param>
 </struct>
 
@@ -1482,6 +1539,15 @@
   </param>
 </struct>
 
+<struct name="HMICapabilities">
+  <param name="navigation" type="Boolean" mandatory="false">
+    <description>Availability of build in Nav. True: Available, False: Not Available</description>
+  </param>
+  <param name="phoneCall" type="Boolean" mandatory="false">
+    <description>Availability of build in phone. True: Available, False: Not Available</description>
+  </param>
+</struct>
+
 <struct name="AudioPassThruCapabilities">
   <description>
     Describes different audio type configurations for PerformAudioPassThru.
@@ -1549,18 +1615,6 @@
   <param name="trim" type="String" maxlength="500" mandatory="false">
     <description>Trim of the vehicle</description>
     <description>e.g. SE</description>
-  </param>
-</struct>
-
-<struct name="DeviceInfo">
-  <param name="name" type="String" mandatory="true">
-    <description>The name of the device connected.</description>
-  </param>
-  <param name="id" type="Integer" mandatory="true">
-    <description>The ID of the device connected</description>
-  </param>
-  <param name="isSDLAllowed" type="Boolean" mandatory="false">
-    <description>Sent by SDL in UpdateDeviceList. ’true’ – if device is allowed for PolicyTable Exchange; ‘false’ – if device is NOT allowed for PolicyTable Exchange </description>
   </param>
 </struct>
 
@@ -1912,6 +1966,24 @@
             </description>
         </param>
     </function>
+    <function name="OnButtonSubscription" messagetype="notification">
+      <description>
+        Sender: SDL->HMI. Purpose: to notify about button subscription state is changed for the named application
+      </description>
+      <param name="name" type="Common.ButtonName" mandatory="true" />
+      <param name="isSubscribed" type="Boolean" mandatory="true">
+        <description>
+          Defines whether the named button has status of 'subscribed' or 'unsubscribed':
+          If "true" - the named button is subscribed.
+          If "false" - the named button is unsubscribed.
+        </description>
+      </param>
+      <param name="appID" type="Integer" mandatory="true">
+        <description>
+          The ID of application that relates to this button-subscription status change.
+        </description>
+      </param>
+    </function>
 </interface>
 
 <interface name="BasicCommunication" version="1.0" date="2013-04-12">
@@ -2065,7 +2137,7 @@
     </function>
     <function name="OnExitApplication" messagetype="notification">
       <description>Must be sent by HMI when the User chooses to exit the application..</description>
-      <param name="reason" type="Common.ApplicationToNONEReason" mandatory="true">
+      <param name="reason" type="Common.ApplicationExitReason" mandatory="true">
         <description>Specifies reason of moving the app to NONE</description>
       </param>
       <param name="appID" type="Integer" mandatory="true">
@@ -2101,6 +2173,19 @@
          <description>Defines the name of app's request that initiates playing a tone</description>
       </param>
     </function>
+    <function name="DialNumber" messagetype="request">
+      <description>Request from SDL to call a specific number.</description>
+      <param name="number" type="String" maxlength="40">
+        <description>The number to dial. All characters shall be stripped from string except digits 0-9 and * # , ;.</description>
+      </param>
+      <param name="appID" type="Integer" mandatory="true">
+        <description>ID of application that concerns this RPC.</description>
+      </param>
+    </function>
+
+    <function name="DialNumber" messagetype="response">
+    </function>
+
     <!-- Policies -->
 
     <!-- SyncP RPC-->
@@ -2129,9 +2214,6 @@
       <param name="fileName" type="String" maxlength="255" minlength="1" mandatory="true">
         <description>File reference name.</description>
       </param>
-      <param name="policyAppID" type="String" maxlength="50" minlength="1" mandatory="false">
-        <description>Policy ID of application that requested this RPC.</description>
-      </param>
       <param name="appID" type="Integer" mandatory="false">
         <description>Internal ID of the application that corresponds to the policyAppID</description>
       </param>
@@ -2144,11 +2226,8 @@
       <param name="fileName" type="String" maxlength="255" minlength="1" mandatory="true">
           <description>The path to file.</description>
       </param>
-      <param name="policyAppID" type="String" maxlength="50" minlength="1" mandatory="false">
-        <description>Internal ID of the application that corresponds to the policyAppID</description>
-      </param>
-      <param name="appID" type="Integer" mandatory="false">
-        <description>Policy ID of the application that the request must be sent to</description>
+      <param name="appID" type="Integer" mandatory="true">
+        <description>Internal ID of the application that requested this RPC.</description>
       </param>
     </function>
     <function name="SystemRequest" messagetype="response">
@@ -2343,7 +2422,12 @@
     <param name="cmdID" type="Integer" mandatory="true" minvalue="0" maxvalue="2000000000">
       <description>ID of of the command (list of strings)</description>
     </param>
-    <param name="appID" type="Integer" mandatory="true">
+    <param name="grammarID" type="Integer" minvalue="0" maxvalue="2000000000" mandatory="true">
+    <description>
+      ID of the specific grammar that the command relates to. Previously provided by SDL via corresponding VR.AddCommand request.
+    </description>
+    </param>
+    <param name="appID" type="Integer" mandatory="false">
       <description>ID of application related to this RPC.</description>
     </param>
   </function>
@@ -2751,8 +2835,11 @@
     </param>
     <param name="audioPassThruCapabilities" type="Common.AudioPassThruCapabilities" mandatory="true"/>
     <param name="hmiZoneCapabilities" type="Common.HmiZoneCapabilities" mandatory="true"/>
-    <param name="softButtonCapabilities" type="Common.SoftButtonCapabilities" mandatory="false">
+    <param name="softButtonCapabilities" type="Common.SoftButtonCapabilities" minsize="1" maxsize="100" array="true" mandatory="false">
       <description>Must be returned if the platform supports on-screen SoftButtons.</description>
+    </param>
+    <param name="hmiCapabilities" type="Common.HMICapabilities" mandatory="false">
+      <description>Specifies the HMI’s capabilities. See HMICapabilities.</description>
     </param>
   </function>
   <function name="ChangeRegistration" messagetype="request">
@@ -3019,6 +3106,9 @@
   </function>
   <function name="SendLocation" messagetype="request">
       <description>That allows the app to send a destination to the embedded nav system.</description>
+    <param name="appID" type="Integer" mandatory="true">
+      <description>ID of application related to this RPC.</description>
+    </param>
     <param name="longitudeDegrees" type="Float" minvalue="-180" maxvalue="180" mandatory="true">
     </param>
     <param name="latitudeDegrees" type="Float" minvalue="-90" maxvalue="90" mandatory="true">
@@ -3083,6 +3173,9 @@
     <param name="softButtons" type="Common.SoftButton" minsize="0" maxsize="3" array="true" mandatory="false">
       <description>If omitted, only the system defined "Close" SoftButton should be displayed.</description>
     </param>
+    <param name="appID" type="Integer" mandatory="true">
+      <description>ID of the application requested this RPC.</description>
+    </param>
   </function>
   <function name="AlertManeuver" messagetype="response">
   </function>
@@ -3142,6 +3235,18 @@
     </param>
   </function>
   <function name="StopAudioStream" messagetype="response">
+  </function>
+  <function name="OnAudioDataStreaming" messagetype="notification">
+    <description>Sender: SDL->HMI. Purpose: notify about raw audio data presence over the URL provided via StartAudioStream SDL's request.</description>
+    <param name="available" type="Boolean" mandatory="true">
+      <description>If "true" - audio data started. If "false" - audio data stopped.</description>
+    </param>
+  </function>
+  <function name="OnVideoDataStreaming" messagetype="notification">
+    <description>Sender: SDL->HMI. Purpose: notify about raw video data presence over the URL provided via StartStream SDL's request.</description>
+    <param name="available" type="Boolean" mandatory="true">
+      <description>If "true" - video data started. If "false" - video data stopped.</description>
+    </param>
   </function>
 
 </interface>
@@ -3233,9 +3338,6 @@
         The application will be notified by the onVehicleData notification whenever new data is available.
         To unsubscribe the notifications, use unsubscribe with the same subscriptionType.
     </description>
-    <param name="appID" type="Integer" mandatory="true">
-      <description>ID of application that requested this RPC.</description>
-    </param>
     <param name="gps" type="Boolean" mandatory="false">
       <description>See GPSData</description>
     </param>
@@ -3622,9 +3724,6 @@
     <param name="myKey" type="Boolean" mandatory="false">
       <description>Information related to the MyKey feature</description>
     </param>
-    <param name="appID" type="Integer" mandatory="true">
-      <description>ID of application requested this RPC.</description>
-    </param>
   </function>
   <function name="GetVehicleData" messagetype="response">
     <param name="gps" type="Common.GPSData" mandatory="false">
@@ -3890,6 +3989,12 @@
       </param>
       <param name="priority" type="Common.AppPriority" mandatory="false">
         <description>Send to HMI so that it can coordinate order of requests/notifications correspondingly.</description>
+      </param>
+      <param name="requestType" type="Common.RequestType" minsize="0" maxsize="100" array="true" mandatory="false">
+        <description>The list of SystemRequest's RequestTypes allowed by policies for the named application (the app's SystemRequest sent with RequestType           out of this list will get 'disallowed' response from SDL).
+        If SDL sends an empty array - any RequestType is allowed for this app.
+        If SDL omits this parameter - nothing is changed for RequestType in the policies
+        </description>
       </param>
     </function>
 
