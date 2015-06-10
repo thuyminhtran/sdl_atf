@@ -226,7 +226,7 @@ function mt.__index:StopService(service)
 end
 
 function mt.__index:StopHeartbeat()
-  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
     self.heartbeatEnabled = false
     self.heartbeatToSDLTimer:stop()
     self.heartbeatFromSDLTimer:stop()
@@ -234,15 +234,15 @@ function mt.__index:StopHeartbeat()
 end
 
 function mt.__index:StartHeartbeat()
-  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
     self.heartbeatEnabled = true
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
-    self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
+    self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)
   end
 end
 
 function mt.__index:SetHeartbeatTimeout(timeout)
-  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then 
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
     self.heartbeatToSDLTimer:setInterval(timeout)
     self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
   end
@@ -264,7 +264,7 @@ function mt.__index:Start()
                     :Pin()
                     :Times(AnyNumber())
                     :Do(function(data)
-                          if self.heartbeatEnabled then
+                          if self.heartbeatEnabled and not self.answerHeartbeatFromSDL then
                             self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
                                          serviceType = constants.SERVICE_TYPE.CONTROL, 
                                          frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
@@ -275,19 +275,32 @@ function mt.__index:Start()
                   self.heartbeatToSDLTimer = timers.Timer()
                   self.heartbeatFromSDLTimer = timers.Timer()
                   
-                  function d.SendHeartbeat()
-                    self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
-                                 serviceType = constants.SERVICE_TYPE.CONTROL, 
-                                 frameInfo   = constants.FRAME_INFO.HEARTBEAT } )
+                  function d.SendHeartbeat()                   
+                    if self.heartbeatEnabled and self.sendHeartbeatToSDL then
+                      self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
+                                   serviceType = constants.SERVICE_TYPE.CONTROL, 
+                                   frameInfo   = constants.FRAME_INFO.HEARTBEAT } )
+                    end
                   end
                   
                   function d.CloseSession()
-                    self:StopService(7)
-                    self.test:FailTestCase("SDL didn't send anything for " .. config.heartbeatTimeout .. " msecs. Closing session # " .. self.sessionId)
+                    if self.heartbeatEnabled then
+                      self:StopService(7)
+                      self.test:FailTestCase("SDL didn't send anything for " .. self.heartbeatFromSDLTimer:interval()
+                                             .. " msecs. Closing session # " .. self.sessionId)                      
+                    end
                   end
                   
-                  self.connection:OnInputData(function() if self.heartbeatEnabled then self.heartbeatFromSDLTimer:reset() end end)
-                  self.connection:OnDataSent(function() if self.heartbeatEnabled then self.heartbeatToSDLTimer:reset() end end)
+                  self.connection:OnInputData(function(_, msg) 
+                                                if self.heartbeatEnabled and self.sessionId == msg.sessionId then 
+                                                  self.heartbeatFromSDLTimer:reset() 
+                                                end 
+                                              end)
+                  self.connection:OnMessageSent(function(sessionId)                                                 
+                                                  if self.heartbeatEnabled and self.sessionId == sessionId then
+                                                     self.heartbeatToSDLTimer:reset()
+                                                  end
+                                                end)
                   qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
                   qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")
                   self:StartHeartbeat()            
@@ -313,6 +326,8 @@ function module.MobileSession(test, connection, regAppParams)
   res.version = config.defaultProtocolVersion or 2
   res.hashCode = 0
   res.heartbeatEnabled = true
+  res.sendHeartbeatToSDL = true
+  res.answerHeartbeatFromSDL = true
   setmetatable(res, mt)
   return res
 end

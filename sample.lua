@@ -102,7 +102,8 @@ function Test:StopAudioStreaming()
              end)
 
 end
-]]
+--]]
+
 
 function Test:Case_PerformAudioPassThruTest()
  local CorIdPAPT = self.mobileSession:SendRPC("PerformAudioPassThru",
@@ -126,15 +127,15 @@ function Test:Case_PerformAudioPassThruTest()
 
   EXPECT_NOTIFICATION("OnAudioPassThru")
      :Times(AnyNumber())
-     -- :Do(function(exp, data)
-     --     if exp.occurences == 5 then
-     --         self.hmiConnection:Send({
-     --                                   id = UIPAPTid,
-     --                                   jsonrpc = "2.0",
-     --                                   result = { method = "UI.PerformInteraction", code = 0 }
-     --                                 })
-     --       end
-     --     end)
+      :Do(function(exp, data)
+          if exp.occurences == 5 then
+              self.hmiConnection:Send({
+                                        id = UIPAPTid,
+                                        jsonrpc = "2.0",
+                                        result = { method = "UI.PerformInteraction", code = 0 }
+                                      })
+            end
+          end)
 
  EXPECT_RESPONSE(CorIdPAPT, { success = true, resultCode = "SUCCESS" })
    :Timeout(15000)

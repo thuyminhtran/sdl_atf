@@ -2,7 +2,7 @@ sender = qt.dynamic()
 receiver = qt.dynamic()
 function sender:signal() end
 function receiver:test(s)
-  print("d.test(): ", s)
+  print("receiver.test(): ", s)
 end
 function receiver:quit(s)
   quit()

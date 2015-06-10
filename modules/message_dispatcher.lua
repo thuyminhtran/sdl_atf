@@ -1,10 +1,13 @@
-local ph = require('protocol_handler/protocol_handler')
+local ph     = require('protocol_handler/protocol_handler')
+local config = require('config')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
+
 function module.FileStorage(filename)
   local res = {}
   res.filename = filename
+  res.protocol_handler = ph.ProtocolHandler()
   res.wfd = io.open(filename, "w")
   res.rfd = io.open(filename, "r")
   setmetatable(res, fbuffer_mt)
@@ -44,6 +47,7 @@ function fbuffer_mt.__index:Flush()
 end
 function fstream_mt.__index:GetMessage()
   local timespan = timestamp() - self.ts
+  local header = {}
   if timespan == 0 then return nil, 20 end
   if timespan > 5000 then
     self.ts = self.ts + timespan - 1000
@@ -51,23 +55,22 @@ function fstream_mt.__index:GetMessage()
     timespan = 1000
   end
   if (self.bytesSent + self.chunksize) / (timespan / 1000) > self.bandwidth then
-    return nil, 200
+    return header, nil, 200
   end
-
   local res = nil
   if self.keep then
     res = self.keep
     self.keep = nil
-    return res
+    return header, res
   end
-
   local data = self.rfd:read(self.chunksize)
   if data then
     self.bytesSent = self.bytesSent + #data
     self.messageId = self.messageId + 1
-    res = table.concat(self.protocol_handler:Compose(
+    
+    header = 
      {
-       version = 2,
+       version = config.defaultProtocolVersion or 2,
        encryption = false,
        sessionId = self.sessionId,
        frameInfo = 0,
@@ -75,25 +78,32 @@ function fstream_mt.__index:GetMessage()
        serviceType = self.service,
        binaryData = data,
        messageId = self.messageId
-     }))
+     }    
+     
+    res = table.concat(self.protocol_handler:Compose(header))
   end
-  return res
+  return header, res
 end
-function fbuffer_mt.__index:GetMessage()
+function fbuffer_mt.__index:GetMessage()  
+  local header = {}
   if self.keep then
     local res = self.keep
     self.keep = nil
-    return res
+    header = self.protocol_handler:Parse(self.keep)    
+    return header, res
   end
   local len = self.rfd:read(4)
-  if len then
+  if len then      
     len = bit32.lshift(string.byte(string.sub(len, 4, 4)), 24) +
           bit32.lshift(string.byte(string.sub(len, 3, 3)), 16) +
           bit32.lshift(string.byte(string.sub(len, 2, 2)), 8) +
           string.byte(string.sub(len, 1, 1))
-    return self.rfd:read(len)
-  end
-  return nil
+    local frame = self.rfd:read(len)
+    local doNotValidateJson = true
+    header = self.protocol_handler:Parse(frame, doNotValidateJson)    
+    return header, frame
+  end  
+  return header, nil
 end
 function module.MessageDispatcher(connection)
   local res = {}
@@ -108,6 +118,9 @@ function module.MessageDispatcher(connection)
   function res._d:timeout()
     self:bytesWritten(0)
   end
+  res.sender = qt.dynamic()
+  function res.sender:SignalMessageSent() end
+  
   function res._d:bytesWritten(c)
     if #res.generators == 0 then return end
     res.bufferSize = res.bufferSize + c
@@ -117,11 +130,14 @@ function module.MessageDispatcher(connection)
       else
         res.idx = 1
       end
-      local msg, timeout = res.generators[res.idx]:GetMessage()
+      local header, msg, timeout = res.generators[res.idx]:GetMessage()
       if msg and #msg > 0 then
         if res.bufferSize > #msg then
           res.bufferSize = res.bufferSize - #msg
           res.connection:Send({ msg })
+          for index, table in pairs (header) do
+            res.sender:SignalMessageSent(table.sessionId)
+          end
           break
         else
           res.generators[res.idx]:KeepMessage(msg)
@@ -136,6 +152,15 @@ function module.MessageDispatcher(connection)
   setmetatable(res, module.mt)
   return res
 end
+
+function module.mt.__index:OnMessageSent(func)
+  local d = qt.dynamic()
+  function d:SlotMessageSent(v)
+    func(v)
+  end
+  qt.connect(self.sender, "SignalMessageSent(int)", d, "SlotMessageSent(int)")
+end
+
 function module.mt.__index:MapFile(filebuffer)
   self.mapped[filebuffer.filename] = filebuffer
   table.insert(self.generators, filebuffer)
