@@ -1,10 +1,13 @@
+#line 16 "main.nw"
 #include <getopt.h>
 #include <iostream>
+#line 5 "main.nw"
 extern "C" {
 #include <lua5.2/lua.h>
 #include <lua5.2/lualib.h>
 #include <lua5.2/lauxlib.h>
 }
+#line 19 "main.nw"
 #include <QObject>
 #include <QStringList>
 #include <QCoreApplication>
@@ -15,6 +18,7 @@ extern "C" {
 #include <csetjmp>
 #include "lua_interpreter.h"
 
+#line 32 "main.nw"
 namespace {
 void abrt_handler(int signal) {
   _exit(1);

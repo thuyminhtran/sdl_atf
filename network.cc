@@ -1,9 +1,11 @@
+#line 12 "network.nw"
 #include "network.h"
 
 #include <QAbstractSocket>
 #include <QTcpSocket>
 #include <QTcpServer>
 #include <QWebSocket>
+#line 22 "network.nw"
 // TcpClient functions/*{{{*/
 int network_tcp_client(lua_State *L) {/*{{{*/
   QTcpSocket  *tcpSocket = new QTcpSocket();
@@ -14,24 +16,33 @@ int network_tcp_client(lua_State *L) {/*{{{*/
   return 1;
 }/*}}}*/
 int tcp_socket_connect(lua_State *L) {/*{{{*/
-  QTcpSocket *tcpSocket =
-    *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 33 "network.nw"
   const char* ip   = luaL_checkstring(L, 2);
   int         port = luaL_checkinteger(L, 3);
   tcpSocket->connectToHost(ip, port);
   return 0;
 }/*}}}*/
 int tcp_socket_read(lua_State *L) {/*{{{*/
-  QTcpSocket *tcpSocket =
-    *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 40 "network.nw"
   int maxSize = luaL_checkinteger(L, 2);
   QByteArray result = tcpSocket->read(maxSize);
   lua_pushlstring(L, result.data(), result.count()); 
   return 1;
 }/*}}}*/
 int tcp_socket_write(lua_State *L) {/*{{{*/
-  QTcpSocket *tcpSocket =
-    *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 47 "network.nw"
   size_t size;
   const char* data = luaL_checklstring(L, 2, &size);
   int result = tcpSocket->write(data, size);
@@ -39,18 +50,25 @@ int tcp_socket_write(lua_State *L) {/*{{{*/
   return 1;
 }/*}}}*/
 int tcp_socket_close(lua_State *L) {/*{{{*/
-  QTcpSocket *tcpSocket =
-    *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 55 "network.nw"
   tcpSocket->close();
   return 0;
 }/*}}}*/
 int tcp_socket_delete(lua_State *L) {/*{{{*/
-  QTcpSocket *tcpSocket =
-    *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 60 "network.nw"
   delete tcpSocket;
   return 0;
 }/*}}}*/
 /*}}}*/
+#line 69 "network.nw"
 // TcpServer functions/*{{{*/
 int network_tcp_server(lua_State *L) {/*{{{*/
   QTcpServer *tcpServer = new QTcpServer();
@@ -62,8 +80,11 @@ int network_tcp_server(lua_State *L) {/*{{{*/
 }/*}}}*/
 int tcp_server_listen(lua_State *L)/*{{{*/
 {
-  QTcpServer *tcpServer =
-    *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+  
+#line 111 "network.nw"
+QTcpServer *tcpServer =
+  *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+#line 81 "network.nw"
   const char * ip = luaL_checkstring(L, 2);
   QHostAddress addr(ip);
   int port = luaL_checkinteger(L, 3);
@@ -73,8 +94,11 @@ int tcp_server_listen(lua_State *L)/*{{{*/
 }/*}}}*/
 int tcp_server_get_connection(lua_State *L)/*{{{*/
 {
-  QTcpServer *tcpServer =
-    *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+  
+#line 111 "network.nw"
+QTcpServer *tcpServer =
+  *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+#line 91 "network.nw"
   QTcpSocket *tcpSocket = tcpServer->nextPendingConnection();
   if (tcpSocket) {
     QTcpSocket **p = static_cast<QTcpSocket**>(lua_newuserdata(L, sizeof(QTcpServer*)));
@@ -88,13 +112,17 @@ int tcp_server_get_connection(lua_State *L)/*{{{*/
   return 1;
 }/*}}}*/
 int tcp_server_delete(lua_State *L) {/*{{{*/
-  QTcpServer *tcpServer =
-    *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+  
+#line 111 "network.nw"
+QTcpServer *tcpServer =
+  *static_cast<QTcpServer**>(luaL_checkudata(L, 1, "network.TcpServer"));
+#line 105 "network.nw"
   delete tcpServer;
   return 0;
 }/*}}}*/
 
 /*}}}*/
+#line 115 "network.nw"
 // WebSocket functions/*{{{*/
 int network_web_socket(lua_State *L) {/*{{{*/
   QWebSocket *webSocket = new QWebSocket();
@@ -105,22 +133,31 @@ int network_web_socket(lua_State *L) {/*{{{*/
   return 1;
 }/*}}}*/
 int web_socket_open(lua_State *L) {/*{{{*/
-  QWebSocket *webSocket =
-    *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+  
+#line 153 "network.nw"
+QWebSocket *webSocket =
+  *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+#line 126 "network.nw"
   QUrl url(luaL_checkstring(L, 2));
   url.setPort(lua_tointegerx(L, 3, NULL));
   webSocket->open(url);
   return 0;
 }/*}}}*/
 int web_socket_close(lua_State *L) {/*{{{*/
-  QWebSocket *webSocket =
-    *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+  
+#line 153 "network.nw"
+QWebSocket *webSocket =
+  *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+#line 133 "network.nw"
   webSocket->close();
   return 0;
 }/*}}}*/
 int web_socket_write(lua_State *L) {/*{{{*/
-  QWebSocket *webSocket =
-    *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+  
+#line 153 "network.nw"
+QWebSocket *webSocket =
+  *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+#line 138 "network.nw"
   size_t size;
   const char* data = luaL_checklstring(L, 2, &size);
   QByteArray b(data, size);
@@ -130,12 +167,16 @@ int web_socket_write(lua_State *L) {/*{{{*/
 }/*}}}*/
 
 int web_socket_delete(lua_State *L) {/*{{{*/
-  QWebSocket *webSocket =
-    *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+  
+#line 153 "network.nw"
+QWebSocket *webSocket =
+  *static_cast<QWebSocket**>(luaL_checkudata(L, 1, "network.WebSocket"));
+#line 148 "network.nw"
   delete webSocket;
   return 0;
 }/*}}}*/
 /*}}}*/
+#line 158 "network.nw"
 int luaopen_network(lua_State *L) {
   lua_newtable(L);
 

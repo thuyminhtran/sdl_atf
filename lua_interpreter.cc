@@ -1,3 +1,4 @@
+#line 121 "main.nw"
 #include <time.h> // for clock_gettime
 #include <locale.h> // for setlocale()
 #include <stdio.h>
@@ -10,17 +11,20 @@
 #include <assert.h>
 #include <iostream>
 #include <stdexcept>
+#line 5 "main.nw"
 extern "C" {
 #include <lua5.2/lua.h>
 #include <lua5.2/lualib.h>
 #include <lua5.2/lauxlib.h>
 }
+#line 132 "main.nw"
 #include <QObject>
 #include <QTimer>
 #include <QCoreApplication>
 #include <QStringList>
 
 namespace {
+#line 142 "main.nw"
 int app_quit(lua_State *L) {
   lua_getglobal(L, "interp");
   LuaInterpreter *li = *static_cast<LuaInterpreter**>(lua_touserdata(L, -1));
@@ -36,6 +40,18 @@ int timestamp(lua_State *L) {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   lua_pushnumber(L, ts.tv_sec * 1000 + ts.tv_nsec / 1000000);
+  return 1;
+}
+
+int arguments(lua_State *L) {
+  QStringList args = QCoreApplication::instance()->arguments();
+  lua_createtable(L, args.count(), 0);
+  int i = 1;
+  for (auto& arg : args)
+  {
+    lua_pushstring(L, arg.toUtf8().constData());
+    lua_rawseti(L, -2, i++);
+  }
   return 1;
 }
 }  // anonymous namespace
@@ -55,6 +71,7 @@ LuaInterpreter::LuaInterpreter(QObject *parent, const QStringList::iterator& arg
   luaL_requiref(lua_state, "os", &luaopen_os, 1);
   luaL_requiref(lua_state, "bit32", &luaopen_bit32, 1);
   luaL_requiref(lua_state, "qt", &luaopen_qt, 1);
+#line 192 "main.nw"
   // extend package.cpath
   lua_getglobal(lua_state, "package");
   assert(!lua_isnil(lua_state, -1));
@@ -75,6 +92,9 @@ LuaInterpreter::LuaInterpreter(QObject *parent, const QStringList::iterator& arg
 
   lua_pushcfunction(lua_state, &timestamp);
   lua_setglobal(lua_state, "timestamp");
+
+  lua_pushcfunction(lua_state, &arguments);
+  lua_setglobal(lua_state, "arguments");
 
   lua_pushboolean(lua_state, !isatty(fileno(stdout)));
   lua_setglobal(lua_state, "is_redirected");

@@ -121,6 +121,7 @@ function module.PrintUsage()
 end
 function module.PrintVersion()
   print(version)
+  quit()
 end
 
 return module

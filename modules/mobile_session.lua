@@ -250,7 +250,7 @@ function mt.__index:SetHeartbeatTimeout(timeout)
     self.heartbeatToSDLTimer:setInterval(timeout)
     self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
   end
-=======
+
   self.heartbeatEnabled = false
   self.heartbeatToSDLTimer:stop()
   self.heartbeatFromSDLTimer:stop()

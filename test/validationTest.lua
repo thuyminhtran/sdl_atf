@@ -13,7 +13,7 @@ local json_hmi_tbl = { numTicks = 7,position = 6,sliderHeader ="sliderHeader",
 	}, 
 	timeout = 3000,
         }
---[[
+
 local json_mob_tbl =  {success = true, resultCode = {"SUCCESS"}}
 
 local _res, _err = validator.validate_hmi_request('Slider', json_hmi_tbl)
@@ -39,7 +39,6 @@ if (not _res) then  print("json_validate:"..tostring(_res).." ==> ".._err) else 
 
 _res, _err = validator.json_validate(json_mob_tbl, { success = 'true', resultCode = {"SUCCESS"} } )
 if (not _res) then  print("json_validate:"..tostring(_res).." ==> ".._err) else  print ("json_validate:"..tostring(_res)) end
-]]--
 
 local _res, _err = validator.validate_hmi_request('PerformInteraction', 
 { initialText = "initialText",
