@@ -154,11 +154,9 @@ function mt.__index:SendRPC(func, arguments, fileName)
     payload          = json.encode(arguments)
   }
   if fileName then
-    if (is_file_exists(fileName)) then
         local f = assert(io.open(fileName))
         msg.binaryData = f:read("*all")
         io.close(f)
-    end
   end
   self:Send(msg)
   return self.correlationId
@@ -228,17 +226,15 @@ function mt.__index:StopService(service)
 end
 
 function mt.__index:StopHeartbeat()
-  if self.heartbeatToSDLTimer then
+  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then
     self.heartbeatEnabled = false
     self.heartbeatToSDLTimer:stop()
     self.heartbeatFromSDLTimer:stop()
-  else
-    
   end
 end
 
 function mt.__index:StartHeartbeat()
-  if self.heartbeatToSDLTimer then
+  if self.heartbeatToSDLTimer and self.heartbeatToSDLTimer then
     self.heartbeatEnabled = true
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
     self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
@@ -250,21 +246,6 @@ function mt.__index:SetHeartbeatTimeout(timeout)
     self.heartbeatToSDLTimer:setInterval(timeout)
     self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
   end
-
-  self.heartbeatEnabled = false
-  self.heartbeatToSDLTimer:stop()
-  self.heartbeatFromSDLTimer:stop()
-end
-
-function mt.__index:StartHeartbeat()
-  self.heartbeatEnabled = true
-  self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
-  self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)   
-end
-
-function mt.__index:SetHeartbeatTimeout(timeout)
-  self.heartbeatToSDLTimer:setInterval(timeout)
-  self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
 end
 
 function mt.__index:Start()
