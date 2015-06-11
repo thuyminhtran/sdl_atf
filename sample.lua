@@ -34,11 +34,12 @@ function Test:Case_GetVehicleDataTest()
     speed = true
   })
 
-  EXPECT_HMICALL("VehicleInfo.GetVehicleData", 
+--[[  EXPECT_HMICALL("VehicleInfo.GetVehicleData", 
   {
     gps = true,
     speed = true
-  })
+  })]]--
+ EXPECT_HMICALL("VehicleInfo.GetVehicleData")
   :Do(function(_,data)
         self.hmiConnection:SendResponse(data.id, "VehicleInfo.GetVehicleData", "SUCCESS",{gps = {longitudeDegrees = 20.1, latitudeDegrees = -11.9, dimension = "2D"}, speed = 120.10})
       end)

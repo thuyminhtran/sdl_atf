@@ -9,6 +9,27 @@ RequiredArgument = utils.RequiredArgument
 OptionalArgument = utils.OptionalArgument
 NoArgument       = utils.NoArgument
 
+local function dump(o)
+   if type(o) == 'table' then
+      local s = '{ '
+      for k,v in pairs(o) do
+         if type(k) ~= 'number' then k = '"'..k..'"' end
+         s = s .. '['..k..'] = ' .. dump(v) .. ','
+      end
+      return s .. '} \n'
+   else
+      return tostring(o)
+   end
+end
+
+function print_table(t,... )
+    local comment = table.pack(...)
+    if (type(t) == 'table' ) then
+        print(dump(t).. dump(comment))
+    else
+        print(tostring(t).. dump(comment))
+end
+end
 
 function is_file_exists(name)
 	local f = io.open(name,"r")

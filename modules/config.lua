@@ -7,6 +7,8 @@ config.mobileHost = "localhost"
 config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 config.defaultProtocolVersion = 3
+config.storeFullSDLLogs = false
+config.x_sdllog = 100 --for store sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).
 
 config.application1 =
 {
