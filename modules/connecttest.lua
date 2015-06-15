@@ -23,9 +23,15 @@ module.mobileConnection = mobile.MobileConnection(fileConnection)
 event_dispatcher:AddConnection(module.hmiConnection)
 event_dispatcher:AddConnection(module.mobileConnection)
 
-function module.hmiConnection:EXPECT_HMIRESPONSE(id)
+function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
   local event = events.Event()
-  event.matches = function(self, data) return data.id == id end
+-- print(string.format("EXPECT_HMIRESPONSE = %s ", table2str(args)))
+ event.matches = function(self, data) 
+      if (data.method) then 
+--          print(data.method .."["..table2str(data.params).."]")
+      end
+      return data.id == id 
+  end
   local ret = Expectation("HMI response " .. id, self)
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
@@ -33,9 +39,10 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id)
   return ret
 end
 
-function EXPECT_HMIRESPONSE(id)
+function EXPECT_HMIRESPONSE(id,...)
+  local args = table.pack(...)
   xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Id"] = tostring(id)})
-  return module.hmiConnection:EXPECT_HMIRESPONSE(id)
+  return module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
 end
 
 function EXPECT_HMINOTIFICATION(name)

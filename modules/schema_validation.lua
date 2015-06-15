@@ -109,8 +109,7 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
                   tmp['class']= "struct"
                   tmp['type'] = string.format("%s",class_type)
                end
---                print(class_.."."..short_name.."."..msg_type.."@".. tostring(class_type))
---                print(tostring(types.struct[class_type]))
+
 --                tmp['mandatory'] = (v2:attr('mandatory')) and v2:attr('mandatory') or 'true'
                 tmp['mandatory'] = v2:attr('mandatory') or 'true'
                 if (v2:attr('array')) then tmp['array'] = v2:attr('array') end
@@ -150,13 +149,15 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
   end
   
 local function compare_table_key(t1,t2)
-      if (type(t1) ~= type(t2)) then return false end
-      if (type(t1) ~= "table") then return t1 == t2 end
-      local t1keys = {}
-      local t2keys = {}
-      local retval = false
-
-      for k, _ in pairs(table.unpack(t2)) do
+     if (type(t1) ~= type(t2)) then return false end
+     if (type(t1) ~= "table") then return t1 == t2 end
+     local t1keys = {}
+     local t2keys = {}
+     local retval = false
+      
+     if (not table.unpack(t2)) then t2=table.pack(t2) end  
+     if (type(table.unpack(t2)) ~= 'table') then return false,string.format("Incorrect user data") end
+     for k, _ in pairs(table.unpack(t2)) do
         retval = false
         for k1, _ in pairs(t1) do
              if (k == k1) then retval=true end
