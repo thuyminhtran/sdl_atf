@@ -239,8 +239,8 @@ function module:InitHMI_onReady()
     EXPECT_HMIEVENT(event, name)
       :Times(mandatory and 1 or AnyNumber())
       :Do(function(_, data)
-            self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
-          end)
+           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
+         end)
   end
 
   local function ExpectNotification(name, mandatory)

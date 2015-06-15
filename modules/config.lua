@@ -8,6 +8,7 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 config.defaultProtocolVersion = 3
 config.storeFullSDLLogs = false
+config.reportPath = "./Testing Reports"
 config.x_sdllog = 100 --for store sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).
 
 config.application1 =
