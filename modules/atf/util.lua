@@ -125,6 +125,14 @@ function compareValues(a, b, name)
       end
       return res
     else
+      if (type(a) ~= type(b)) then 
+         if (type(a) == 'string' and type(b) == 'number') then
+              b = tostring(b)
+         else
+              table.insert(msg, string.format("type of data %s: expected %s, actual type: %s", name, type(a), type(b))) 
+              return false
+         end
+      end
       if a == b then
         return true
       else
