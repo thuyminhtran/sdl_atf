@@ -25,14 +25,21 @@ event_dispatcher:AddConnection(module.mobileConnection)
 
 function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
   local event = events.Event()
--- print(string.format("EXPECT_HMIRESPONSE = %s ", table2str(args)))
- event.matches = function(self, data) 
-      if (data.method) then 
---          print(data.method .."["..table2str(data.params).."]")
-      end
-      return data.id == id 
-  end
+  event.matches = function(self, data) return data.id == id end
   local ret = Expectation("HMI response " .. id, self)
+  if #args > 0 then
+       ret:ValidIf(function(self, data)
+                    local arguments
+                    if self.occurences > #args then
+                       arguments = args[#args]
+                    else
+                       arguments = args[self.occurences]
+                    end
+                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"]= "EXPECTED_RESULT"},arguments)
+                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE",  {["Id"] = tostring(id),["Type"]= "AVALIABLE_RESULT"},data)
+                     return validator.validate_hmi_request(data.method, arguments)
+                    end)
+  end
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
   module:AddExpectation(ret)
@@ -41,15 +48,28 @@ end
 
 function EXPECT_HMIRESPONSE(id,...)
   local args = table.pack(...)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Id"] = tostring(id)})
   return module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
 end
 
-function EXPECT_HMINOTIFICATION(name)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Name"] = tostring(name)})
+function EXPECT_HMINOTIFICATION(name,...)
+  local args = table.pack(...)
+--  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Name"] = tostring(name)})
   local event = events.Event()
   event.matches = function(self, data) return data.method == name end
   local ret = Expectation("HMI notification " .. name, module.hmiConnection)
+  if #args > 0 then
+       ret:ValidIf(function(self, data)
+                    local arguments
+                    if self.occurences > #args then
+                       arguments = args[#args]
+                    else
+                       arguments = args[self.occurences]
+                    end
+                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"]= "EXPECTED_RESULT"},arguments)
+                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION",  {["name"] = tostring(name),["Type"]= "AVALIABLE_RESULT"},data)
+                     return validator.validate_hmi_request(name, arguments)
+                    end)
+  end
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
   module:AddExpectation(ret)

@@ -59,6 +59,7 @@ function control.runNextCase()
   else
     module.current_case_name = nil
     xmlLogger:finalize()
+    print_stopscript()
     quit()
   end
 end

@@ -43,33 +43,39 @@ local function dump(o)
   return tostring(o)
 end
 function module.AddCase(name)
-   module.curr_node = module.root:addChild(name) 
-   module.ndoc:write(module.curr_report_name)
+   if(not config.noReport) then 
+       module.curr_node = module.root:addChild(name) 
+       module.ndoc:write(module.curr_report_name)
+   end
 end
 function module.AddMessage(name,funcName,...)
-    local attrib = table.pack(...)[1]
+   if(not config.noReport) then
+       local attrib = table.pack(...)[1]
        local msg =  module.curr_node:addChild(name)
 
-    if (type(funcName) ~= 'table') then 
-        msg:attr('FunctionName',funcName)
-    else
-        for an, av in pairs(funcName) do
-            msg:attr(an,av)
-        end    
-    end
-    if (type(attrib) == 'table') then
-        msg:text(dump(attrib))   
-    elseif(attrib ~= nil) then
-         msg:text(attrib)
-    end
+       if (type(funcName) ~= 'table') then 
+            msg:attr('FunctionName',funcName)
+       else
+            for an, av in pairs(funcName) do
+                msg:attr(an,av)
+            end    
+       end
+       if (type(attrib) == 'table') then
+            msg:text(dump(attrib))   
+       elseif(attrib ~= nil) then
+            msg:text(attrib)
+       end
+   end
 end
 function module.CaseMessageTotal(name, ... )
-   local attrib = table.pack(...)[1]
-   for attr_n,attr_v in pairs(attrib) do 
-       if (type(attr_v) == 'table') then attr_v = table.concat(attr_v, ';') 
-       elseif (type(attr_v) ~= 'string') then attr_v = tostring(attr_v)
-       end
-       module.curr_node:attr(attr_n, attr_v) 
+  if(not config.noReport) then
+      local attrib = table.pack(...)[1]
+      for attr_n,attr_v in pairs(attrib) do 
+          if (type(attr_v) == 'table') then attr_v = table.concat(attr_v, ';') 
+          elseif (type(attr_v) ~= 'string') then attr_v = tostring(attr_v)
+          end
+          module.curr_node:attr(attr_n, attr_v) 
+      end
    end
 end
 --[[ change log level not implemented now. absent in requirements
@@ -81,8 +87,10 @@ function module.getLevel()
 end
 ]]--
 function module.finalize()
-   module.ndoc:write(module.curr_report_name)	
-   if (config.storeFullSDLLogs) then sdl_log.close() end
+   if(not config.noReport) then
+       module.ndoc:write(module.curr_report_name)	
+       if (config.storeFullSDLLogs) then sdl_log.close() end
+   end
 end
 local function get_script_name(str)
    local tbl =  table.pack(string.match(str, '(.-)([^/]-([^%.]+))$'))
@@ -90,6 +98,7 @@ local function get_script_name(str)
    return name
 end
 function module.init(_name)
+   if(config.noReport) then return module end
    local dir_name = './' .. _name
    local curr_report_dir = ''
    local curr_sdl_log_dir = ''

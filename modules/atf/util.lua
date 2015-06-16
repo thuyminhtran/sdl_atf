@@ -21,7 +21,6 @@ function table2str(o)
       return tostring(o)
    end
 end
-
 function print_table(t,... )
     local comment = table.pack(...)
     if (type(t) == 'table' ) then
@@ -30,11 +29,51 @@ function print_table(t,... )
         print(tostring(t).. table2str(comment))
 end
 end
-
 function is_file_exists(name)
 	local f = io.open(name,"r")
 	if f ~=nil then io.close(f) return true else return false end
 end
+function print_startscript(script_name)
+    print("==============================")
+    print(string.format("Start '%s'",script_name))
+    print("==============================")
+end
+function print_stopscript(script_name)
+    print("==============================")
+    print(string.format("Finish '%s'",script_name or script_files[1]))
+    print("==============================")
+end
+function compareValues(a, b, name)
+  local function iter(a, b, name, msg)
+    if type(a) == 'table' and type(b) == 'table' then
+      local res = true
+      for k, v in pairs(a) do
+        res = res and iter(v, b[k], name .. "." .. k, msg)
+      end
+      return res
+    else
+      if (type(a) ~= type(b)) then 
+         if (type(a) == 'string' and type(b) == 'number') then
+              b = tostring(b)
+         else
+              table.insert(msg, string.format("type of data %s: expected %s, actual type: %s", name, type(a), type(b))) 
+              return false
+         end
+      end
+      if a == b then
+        return true
+      else
+        table.insert(msg, string.format("%s: expected: %s, actual value: %s", name, a, b))
+        return false
+      end
+    end
+  end
+  local message = { }
+  local res = iter(a, b, name, message)
+  return res, table.concat(message, '\n')
+end
+--------------------------------------------------
+-- parsing commad line part
 
 function module.config_file(config_file)
 	if (is_file_exists(config_file)) then
@@ -116,32 +155,4 @@ function script_execute(script_name)
 	xmlLogger = xmlLogger.init(tostring(script_name))
   dofile(script_name)
 end
-function compareValues(a, b, name)
-  local function iter(a, b, name, msg)
-    if type(a) == 'table' and type(b) == 'table' then
-      local res = true
-      for k, v in pairs(a) do
-        res = res and iter(v, b[k], name .. "." .. k, msg)
-      end
-      return res
-    else
-      if (type(a) ~= type(b)) then 
-         if (type(a) == 'string' and type(b) == 'number') then
-              b = tostring(b)
-         else
-              table.insert(msg, string.format("type of data %s: expected %s, actual type: %s", name, type(a), type(b))) 
-              return false
-         end
-      end
-      if a == b then
-        return true
-      else
-        table.insert(msg, string.format("%s: expected: %s, actual value: %s", name, a, b))
-        return false
-      end
-    end
-  end
-  local message = { }
-  local res = iter(a, b, name, message)
-  return res, table.concat(message, '\n')
-end
+
