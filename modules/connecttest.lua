@@ -177,7 +177,6 @@ function StopSDL()
   return SDL:StopSDL()
 end
 
-
 function module:RunSDL()
   self:runSDL()
 end

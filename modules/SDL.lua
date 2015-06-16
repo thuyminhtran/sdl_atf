@@ -10,7 +10,7 @@ SDL.RUNNING = 1
 SDL.CRASH = -1
 
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
-  if ExitOnCrash ~= nil then
+  if ExitOnCrash then
     self.exitOnCrash = ExitOnCrash
   end
   local status = self:CheckStatusSDL()
@@ -56,8 +56,10 @@ function SDL:CheckStatusSDL()
   return self.STOPPED
 end
 
-function SDL:DeleteFile()
-  os.execute ('rm -f sdl.pid')
+function SDL:DeleteFile()  
+  if os.execute ('test -e sdl.pid') then
+    os.execute('rm -f sdl.pid') 
+  end
 end
 
 return SDL
