@@ -37,7 +37,7 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
                     end
                      xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"]= "EXPECTED_RESULT"},arguments)
                      xmlLogger.AddMessage("EXPECT_HMIRESPONSE",  {["Id"] = tostring(id),["Type"]= "AVALIABLE_RESULT"},data)
-                     return validator.validate_hmi_request(data.method, arguments)
+                     return validator.validate_hmi_response(data.method, arguments)
                     end)
   end
   ret.event = event
@@ -67,7 +67,7 @@ function EXPECT_HMINOTIFICATION(name,...)
                     end
                      xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"]= "EXPECTED_RESULT"},arguments)
                      xmlLogger.AddMessage("EXPECT_HMINOTIFICATION",  {["name"] = tostring(name),["Type"]= "AVALIABLE_RESULT"},data)
-                     return validator.validate_hmi_request(name, arguments)
+                     return validator.validate_hmi_notification(name, arguments)
                     end)
   end
   ret.event = event
