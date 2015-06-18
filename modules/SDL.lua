@@ -10,12 +10,16 @@ SDL.RUNNING = 1
 SDL.CRASH = -1
 
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
+--  local fileExists = os.execute ('test -e sdl.pid')
+--  if fileExists then self:DeleteFile() end
   if ExitOnCrash then
     self.exitOnCrash = ExitOnCrash
   end
+  
   local status = self:CheckStatusSDL()
   if status == self.STOPPED then
     local result = os.execute ('./StartSDL.sh ' .. pathToSDL .. ' ' ..  smartDeviceLinkCore)
+    print('result', result)
     if result then
       return true
     else

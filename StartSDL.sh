@@ -1,11 +1,12 @@
 #!/bin/bash
-dirsSDL=$1
-dirsATF=$(pwd)
-nameApplication=$2
-cd $dirsSDL
+
+dirSDL=$1
+dirATF=$(pwd)
+appName=$2
+cd $dirSDL
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:. export LD_LIBRARY_PATH
-xterm -e ./$nameApplication &
-cd $dirsATF 
+xterm -e ./$appName &
+cd $dirATF 
 touch sdl.pid
 echo $! > sdl.pid
 sleep 3

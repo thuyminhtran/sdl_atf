@@ -5,6 +5,8 @@ local mobile_session = require('mobile_session')
 local config = require('config')
 
 function Test:WaitActivation()
+  description('Waiting for notification')
+  critical(true)
   EXPECT_NOTIFICATION("OnHMIStatus")
   local rid = self.hmiConnection:SendRequest("SDL.ActivateApp", { appID = self.applications["Test Application"]})
   EXPECT_HMIRESPONSE(rid)

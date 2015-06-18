@@ -100,7 +100,7 @@ function Test:DelayedExp()
   EXPECT_EVENT(event, "Delayed event")
   RUN_AFTER(function()
               RAISE_EVENT(event, event)
-            end, 10000)
+            end, 1000)
 end
 
 function Test:StopSDL()

@@ -10,7 +10,7 @@ config.defaultProtocolVersion = 3
 
 config.pathToSDL = ""
 config.SDL = "smartDeviceLinkCore"
-config.ExitOnCrash = true
+config.ExitOnCrash = false
 config.autorunSDL = true
 
 config.application1 =
