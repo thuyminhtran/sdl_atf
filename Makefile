@@ -2,7 +2,7 @@
 
 PROJECT=atf
 
-QMAKE=
+#QMAKE=/opt/Qt5.3.1/5.3/gcc/bin/qmake
 #QMAKE=/home/arv/Qt/5.4/gcc/bin/qmake
 
 SOURCES= lua_interpreter.cc \

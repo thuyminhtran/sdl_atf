@@ -134,7 +134,6 @@ function Test:Case_PerformAudioPassThruTest()
 
  EXPECT_RESPONSE(CorIdPAPT, { success = true, resultCode = "SUCCESS" })
    :Timeout(15000)
-
 end
 
 function Test:sendOnSystemContext(ctx)
