@@ -38,18 +38,18 @@ local function dump(o)
       end
       return s .. '}'
    elseif string.match(tostring(o),'[%Wxyz]') then 
-       return escape_lua_pattern(tostring(o)) 
+      return escape_lua_pattern(tostring(o)) 
    end
   return tostring(o)
 end
 function module.AddCase(name)
-   if(not config.noReport) then 
+   if(not config.excludeReport) then 
        module.curr_node = module.root:addChild(name) 
        module.ndoc:write(module.curr_report_name)
    end
 end
 function module.AddMessage(name,funcName,...)
-   if(not config.noReport) then
+   if(not config.excludeReport) then
        local attrib = table.pack(...)[1]
        local msg =  module.curr_node:addChild(name)
 
@@ -65,10 +65,11 @@ function module.AddMessage(name,funcName,...)
        elseif(attrib ~= nil) then
             msg:text(attrib)
        end
-   end
+       module.ndoc:write(module.curr_report_name)
+  end
 end
 function module.CaseMessageTotal(name, ... )
-  if(not config.noReport) then
+  if(not config.excludeReport) then
       local attrib = table.pack(...)[1]
       for attr_n,attr_v in pairs(attrib) do 
           if (type(attr_v) == 'table') then attr_v = table.concat(attr_v, ';') 
@@ -87,7 +88,7 @@ function module.getLevel()
 end
 ]]--
 function module.finalize()
-   if(not config.noReport) then
+   if(not config.excludeReport) then
        module.ndoc:write(module.curr_report_name)	
        if (config.storeFullSDLLogs) then sdl_log.close() end
    end
@@ -98,7 +99,7 @@ local function get_script_name(str)
    return name
 end
 function module.init(_name)
-   if(config.noReport) then return module end
+   if(config.excludeReport) then return module end
    local dir_name = './' .. _name
    local curr_report_dir = ''
    local curr_sdl_log_dir = ''

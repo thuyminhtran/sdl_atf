@@ -53,7 +53,6 @@ end
 
 function EXPECT_HMINOTIFICATION(name,...)
   local args = table.pack(...)
---  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Name"] = tostring(name)})
   local event = events.Event()
   event.matches = function(self, data) return data.method == name end
   local ret = Expectation("HMI notification " .. name, module.hmiConnection)

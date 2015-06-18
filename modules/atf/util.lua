@@ -17,16 +17,14 @@ function table2str(o)
          s = s .. '['..k..'] = ' .. table2str(v) .. ','
       end
       return s .. '} \n'
-   else
-      return tostring(o)
-   end
+   end 
+   return tostring(o)
 end
 function print_table(t,... )
-    local comment = table.pack(...)
     if (type(t) == 'table' ) then
-        print(table2str(t).. table2str(comment))
+        print(table2str(t).. table2str(table.pack(...)))
     else
-        print(tostring(t).. table2str(comment))
+        print(tostring(t).. table2str(table.pack(...)))
 end
 end
 function is_file_exists(name)
