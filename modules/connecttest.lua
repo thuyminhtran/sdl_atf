@@ -162,9 +162,8 @@ function EXPECT_ANY()
   return module.mobileSession:ExpectAny()
 end
 
-function EXPECT_EVENT(event, name)
-  
- -- xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
+function EXPECT_EVENT(event, name)  
+--  xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
   local ret = Expectation(name, module.mobileConnection)
   ret.event = event
   event_dispatcher:AddEvent(module.mobileConnection, event, ret)
@@ -231,7 +230,7 @@ function module:runSDL()
 end
 
 function module:initHMI()
-  --critical(true)
+  critical(true)
   local function registerComponent(name, subscriptions)
     xmlLogger.AddMessage(debug.getinfo(1, "n").name, name);
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
@@ -277,7 +276,7 @@ function module:initHMI()
 end
 
 function module:initHMI_onReady()
-  --critical(true)
+  critical(true)
   local function ExpectRequest(name, mandatory, params)
     xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     local event = events.Event()
