@@ -1,4 +1,3 @@
-local config = require('config')
 local module = { }
 console = require('console')
 function module.PrintCaseResult(caseName, success, errorMessage, timespan)

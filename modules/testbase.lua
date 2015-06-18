@@ -3,7 +3,6 @@ local events       = require("events")
 local expectations = require('expectations')
 local console      = require('console')
 local fmt          = require('format')
-local config       = require('config')
 local SDL          = require('SDL')
 
 local module = { }
@@ -67,14 +66,20 @@ local mt =
 }
 
 function control.runNextCase()
+  module.ts = timestamp()
   module.current_case_index = module.current_case_index + 1
   local testcase = module.test_cases[module.current_case_index]
   if testcase then
+    module.current_case_name = module.case_names[testcase]
+    xmlLogger.AddCase(module.current_case_name)
+    xmlLogger:finalize()
     testcase(module)
   else
     if SDL.autoStarted then
       SDL:StopSDL()
     end
+    module.current_case_name = nil
+    xmlLogger:finalize()
     quit()
   end
 end
@@ -90,8 +95,6 @@ end
 setmetatable(module, mt)
 
 qt.connect(control, "next()", control, "runNextCase()")
-qt.connect(control, "init()", control, "start()")
-
 local function CheckStatus()
   if module.current_case_name == nil or module.current_case_name == '' then return end
   -- Check the test status
@@ -107,14 +110,16 @@ local function CheckStatus()
     if e.status ~= SUCCESS then
       success = false
     end
-    if not e.pinned then
+    if not e.pinned and e.connection then
       event_dispatcher:RemoveEvent(e.connection, e.event)
     end
     for k, v in pairs(e.errorMessage) do
-      errorMessage[k] = v
+      errorMessage[e.name .. ": " .. k] = v
     end
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
+  xmlLogger.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
+  if (not success) then  xmlLogger.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   module.expectations_list:Clear()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then
@@ -122,6 +127,16 @@ local function CheckStatus()
   end
   control:next()
 end
+
+local function FailTestCase(self, cause)
+  module.expectations_list:Clear()
+  local exp = expectations.Expectation(cause)
+  exp.status = FAILED
+  exp.errorMessage = { ["AutoFail"] = cause }
+  module.expectations_list:Add(exp)
+  CheckStatus()
+end
+rawset(module, "FailTestCase", FailTestCase)
 
 event_dispatcher = ed.EventDispatcher()
 event_dispatcher:OnPostEvent(CheckStatus)
@@ -132,5 +147,6 @@ function control:checkstatus()
   CheckStatus()
 end
 timeoutTimer:start(400)
-control:init()
+control:next()
+
 return module

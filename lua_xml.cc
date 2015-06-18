@@ -1,3 +1,4 @@
+#line 5 "main.nw"
 #include <stdarg.h>
 #include <string.h>
 extern "C" {
@@ -5,17 +6,20 @@ extern "C" {
 #include <lua5.2/lualib.h>
 #include <lua5.2/lauxlib.h>
 }
+#line 6 "xml.nw"
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 #include <libxml/xpath.h>
 #include <libxml/xmlsave.h>
 
 #include <iostream>
-#include <sstream>
+#include <assert.h>
+#include <stdarg.h>
+#include <avcall.h>
+#include <string.h>
 
 namespace {
-
-void genericErrorHandler(void *ctx, const char* message, ...) {
+void genericErrorHandler(void *ctx, const char* message, ...){
   lua_State *L = static_cast<lua_State*>(ctx);
   va_list args;
   va_start(args, message);
@@ -28,33 +32,45 @@ void genericErrorHandler(void *ctx, const char* message, ...) {
 
 void structuredErrorHandler(void *userData, xmlErrorPtr err) {
   lua_State *L = static_cast<lua_State*>(userData);
-  std::stringstream msg;
-
+  char msg[1024];
+  char fmt[256] = { 0 };
   switch(err->domain) {
     case XML_FROM_XPATH:
-      msg << "Error evaluating xpath query:" << std::endl;
+      strcpy(fmt, "Error evaluating xpath query:\n");
       break;
     case XML_FROM_PARSER:
-      msg << "Error parsing xml file:" << std::endl;
-      break;
-    default:
-      break;
+      strcpy(fmt, "Error parsing xml file:\n");
   }
 
+  av_alist alist;
+  int retval;
+  av_start_int(alist, &snprintf, &retval);
+
+  av_ptr(alist, char*, msg);
+  av_int(alist, 1023);
+  av_ptr(alist, char*, fmt);
+
   if (err->file) {
-    msg << err->file << ":" << err->line << ": ";
+    strcat(fmt, "%s:%d: ");
+    av_ptr(alist, const char*, err->file);
+    av_int(alist, err->line);
   }
-  msg << err->message;
+  strcat(fmt, "%s");
+  av_ptr(alist, const char*, err->message);
   if (err->str1) {
-    msg << ": " << err->str1;
+    strcat(fmt, ": %s");
+    av_ptr(alist, const char*, err->str1);
   }
   if (err->str2) {
-    msg << ": " << err->str2;
+    strcat(fmt, ": %s");
+    av_ptr(alist, const char*, err->str2);
   }
   if (err->str3) {
-    msg << ": " << err->str3;
+    strcat(fmt, ": %s");
+    av_ptr(alist, const char*, err->str3);
   }
-  lua_pushstring(L, msg.str().c_str());
+  av_call(alist);
+  lua_pushstring(L, msg);
   lua_error(L);
 }
 
@@ -81,7 +97,7 @@ int xml_new(lua_State *L) {
   lua_setmetatable(L, -2);
   return 1;
 }
-
+#line 99 "xml.nw"
 int eval_xpath(lua_State *L, xmlDocPtr doc, xmlNodePtr node, const xmlChar* query) {
   xmlXPathContextPtr context = xmlXPathNewContext(doc);
   if (!context) {
@@ -104,47 +120,52 @@ int eval_xpath(lua_State *L, xmlDocPtr doc, xmlNodePtr node, const xmlChar* quer
     return 2;
   }
 
-  switch(result->type) {
-    case XPATH_NODESET:
-      // Haven't the slightest idea why, but libxml returns result
-      // of type XPATH_NODESET but nodesetval == 0 on some queries
-      if (!result->nodesetval) {
-        lua_pushnil(L);
-        break;
-      }
-      lua_createtable(L, result->nodesetval->nodeNr, 0);
-      luaL_getmetatable(L, "xml.Node");
-      for (int i = 0; i < result->nodesetval->nodeNr; ++i) {
-        auto n = result->nodesetval->nodeTab[i];
-        if (n->type == XML_ELEMENT_NODE) {
-          xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
-          *p = n;
-          lua_pushnil(L);
-          lua_copy(L, -3, -1);
-          lua_setmetatable(L, -2);
-        } else if (n->type == XML_TEXT_NODE) {
-          lua_pushstring(L, reinterpret_cast<const char*>(n->content));
-        } else if (n->type == XML_ATTRIBUTE_NODE) {
-          lua_pushstring(L, reinterpret_cast<const char*>(n->children->content));
-        } else {
-          continue;
-        }
-        lua_rawseti(L, -3, i + 1);
-      }
-      lua_pop(L, 1);
-      break;
-    case XPATH_BOOLEAN:
-      lua_pushboolean(L, result->boolval);
-      break;
-    case XPATH_NUMBER:
-      lua_pushnumber(L, result->floatval);
-      break;
-    case XPATH_STRING:
-      lua_pushstring(L, reinterpret_cast<const char*>(result->stringval));
-      break;
-    default:
+  
+#line 188 "xml.nw"
+switch(result->type) {
+  case XPATH_NODESET:
+    // Haven't the slightest idea why, but libxml returns result
+    // of type XPATH_NODESET but nodesetval == 0 on some queries
+    if (!result->nodesetval) {
       lua_pushnil(L);
-  }
+      break;
+    }
+    lua_createtable(L, result->nodesetval->nodeNr, 0);
+    luaL_getmetatable(L, "xml.Node");
+    for (int i = 0; i < result->nodesetval->nodeNr; ++i) {
+      auto n = result->nodesetval->nodeTab[i];
+      if (n->type == XML_ELEMENT_NODE) {
+        xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
+        *p = n;
+        lua_pushnil(L);
+        lua_copy(L, -3, -1);
+        lua_setmetatable(L, -2);
+      } else if (n->type == XML_TEXT_NODE) {
+        lua_pushstring(L, reinterpret_cast<const char*>(n->content));
+      } else if (n->type == XML_ATTRIBUTE_NODE) {
+        assert(n->children);
+        assert(n->children->type == XML_TEXT_NODE);
+        lua_pushstring(L, reinterpret_cast<const char*>(n->children->content));
+      } else {
+        continue;
+      }
+      lua_rawseti(L, -3, i + 1);
+    }
+    lua_pop(L, 1);
+    break;
+  case XPATH_BOOLEAN:
+    lua_pushboolean(L, result->boolval);
+    break;
+  case XPATH_NUMBER:
+    lua_pushnumber(L, result->floatval);
+    break;
+  case XPATH_STRING:
+    lua_pushstring(L, reinterpret_cast<const char*>(result->stringval));
+    break;
+  default:
+    lua_pushnil(L);
+}
+#line 122 "xml.nw"
   
   xmlXPathFreeObject(result);
   return 1;
@@ -158,16 +179,19 @@ int doc_xpath(lua_State *L) {
 
 int doc_rootNode(lua_State *L) {
   xmlDoc *doc = *static_cast<xmlDoc**>(luaL_checkudata(L, 1, "xml.Document"));
-  auto c = xmlDocGetRootElement(doc);
-  if (c)
-  {
-    xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
-    *p = c;
-    luaL_getmetatable(L, "xml.Node");
-    lua_setmetatable(L, -2);
-  } else {
-    lua_pushnil(L);
+  if (doc->children) {
+    auto c = doc->children;
+    while (c && c->type != XML_ELEMENT_NODE) { c = c->next; };
+    if (c)
+    {
+      xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
+      *p = c;
+      luaL_getmetatable(L, "xml.Node");
+      lua_setmetatable(L, -2);
+      return 1;
+    }
   }
+  lua_pushnil(L);
   return 1;
 }
 
@@ -230,7 +254,7 @@ int node_text(lua_State *L) {
       lua_pushstring(L, reinterpret_cast<const char*>(text));
       xmlFree(text);
     } else {
-      lua_pushnil(L);
+      lua_pushstring(L, "<nil>");
     }
     return 1;
   }
@@ -242,7 +266,7 @@ int node_name(lua_State *L) {
   if (text) {
     lua_pushstring(L, reinterpret_cast<const char*>(text));
   } else {
-    lua_pushnil(L);
+    lua_pushstring(L, "<nil>");
   }
   return 1;
 }
@@ -301,19 +325,21 @@ int node_children(lua_State *L) {
   }
   if (node->type == XML_ELEMENT_NODE) {
     lua_newtable(L);
-    auto n = xmlFirstElementChild(node);
+    auto n = node->children;
     int i = 0;
     luaL_getmetatable(L, "xml.Node");
     while (n) {
-      if (!filter || xmlStrEqual(n->name, filter)) {
-        xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
-        lua_pushnil(L);
-        lua_copy(L, -3, -1);
-        lua_setmetatable(L, -2);
-        lua_rawseti(L, -3, ++i);
-        *p = n;
+      if (n->type == XML_ELEMENT_NODE) {
+        if (!filter || xmlStrEqual(n->name, filter)) {
+          xmlNodePtr* p = static_cast<xmlNodePtr*>(lua_newuserdata(L, sizeof(xmlNodePtr)));
+          lua_pushnil(L);
+          lua_copy(L, -3, -1);
+          lua_setmetatable(L, -2);
+          lua_rawseti(L, -3, ++i);
+          *p = n;
+        }
       }
-      n = xmlNextElementSibling(n);
+      n = n->next;
     }
     lua_pop(L, 1);
   } else {
@@ -355,9 +381,7 @@ int node_eq(lua_State *L) {
   lua_pushboolean(L, a == b);
   return 1;
 }
-
-}  // anonymous namespace
-
+}
 extern "C"
 int luaopen_xml(lua_State *L, int ) {
   LIBXML_TEST_VERSION

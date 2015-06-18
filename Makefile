@@ -2,7 +2,7 @@
 
 PROJECT=atf
 
-QMAKE=/usr/local/Qt-5.4.1/bin/qmake
+QMAKE=
 #QMAKE=/home/arv/Qt/5.4/gcc/bin/qmake
 
 SOURCES= lua_interpreter.cc \
@@ -19,7 +19,7 @@ interp: $(PROJECT).mk $(SOURCES)
 	make -f $<
 
 modules/libxml.so: lua_xml.cc
-	$(CXX) $(CXXFLAGS) -shared -std=c++11 $< -o modules/libxml.so -g -I/usr/include/libxml2 -llua5.2 -lxml2 -fPIC
+	$(CXX) $(CXXFLAGS) -shared -std=c++11 $< -o modules/libxml.so -g -I/usr/include/libxml2 /usr/lib/libavcall.a -llua5.2 -lxml2 -fPIC
 
 clean:
 	rm -f $(PROJECT).mk
