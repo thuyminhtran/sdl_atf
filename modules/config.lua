@@ -8,11 +8,16 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 config.defaultProtocolVersion = 3
 
-config.pathToSDL = ""
+config.pathToSDL = "/opt/work/sdl_panasonic_build/bin/"
 config.SDL = "smartDeviceLinkCore"
-config.ExitOnCrash = true
+config.ExitOnCrash = false
 config.autorunSDL = true
 
+config.excludeReport=false
+config.storeFullSDLLogs = false
+config.reportPath = "./Testing Reports"
+--for store sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).
+config.x_sdllog = 100
 config.application1 =
 {
   registerAppInterfaceParams =

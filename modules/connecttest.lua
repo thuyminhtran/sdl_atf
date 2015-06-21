@@ -24,26 +24,52 @@ module.mobileConnection = mobile.MobileConnection(fileConnection)
 event_dispatcher:AddConnection(module.hmiConnection)
 event_dispatcher:AddConnection(module.mobileConnection)
 
-function module.hmiConnection:EXPECT_HMIRESPONSE(id)
+function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
   local event = events.Event()
   event.matches = function(self, data) return data.id == id end
   local ret = Expectation("HMI response " .. id, self)
+  if #args > 0 then
+       ret:ValidIf(function(self, data)
+                    local arguments
+                    if self.occurences > #args then
+                       arguments = args[#args]
+                    else
+                       arguments = args[self.occurences]
+                    end
+                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"]= "EXPECTED_RESULT"},arguments)
+                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE",  {["Id"] = tostring(id),["Type"]= "AVALIABLE_RESULT"},data)
+                     return validator.validate_hmi_response(data.method, arguments)
+                    end)
+  end
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
   module:AddExpectation(ret)
   return ret
 end
 
-function EXPECT_HMIRESPONSE(id)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Id"] = tostring(id)})
-  return module.hmiConnection:EXPECT_HMIRESPONSE(id)
+function EXPECT_HMIRESPONSE(id,...)
+  local args = table.pack(...)
+  return module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
 end
 
-function EXPECT_HMINOTIFICATION(name)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["Name"] = tostring(name)})
+function EXPECT_HMINOTIFICATION(name,...)
+  local args = table.pack(...)
   local event = events.Event()
   event.matches = function(self, data) return data.method == name end
   local ret = Expectation("HMI notification " .. name, module.hmiConnection)
+  if #args > 0 then
+       ret:ValidIf(function(self, data)
+                    local arguments
+                    if self.occurences > #args then
+                       arguments = args[#args]
+                    else
+                       arguments = args[self.occurences]
+                    end
+                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"]= "EXPECTED_RESULT"},arguments)
+                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION",  {["name"] = tostring(name),["Type"]= "AVALIABLE_RESULT"},data)
+                     return validator.validate_hmi_notification(name, arguments)
+                    end)
+  end
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
   module:AddExpectation(ret)
@@ -65,10 +91,10 @@ function EXPECT_HMICALL(methodName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                    local _res, _err = validator.validate_hmi_request(methodName, unpack(args)) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", "EXPECTED_RESULT",arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", "AVALIABLE_RESULT",data.params)
---                   if (not _res) then  return _res,_err end
+                    local _res, _err = validator.validate_hmi_request(methodName, arguments) 
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "EXPECTED_RESULT"},arguments) 
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "AVALIABLE_RESULT"},data.params)
+                    if (not _res) then  return _res,_err end
                     return compareValues(arguments, data.params, "params")
                 end)
   end
@@ -98,8 +124,10 @@ function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "EXPECTED_RESULT", arguments)
-                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "AVALIABLE_RESULT", data.payload)
+	         local _res, _err = validator.validate_hmi_request(funcName, arguments)
+                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+	         if (not _res) then  return _res,_err end 
                  return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -286,8 +314,8 @@ function module:initHMI_onReady()
     EXPECT_HMIEVENT(event, name)
       :Times(mandatory and 1 or AnyNumber())
       :Do(function(_, data)
-            self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
-          end)
+           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
+         end)
   end
 
   local function ExpectNotification(name, mandatory)

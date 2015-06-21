@@ -34,7 +34,7 @@ function module.mt.__index:Connect()
   self.socket:connect(self.host, self.port)
 end
 function module.mt.__index:Send(data)
- xmlLogger.AddMessage("tcp_connection","Send")
+-- xmlLogger.AddMessage("tcp_connection","Send", data)
  checkSelfArg(self)
   for _, c in ipairs(data) do
     self.socket:write(c)

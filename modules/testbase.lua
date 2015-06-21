@@ -72,16 +72,16 @@ function control.runNextCase()
   if testcase then
     module.current_case_name = module.case_names[testcase]
     xmlLogger.AddCase(module.current_case_name)
-    xmlLogger:finalize()
     testcase(module)
   else
     if SDL.autoStarted then
       SDL:StopSDL()
     end
     module.current_case_name = nil
-    xmlLogger:finalize()
+    print_stopscript()
     quit()
-  end
+    xmlLogger:finalize()
+ end
 end
 
 function control:start()

@@ -44,10 +44,11 @@ function mt.__index:ExpectResponse(arg1, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
-                   if type(arg1) == 'string' then
-                       local _res, _err = validator.validate_mobile_response(funcName, unpack(args) )
---                       if (not _res) then  return _res,_err end
+                   xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(arg1),["Type"]= "EXPECTED_RESULT"}, arguments)                   
+                   xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(arg1),["Type"]= "AVALIABLE_RESULT"}, data.payload)                   
+                  if type(arg1) == 'string' then
+                       local _res, _err = validator.validate_mobile_response(arg1, arguments)
+                       if (not _res) then  return _res,_err end
                    end
                    return compareValues(arguments, data.payload, "payload")
                  end)
@@ -85,9 +86,10 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
---                    local _res, _err = validator.validate_mobile_notification(funcName, ...)
---                    if (not _res) then  return _res,_err end
-                  xmlLogger.AddMessage("EXPECT_NOTIFICATION","AVALIABLE_RESULT", data.payload) 
+                   xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+                   xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload) 
+                   local _res, _err = validator.validate_mobile_notification(funcName, arguments)
+                   if (not _res) then  return _res,_err end
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -162,6 +164,7 @@ function mt.__index:SendRPC(func, arguments, fileName)
   return self.correlationId
 end
 function mt.__index:StartService(service)
+   xmlLogger.AddMessage("StartService", service)
   if service ~= 7 and self.sessionId == 0 then error("Session cannot be started") end
   local startSession =
   {
@@ -183,7 +186,9 @@ function mt.__index:StartService(service)
 
   local ret = self:ExpectEvent(startserviceEvent, "StartService ACK")
     :ValidIf(function(s, data)
-               if data.frameInfo == 2 then return true
+               if data.frameInfo == 2 then 
+                   xmlLogger.AddMessage("StartService", "StartService ACK", "True")
+                   return true
                else return false, "StartService NACK received" end
              end)
   if service == 7 then
@@ -196,6 +201,7 @@ function mt.__index:StartService(service)
   return ret
 end
 function mt.__index:StopService(service)
+  xmlLogger.AddMessage("StopService", service)
   local stopService =
   self:Send(
     {
@@ -230,7 +236,8 @@ function mt.__index:StopHeartbeat()
     self.heartbeatEnabled = false
     self.heartbeatToSDLTimer:stop()
     self.heartbeatFromSDLTimer:stop()
-  end
+    xmlLogger.AddMessage("StopHearbeat", "True")
+ end
 end
 
 function mt.__index:StartHeartbeat()
@@ -238,7 +245,8 @@ function mt.__index:StartHeartbeat()
     self.heartbeatEnabled = true
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
     self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)
-  end
+    xmlLogger.AddMessage("StartHearbeat", "True", (config.heartbeatTimeout + 1000))
+ end
 end
 
 function mt.__index:SetHeartbeatTimeout(timeout)

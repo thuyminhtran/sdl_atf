@@ -18,9 +18,7 @@ local script_files = parse_cmdl()
 
 if (#script_files > 0) then 
     for _,scpt in ipairs(script_files) do
-	    print("==============================")
-	    print(string.format("Start '%s'",scpt))
-	    print("==============================")
+        print_startscript(scpt)
 	    script_execute(scpt)
-     end
+    end
 end
