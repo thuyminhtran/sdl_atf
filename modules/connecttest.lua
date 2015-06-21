@@ -91,8 +91,8 @@ function EXPECT_HMICALL(methodName, ...)
                      arguments = args[self.occurences]
                    end
                     local _res, _err = validator.validate_hmi_request(methodName, arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", "EXPECTED_RESULT",arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", "AVALIABLE_RESULT",data.params)
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "EXPECTED_RESULT"},arguments) 
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "AVALIABLE_RESULT"},data.params)
                     if (not _res) then  return _res,_err end
                     return compareValues(arguments, data.params, "params")
                 end)
@@ -123,8 +123,10 @@ function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "EXPECTED_RESULT", arguments)
-                  xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", "AVALIABLE_RESULT", data.payload)
+	         local _res, _err = validator.validate_hmi_request(funcName, arguments)
+                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+	         if (not _res) then  return _res,_err end 
                  return compareValues(arguments, data.payload, "payload")
                  end)
   end

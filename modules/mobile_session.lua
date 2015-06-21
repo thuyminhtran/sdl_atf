@@ -44,8 +44,8 @@ function mt.__index:ExpectResponse(arg1, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   xmlLogger.AddMessage("EXPECT_RESPONSE","EXPECTED_RESULT", arguments)                   
-                   xmlLogger.AddMessage("EXPECT_RESPONSE","AVALIABLE_RESULT", data.payload)                   
+                   xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(arg1),["Type"]= "EXPECTED_RESULT"}, arguments)                   
+                   xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(arg1),["Type"]= "AVALIABLE_RESULT"}, data.payload)                   
                   if type(arg1) == 'string' then
                        local _res, _err = validator.validate_mobile_response(arg1, arguments)
                        if (not _res) then  return _res,_err end
@@ -86,8 +86,8 @@ function mt.__index:ExpectNotification(funcName, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   xmlLogger.AddMessage("EXPECT_NOTIFICATION","EXPECTED_RESULT", arguments)
-                   xmlLogger.AddMessage("EXPECT_NOTIFICATION","AVALIABLE_RESULT", data.payload) 
+                   xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+                   xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload) 
                    local _res, _err = validator.validate_mobile_notification(funcName, arguments)
                    if (not _res) then  return _res,_err end
                    return compareValues(arguments, data.payload, "payload")
