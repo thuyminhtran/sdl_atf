@@ -191,7 +191,6 @@ function EXPECT_ANY()
 end
 
 function EXPECT_EVENT(event, name)  
---  xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
   local ret = Expectation(name, module.mobileConnection)
   ret.event = event
   event_dispatcher:AddEvent(module.mobileConnection, event, ret)

@@ -8,9 +8,9 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 config.defaultProtocolVersion = 3
 
-config.pathToSDL = "/opt/work/sdl_panasonic_build/bin/"
+config.pathToSDL = ""
 config.SDL = "smartDeviceLinkCore"
-config.ExitOnCrash = false
+config.ExitOnCrash = true
 config.autorunSDL = true
 
 config.excludeReport=false
