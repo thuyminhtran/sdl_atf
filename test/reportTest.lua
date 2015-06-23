@@ -8,8 +8,8 @@ function FindDirectory(directory,currDate)
       	  t= filename
    		end
     end
-     print("Report folder is :")
-     print("		"..t)
+     -- print("Report folder is :")
+     -- print("		"..t)
     return t
 end
 
@@ -18,9 +18,9 @@ function  FindReportPath(ReportPath)
 	filereport = assert(io.open(ReportPath,"r"))
 
 	if filereport == nil then 
-		print("ERROR: Directory ".. ReportPath.. " was not found")
+		print("ERROR: Directory \"Testing Reports\" was not found")
 	else 
-		print("Directory ".. ReportPath.. " was successfully found")
+		print("Directory  \"Testing Reports\" was successfully found")
 	end
 
 	filereport:close()
@@ -32,8 +32,7 @@ function  FindReport(ReportPath, xmlName, currDate)
     for reportName in popen('ls -a "'..ReportPath..'"'):lines() do
     	if string.find(reportName,xmlName.."_"..currDate,1,true) ~=nil then
       	  t= reportName
-      	  print("Xml report file :")
-      	  print("		"..reportName.. " was successfully found")    	  
+      	  print("Xml report file was successfully found")         	  
    		end
     end
     if t == "" then
