@@ -32,13 +32,15 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
        ret:ValidIf(function(self, data)
                     local arguments
                     if self.occurences > #args then
-                       arguments = args[#args]
+                      arguments = args[#args]
                     else
-                       arguments = args[self.occurences]
+                      arguments = args[self.occurences]
                     end
-                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"]= "EXPECTED_RESULT"},arguments)
-                     xmlLogger.AddMessage("EXPECT_HMIRESPONSE",  {["Id"] = tostring(id),["Type"]= "AVALIABLE_RESULT"},data)
-                     return validator.validate_hmi_response(data.method, arguments)
+                    xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
+                    xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
+                    local _res, _err = validator.validate_hmi_response(data.method, arguments)  
+                    if (not _res) then  return _res,_err end
+                    return compareValues(arguments, data.params, "params")
                     end)
   end
   ret.event = event
@@ -65,9 +67,11 @@ function EXPECT_HMINOTIFICATION(name,...)
                     else
                        arguments = args[self.occurences]
                     end
-                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"]= "EXPECTED_RESULT"},arguments)
-                     xmlLogger.AddMessage("EXPECT_HMINOTIFICATION",  {["name"] = tostring(name),["Type"]= "AVALIABLE_RESULT"},data)
-                     return validator.validate_hmi_notification(name, arguments)
+                    xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
+                    xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
+                    local _res, _err = validator.validate_hmi_notification(name, arguments)
+                    if (not _res) then  return _res,_err end
+                    return compareValues(arguments, data.params, "params")
                     end)
   end
   ret.event = event
@@ -92,8 +96,8 @@ function EXPECT_HMICALL(methodName, ...)
                      arguments = args[self.occurences]
                    end
                     local _res, _err = validator.validate_hmi_request(methodName, arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "EXPECTED_RESULT"},arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"]= "AVALIABLE_RESULT"},data.params)
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments) 
+                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
                     if (not _res) then  return _res,_err end
                     return compareValues(arguments, data.params, "params")
                 end)
