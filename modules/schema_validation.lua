@@ -79,7 +79,9 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
   local bool_result = true
   local errorMessage = {}
   local types = ''
-
+  if not user_data then
+  	user_data = {}
+  end
   local function get_xml_shema_validation(doc,types,name, msg_type)
     local retval= {}
     local class_, short_name
@@ -148,7 +150,7 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
    return tostring(tbl)    
   end
   
-local function compare_table_key(t1,t2)
+  local function compare_table_key(t1,t2)
      if (type(t1) ~= type(t2)) then return false end
      if (type(t1) ~= "table") then return t1 == t2 end
      local t1keys = {}
@@ -250,7 +252,7 @@ end
 end
 
   
-   if (schema == module.HMI) then
+  if (schema == module.HMI) then
       doc = hmi_api
       if not doc then return nil,"Cannot open data/MOBILE_API.xml" end
       types = hmi_types

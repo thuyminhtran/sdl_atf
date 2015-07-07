@@ -28,21 +28,19 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
   local event = events.Event()
   event.matches = function(self, data) return data.id == id end
   local ret = Expectation("HMI response " .. id, self)
-  if #args > 0 then
-       ret:ValidIf(function(self, data)
-                    local arguments
-                    if self.occurences > #args then
-                      arguments = args[#args]
-                    else
-                      arguments = args[self.occurences]
-                    end
-                    xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
-                    xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
-                    local _res, _err = validator.validate_hmi_response(data.method, arguments)  
-                    if (not _res) then  return _res,_err end
-                    return compareValues(arguments, data.params, "params")
-                    end)
-  end
+    ret:ValidIf(function(self, data)
+        local arguments
+        if self.occurences > #args then
+          arguments = args[#args]
+        else
+          arguments = args[self.occurences]
+        end
+        xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
+        xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
+        local _res, _err = validator.validate_hmi_response(data.method, arguments)  
+        if (not _res) then  return _res,_err end
+        return compareValues(arguments, data.params, "params")
+    end)
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
   module:AddExpectation(ret)
