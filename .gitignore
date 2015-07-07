@@ -1,0 +1,8 @@
+Testing Reports/
+atf.mk
+interp
+*.o
+modules/libxml.so
+test.xml
+test/out
+moc_*.cpp
