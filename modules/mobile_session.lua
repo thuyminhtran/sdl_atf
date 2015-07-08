@@ -21,7 +21,6 @@ function mt.__index:ExpectEvent(event, name)
   return ret
 end
 function mt.__index:ExpectResponse(cor_id, ...)
-  print("mobile expect response")
   func_name = self.cor_id_func_map[cor_id]
   if func_name then
     self.cor_id_func_map[cor_id] = nil
@@ -41,7 +40,6 @@ function mt.__index:ExpectResponse(cor_id, ...)
   local ret = Expectation("response to " .. cor_id, self.connection)
   if #args > 0 then
     ret:ValidIf(function(self, data)
-        print("mobile response get")
         local arguments
         if self.occurences > #args then
           arguments = args[#args]
@@ -50,7 +48,6 @@ function mt.__index:ExpectResponse(cor_id, ...)
         end
         xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)                   
         xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)                   
-        print("Validate mobile response")
         local _res, _err = validator.validate_mobile_response(func_name, arguments)
         if (not _res) then  return _res,_err end
         return compareValues(arguments, data.payload, "payload")
@@ -150,7 +147,6 @@ end
 function mt.__index:SendRPC(func, arguments, fileName)
   self.correlationId = self.correlationId + 1
   self.cor_id_func_map[self.correlationId] = func
-  print("Save "..self.correlationId..":"..func)
   local msg =
   {
     serviceType      = 7,
