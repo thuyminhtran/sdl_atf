@@ -273,7 +273,7 @@ function mt.__index:Start()
         :Pin()
         :Times(AnyNumber())
         :Do(function(data)
-            if self.heartbeatEnabled and not self.answerHeartbeatFromSDL then
+            if self.heartbeatEnabled and self.answerHeartbeatFromSDL then
               self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
                   serviceType = constants.SERVICE_TYPE.CONTROL, 
                   frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
