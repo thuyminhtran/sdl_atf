@@ -10,6 +10,9 @@ config.defaultProtocolVersion = 3
 
 config.pathToSDL = ""
 config.SDL = "smartDeviceLinkCore"
+config.sdl_logs_host = "localhost"
+config.sdl_logs_port = 6676
+
 config.ExitOnCrash = true
 config.autorunSDL = true
 
