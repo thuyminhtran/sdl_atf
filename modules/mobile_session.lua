@@ -302,7 +302,8 @@ function mt.__index:Start()
 
         self.connection:OnInputData(function(_, msg)
             if self.heartbeatEnabled and self.sessionId == msg.sessionId then
-              self.heartbeatFromSDLTimer:reset()
+               and not (config.IgnoreSDLHeartBeat and msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK) then
+                 self.heartbeatFromSDLTimer:reset()
             end
           end)
         self.connection:OnMessageSent(function(sessionId)
