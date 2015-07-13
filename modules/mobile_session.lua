@@ -46,8 +46,8 @@ function mt.__index:ExpectResponse(cor_id, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)                   
-        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)                   
+        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_response(func_name, arguments)
         if (not _res) then  return _res,_err end
         return compareValues(arguments, data.payload, "payload")
@@ -87,7 +87,7 @@ function mt.__index:ExpectNotification(funcName, ...)
           arguments = args[self.occurences]
         end
         xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload) 
+        xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_notification(funcName, arguments)
         if (not _res) then  return _res,_err end
         return compareValues(arguments, data.payload, "payload")
@@ -187,7 +187,7 @@ function mt.__index:StartService(service)
 
   local ret = self:ExpectEvent(startserviceEvent, "StartService ACK")
   :ValidIf(function(s, data)
-      if data.frameInfo == 2 then 
+      if data.frameInfo == 2 then
         xmlLogger.AddMessage("StartService", "StartService ACK", "True")
         return true
       else return false, "StartService NACK received" end
@@ -233,7 +233,7 @@ function mt.__index:StopService(service)
 end
 
 function mt.__index:StopHeartbeat()
-  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then
     self.heartbeatEnabled = false
     self.heartbeatToSDLTimer:stop()
     self.heartbeatFromSDLTimer:stop()
@@ -242,7 +242,7 @@ function mt.__index:StopHeartbeat()
 end
 
 function mt.__index:StartHeartbeat()
-  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then
     self.heartbeatEnabled = true
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
     self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)
@@ -251,7 +251,7 @@ function mt.__index:StartHeartbeat()
 end
 
 function mt.__index:SetHeartbeatTimeout(timeout)
-  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then 
+  if self.heartbeatToSDLTimer and self.heartbeatFromSDLTimer then
     self.heartbeatToSDLTimer:setInterval(timeout)
     self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
   end
@@ -264,9 +264,9 @@ function mt.__index:Start()
       if self.version > 2 then
         local event = events.Event()
         event.matches = function(s, data)
-          return data.frameType   == constants.FRAME_TYPE.CONTROL_FRAME and 
+          return data.frameType   == constants.FRAME_TYPE.CONTROL_FRAME and
           data.serviceType == constants.SERVICE_TYPE.CONTROL     and
-          data.frameInfo   == constants.FRAME_INFO.HEARTBEAT     and 
+          data.frameInfo   == constants.FRAME_INFO.HEARTBEAT     and
           self.sessionId   == data.sessionId
         end
         self:ExpectEvent(event, "Heartbeat")
@@ -274,8 +274,8 @@ function mt.__index:Start()
         :Times(AnyNumber())
         :Do(function(data)
             if self.heartbeatEnabled and self.answerHeartbeatFromSDL then
-              self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
-                  serviceType = constants.SERVICE_TYPE.CONTROL, 
+              self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME,
+                  serviceType = constants.SERVICE_TYPE.CONTROL,
                   frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
             end
           end)
@@ -284,10 +284,10 @@ function mt.__index:Start()
         self.heartbeatToSDLTimer = timers.Timer()
         self.heartbeatFromSDLTimer = timers.Timer()
 
-        function d.SendHeartbeat()                   
+        function d.SendHeartbeat()
           if self.heartbeatEnabled and self.sendHeartbeatToSDL then
-            self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME, 
-                serviceType = constants.SERVICE_TYPE.CONTROL, 
+            self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME,
+                serviceType = constants.SERVICE_TYPE.CONTROL,
                 frameInfo   = constants.FRAME_INFO.HEARTBEAT } )
           end
         end
@@ -296,24 +296,24 @@ function mt.__index:Start()
           if self.heartbeatEnabled then
             self:StopService(7)
             self.test:FailTestCase("SDL didn't send anything for " .. self.heartbeatFromSDLTimer:interval()
-              .. " msecs. Closing session # " .. self.sessionId)                      
+              .. " msecs. Closing session # " .. self.sessionId)
           end
         end
 
-        self.connection:OnInputData(function(_, msg) 
-            if self.heartbeatEnabled and self.sessionId == msg.sessionId then 
-              self.heartbeatFromSDLTimer:reset() 
-            end 
+        self.connection:OnInputData(function(_, msg)
+            if self.heartbeatEnabled and self.sessionId == msg.sessionId then
+              self.heartbeatFromSDLTimer:reset()
+            end
           end)
-        self.connection:OnMessageSent(function(sessionId)                                                 
+        self.connection:OnMessageSent(function(sessionId)
             if self.heartbeatEnabled and self.sessionId == sessionId then
               self.heartbeatToSDLTimer:reset()
             end
           end)
         qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
         qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")
-        self:StartHeartbeat()            
-      end                    
+        self:StartHeartbeat()
+      end
 
       local correlationId = self:SendRPC("RegisterAppInterface", self.regAppParams)
       self:ExpectResponse(correlationId, { success = true })
