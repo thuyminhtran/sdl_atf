@@ -37,14 +37,14 @@ local function dump(o)
          s = s .. '['..k..'] = \'' .. dump(v) .. '\','
       end
       return s .. '}'
-   elseif string.match(tostring(o),'[%Wxyz]') then 
-      return escape_lua_pattern(tostring(o)) 
+   elseif string.match(tostring(o),'[%Wxyz]') then
+      return escape_lua_pattern(tostring(o))
    end
   return tostring(o)
 end
 function module.AddCase(name)
-   if(not config.excludeReport) then 
-       module.curr_node = module.root:addChild(name) 
+   if(not config.excludeReport) then
+       module.curr_node = module.root:addChild(name)
        module.ndoc:write(module.curr_report_name)
    end
 end
@@ -53,15 +53,15 @@ function module.AddMessage(name,funcName,...)
        local attrib = table.pack(...)[1]
        local msg =  module.curr_node:addChild(name)
 
-       if (type(funcName) ~= 'table') then 
+       if (type(funcName) ~= 'table') then
             msg:attr('FunctionName',funcName)
        else
             for an, av in pairs(funcName) do
                 msg:attr(an,av)
-            end    
+            end
        end
        if (type(attrib) == 'table') then
-            msg:text(dump(attrib))   
+            msg:text(dump(attrib))
        elseif(attrib ~= nil) then
             msg:text(attrib)
        end
@@ -71,11 +71,11 @@ end
 function module.CaseMessageTotal(name, ... )
   if(not config.excludeReport) then
       local attrib = table.pack(...)[1]
-      for attr_n,attr_v in pairs(attrib) do 
-          if (type(attr_v) == 'table') then attr_v = table.concat(attr_v, ';') 
+      for attr_n,attr_v in pairs(attrib) do
+          if (type(attr_v) == 'table') then attr_v = table.concat(attr_v, ';')
           elseif (type(attr_v) ~= 'string') then attr_v = tostring(attr_v)
           end
-          module.curr_node:attr(attr_n, attr_v) 
+          module.curr_node:attr(attr_n, attr_v)
       end
    end
 end
@@ -89,7 +89,7 @@ end
 ]]--
 function module.finalize()
    if(not config.excludeReport) then
-       module.ndoc:write(module.curr_report_name)	
+       module.ndoc:write(module.curr_report_name)
        if (config.storeFullSDLLogs) then sdl_log.close() end
    end
 end
@@ -114,22 +114,22 @@ function module.init(_name)
 
    local curr_report_path = io.catdir(curr_report_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
    local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
-   if (config.reportMark ~= nil and config.reportMark ~= '' ) then 
+   if (config.reportMark ~= nil and config.reportMark ~= '' ) then
         module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.log')
-        module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')  
+        module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
    else
         module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.log')
         module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
-   end 
+   end
    os.execute('mkdir -p "'.. curr_report_path .. '"')
-  
+
    module.ndoc = xml.new()
    local alias = _name:gsub('%.', '_'):gsub('/','_')
    module.root = module.ndoc:createRootNode(alias)
-   if (config.storeFullSDLLogs) then 
+   if (config.storeFullSDLLogs) then
         os.execute('mkdir -p "'.. curr_log_path .. '"')
-        sdl_log.Connect(sdl_log.init('localhost',4555,module.full_sdlLog_name)) 
-   end 
+        sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
+   end
 
   return module
 end
