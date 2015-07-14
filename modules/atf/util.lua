@@ -1,6 +1,6 @@
 local utils = require("atf.stdlib.argument_parser")
 config = require('config')
-xmlReporter = require("logger")
+xmlReporter = require("reporter")
 
 local module = { }
 local script_files = {}
@@ -17,7 +17,7 @@ function table2str(o)
          s = s .. '['..k..'] = ' .. table2str(v) .. ','
       end
       return s .. '} \n'
-   end 
+   end
    return tostring(o)
 end
 function print_table(t,... )
@@ -50,11 +50,11 @@ function compareValues(a, b, name)
       end
       return res
     else
-      if (type(a) ~= type(b)) then 
+      if (type(a) ~= type(b)) then
          if (type(a) == 'string' and type(b) == 'number') then
               b = tostring(b)
          else
-              table.insert(msg, string.format("type of data %s: expected %s, actual type: %s", name, type(a), type(b))) 
+              table.insert(msg, string.format("type of data %s: expected %s, actual type: %s", name, type(a), type(b)))
               return false
          end
       end

@@ -8,7 +8,7 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 config.defaultProtocolVersion = 3
 
-config.pathToSDL = ""
+config.pathToSDL = "/media/akutsan/Media/development/applink-build/bin"
 config.SDL = "smartDeviceLinkCore"
 config.sdl_logs_host = "localhost"
 config.sdl_logs_port = 6676
