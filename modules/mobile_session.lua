@@ -339,6 +339,7 @@ function module.MobileSession(test, connection, regAppParams)
   res.heartbeatEnabled = true
   res.sendHeartbeatToSDL = true
   res.answerHeartbeatFromSDL = true
+  res.ignoreHeartBeatAck = false
   setmetatable(res, mt)
   return res
 end
