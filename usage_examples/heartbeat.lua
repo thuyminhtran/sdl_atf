@@ -35,7 +35,7 @@ function Test:StartSecondSession()
   self.mobileSession2:Start()
     :Do(function()
          print("Session #", self.mobileSession2.sessionId,  "started")
-        end)    
+        end)
 end
 
 function Test:StartThirdSession()
@@ -43,11 +43,11 @@ function Test:StartThirdSession()
     self,
     self.mobileConnection,
     config.application3.registerAppInterfaceParams)
-  self.mobileSession3.version = 2 
+  self.mobileSession3.version = 2
   self.mobileSession3:Start()
     :Do(function()
          print("Session #", self.mobileSession3.sessionId,  "started")
-        end)    
+        end)
 end
 
 function Test:Wait()
@@ -74,8 +74,12 @@ function Test:Wait3()
 end
 
 function Test:IgnoreHeartbeat()
-  self.mobileSession2.sendHeartbeatToSDL = false  
-  self.mobileSession2.answerHeartbeatFromSDL = false  
+  self.mobileSession2.sendHeartbeatToSDL = false
+  self.mobileSession2.answerHeartbeatFromSDL = false
+end
+
+function Test::IgnoreHeartBeatAckFromSDL()
+	self.mobileSession.ignoreHeartBeatAck = true
 end
 
 function Test:Wait4()
