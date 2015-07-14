@@ -1,4 +1,4 @@
-xmlLogger = require("logger")
+xmlReporter = require("logger")
 config    = require("config")
 
 

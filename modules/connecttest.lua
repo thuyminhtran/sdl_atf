@@ -35,8 +35,8 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
         else
           arguments = args[self.occurences]
         end
-        xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
-        xmlLogger.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
+        xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
+        xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
         local _res, _err = validator.validate_hmi_response(data.method, arguments)  
         if (not _res) then  return _res,_err end
         return compareValues(arguments, data.params, "params")
@@ -65,8 +65,8 @@ function EXPECT_HMINOTIFICATION(name,...)
                     else
                        arguments = args[self.occurences]
                     end
-                    xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
-                    xmlLogger.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
+                    xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
+                    xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
                     local _res, _err = validator.validate_hmi_notification(name, arguments)
                     if (not _res) then  return _res,_err end
                     return compareValues(arguments, data.params, "params")
@@ -94,8 +94,8 @@ function EXPECT_HMICALL(methodName, ...)
                      arguments = args[self.occurences]
                    end
                     local _res, _err = validator.validate_hmi_request(methodName, arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments) 
-                     xmlLogger.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
+                     xmlReporter.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments) 
+                     xmlReporter.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
                     if (not _res) then  return _res,_err end
                     return compareValues(arguments, data.params, "params")
                 end)
@@ -107,7 +107,7 @@ function EXPECT_HMICALL(methodName, ...)
 end
 
 function EXPECT_NOTIFICATION(func, ...)
-   xmlLogger.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... ) 
+   xmlReporter.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... ) 
   return module.mobileSession:ExpectNotification(func, ...)
 end
 
@@ -127,8 +127,8 @@ function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
                      arguments = args[self.occurences]
                    end
 	         local _res, _err = validator.validate_hmi_request(funcName, arguments)
-                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-                 xmlLogger.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+                 xmlReporter.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+                 xmlReporter.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
 	         if (not _res) then  return _res,_err end 
                  return compareValues(arguments, data.payload, "payload")
                  end)
@@ -142,7 +142,7 @@ end
 module.timers = { }
 
 function RUN_AFTER(func, timeout)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(func), {["Timeout"] = tostring(timeout)})
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(func), {["Timeout"] = tostring(timeout)})
   local d = qt.dynamic()
   d.timeout = function(self)
                 func()
@@ -156,12 +156,12 @@ function RUN_AFTER(func, timeout)
 end
 
 function EXPECT_RESPONSE(correlationId, ...)
-   xmlLogger.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
+   xmlReporter.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
   return module.mobileSession:ExpectResponse(correlationId, ...)
 end
 
 function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, {["CorrelationId"] = tostring(correlationId)})
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, {["CorrelationId"] = tostring(correlationId)})
   local args = table.pack(...)
   local event = events.Event()
   event.matches = function(_, data)
@@ -176,8 +176,8 @@ function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
                    else
                      arguments = args[self.occurences]
                    end
-                   xmlLogger.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "EXPECTED_RESULT", arguments)
-                   xmlLogger.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "AVALIABLE_RESULT", data.payload)
+                   xmlReporter.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "EXPECTED_RESULT", arguments)
+                   xmlReporter.AddMessage("EXPECT_ANY_SESSION_RESPONSE", "AVALIABLE_RESULT", data.payload)
                    return compareValues(arguments, data.payload, "payload")
                  end)
   end
@@ -188,7 +188,7 @@ function EXPECT_ANY_SESSION_RESPONSE(correlationId, ...)
 end
 
 function EXPECT_ANY()
-   xmlLogger.AddMessage(debug.getinfo(1, "n").name, '')
+   xmlReporter.AddMessage(debug.getinfo(1, "n").name, '')
   return module.mobileSession:ExpectAny()
 end
 
@@ -201,12 +201,12 @@ function EXPECT_EVENT(event, name)
 end
 
 function RAISE_EVENT(event, data)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(event))
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(event))
   event_dispatcher:RaiseEvent(module.mobileConnection, event, data)
 end
 
 function EXPECT_HMIEVENT(event, name)
-  xmlLogger.AddMessage(debug.getinfo(1, "n").name, name)
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, name)
   local ret = Expectation(name, module.hmiConnection)
   ret.event = event
   event_dispatcher:AddEvent(module.hmiConnection, event, ret)
@@ -261,7 +261,7 @@ end
 function module:initHMI()
   critical(true)
   local function registerComponent(name, subscriptions)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, name);
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, name);
     local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
     local exp = EXPECT_HMIRESPONSE(rid)
     if subscriptions then
@@ -307,7 +307,7 @@ end
 function module:initHMI_onReady()
   critical(true)
   local function ExpectRequest(name, mandatory, params)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     local event = events.Event()
     event.level = 2
     event.matches = function(self, data) return data.method == name end
@@ -320,7 +320,7 @@ function module:initHMI_onReady()
   end
 
   local function ExpectNotification(name, mandatory)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     local event = events.Event()
     event.level = 2
     event.matches = function(self, data) return data.method == name end
@@ -382,7 +382,7 @@ function module:initHMI_onReady()
   ExpectRequest("VehicleInfo.GetVehicleData", true, { vin = "52-452-52-752" })
 
   local function button_capability(name, shortPressAvailable, longPressAvailable, upDownAvailable)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,
@@ -428,7 +428,7 @@ function module:initHMI_onReady()
   })
 
   local function text_field(name, characterSet, width, rows)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,
@@ -438,7 +438,7 @@ function module:initHMI_onReady()
     }
   end
   local function image_field(name, width, heigth)
-    xmlLogger.AddMessage(debug.getinfo(1, "n").name, tostring(name))
+    xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
     return
     {
       name = name,

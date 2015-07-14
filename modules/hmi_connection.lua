@@ -39,7 +39,7 @@ function module.mt.__index:Send(text)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
-  xmlLogger.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
   data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -52,7 +52,7 @@ function module.mt.__index:SendRequest(methodName, params)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
-  xmlLogger.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName, ["params"]= params} )
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName, ["params"]= params} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -65,7 +65,7 @@ function module.mt.__index:SendRequest(methodName, params)
 end
 
 function module.mt.__index:SendNotification(methodName, params)
-  xmlLogger.AddMessage("hmi_connection","SendNotification",{ ["methodName"] = methodName, ["params"] = params } )
+  xmlReporter.AddMessage("hmi_connection","SendNotification",{ ["methodName"] = methodName, ["params"] = params } )
   local data = {}
   data.method = methodName
   data.jsonrpc = "2.0"
@@ -75,7 +75,7 @@ function module.mt.__index:SendNotification(methodName, params)
 end
 
 function module.mt.__index:SendResponse(id, methodName, code, params)
-  xmlLogger.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} ) 
+  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} ) 
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -92,7 +92,7 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
 end
 
 function module.mt.__index:SendError(id, methodName, code, errorMessage)
-  xmlLogger.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] =  errorMessage } )
+  xmlReporter.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] =  errorMessage } )
   local data = {}
   data.error = {}
   data.error.data = {}

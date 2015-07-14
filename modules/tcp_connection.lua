@@ -29,12 +29,12 @@ local function checkSelfArg(s)
   end
 end
 function module.mt.__index:Connect()
-  xmlLogger.AddMessage("tcp_connection","Connect")
+  xmlReporter.AddMessage("tcp_connection","Connect")
   checkSelfArg(self)
   self.socket:connect(self.host, self.port)
 end
 function module.mt.__index:Send(data)
--- xmlLogger.AddMessage("tcp_connection","Send", data)
+-- xmlReporter.AddMessage("tcp_connection","Send", data)
  checkSelfArg(self)
   for _, c in ipairs(data) do
     self.socket:write(c)
@@ -76,7 +76,7 @@ function module.mt.__index:OnDisconnected(func)
   qt.connect(self.socket, "disconnected()", self.qtproxy, "disconnected()")
 end
 function module.mt.__index:Close()
- xmlLogger.AddMessage("tcp_connection","Close")
+ xmlReporter.AddMessage("tcp_connection","Close")
  checkSelfArg(self)
   self.socket:close();
 end

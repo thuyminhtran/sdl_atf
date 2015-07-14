@@ -26,12 +26,12 @@ function module.mt.__index:StartStreaming(session, service, filename, bandwidth)
   if getmetatable(self.connection) ~= file_connection.mt then
     error("Data streaming is impossible unless underlying connection is FileConnection")
   end
-  xmlLogger.AddMessage("mobile_connection","StartStreaming", {["Session"]=session,
+  xmlReporter.AddMessage("mobile_connection","StartStreaming", {["Session"]=session,
   ["Service"]=service,["FileName"]=filename,["Bandwidth"]=bandwidth })
   self.connection:StartStreaming(session, service, filename, bandwidth)
 end
 function module.mt.__index:StopStreaming(filename)
-  xmlLogger.AddMessage("mobile_connection","StopStreaming", {["FileName"]=filename})
+  xmlReporter.AddMessage("mobile_connection","StopStreaming", {["FileName"]=filename})
   self.connection:StopStreaming(filename)
 end
 function module.mt.__index:OnInputData(func)

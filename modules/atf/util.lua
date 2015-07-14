@@ -1,6 +1,6 @@
 local utils = require("atf.stdlib.argument_parser")
 config = require('config')
-xmlLogger = require("logger")
+xmlReporter = require("logger")
 
 local module = { }
 local script_files = {}
@@ -150,7 +150,7 @@ function declare_short_opt(...)
 	utils.declare_short_opt(...)
 end
 function script_execute(script_name)
-	xmlLogger = xmlLogger.init(tostring(script_name))
+	xmlReporter = xmlReporter.init(tostring(script_name))
   dofile(script_name)
 end
 

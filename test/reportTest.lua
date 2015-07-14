@@ -1,4 +1,4 @@
-xmlLogger = require("logger")
+xmlReporter = require("logger")
 config    = require("config")
 local io  = require("atf.stdlib.std.io")
 function FindDirectory(directory,currDate)
@@ -50,12 +50,12 @@ function cleanTestDirectory(ReportPath,ReportName)
 end
 
 function createXmlFile(xmlname)
-	 xmlLogger.init(tostring("test/"..xmlname))
-	 xmlLogger.AddCase("InitHMI")	
-	 xmlLogger.CaseMessageTotal(xmlLogger.current_case_name,{ ["result"] = "success", ["timestamp"] ="100"} )
-	 xmlLogger.AddMessage("EXPECT_HMIEVENT", {["FunctionName"] = "Connected websocket"})
-	 xmlLogger.AddMessage("hmi_connection", {["FunctionName"] = "SendRequest"},"{[\"methodName\"] = \"New method\"}")
-	 xmlLogger:finalize()
+	 xmlReporter.init(tostring("test/"..xmlname))
+	 xmlReporter.AddCase("InitHMI")	
+	 xmlReporter.CaseMessageTotal(xmlReporter.current_case_name,{ ["result"] = "success", ["timestamp"] ="100"} )
+	 xmlReporter.AddMessage("EXPECT_HMIEVENT", {["FunctionName"] = "Connected websocket"})
+	 xmlReporter.AddMessage("hmi_connection", {["FunctionName"] = "SendRequest"},"{[\"methodName\"] = \"New method\"}")
+	 xmlReporter:finalize()
 end
 
 function AnalyzeXmlReport(ReportPath,ReportName)

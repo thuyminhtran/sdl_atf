@@ -71,7 +71,7 @@ function control.runNextCase()
   local testcase = module.test_cases[module.current_case_index]
   if testcase then
     module.current_case_name = module.case_names[testcase]
-    xmlLogger.AddCase(module.current_case_name)
+    xmlReporter.AddCase(module.current_case_name)
     testcase(module)
   else
     if SDL.autoStarted then
@@ -80,7 +80,7 @@ function control.runNextCase()
     module.current_case_name = nil
     print_stopscript()
     quit()
-    xmlLogger:finalize()
+    xmlReporter:finalize()
  end
 end
 
@@ -118,8 +118,8 @@ local function CheckStatus()
     end
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
-  xmlLogger.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
-  if (not success) then  xmlLogger.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
+  xmlReporter.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
+  if (not success) then  xmlReporter.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   module.expectations_list:Clear()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then
