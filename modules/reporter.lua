@@ -130,7 +130,6 @@ function module.init(_name)
         os.execute('mkdir -p "'.. curr_log_path .. '"')
         sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
    end
-
   return module
 end
 
