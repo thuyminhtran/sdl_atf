@@ -32,4 +32,4 @@ function Logger:New(path_to_log_file)
 	return logger
 end
 
-
+return Logger

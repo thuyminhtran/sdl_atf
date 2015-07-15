@@ -1,6 +1,7 @@
 local xml     = require('xml')
 local io      = require('atf.stdlib.std.io')
 local sdl_log = require('sdl_logger')
+local atf_log = require('atf_logger')
 
 local module = {
 --                logLevel = 1, --see log level comment
@@ -116,8 +117,13 @@ function module.init(_name)
    local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
    if (config.reportMark ~= nil and config.reportMark ~= '' ) then
         module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.log')
+        module.full_atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '_full.txt')
+        module.atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.txt')
+
         module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
    else
+        module.full_atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..'_full.txt')
+        module.atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'.. '.txt')
         module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.log')
         module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
    end
@@ -130,6 +136,8 @@ function module.init(_name)
         os.execute('mkdir -p "'.. curr_log_path .. '"')
         sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
    end
+   module.full_atf_log = atf_log:New(module.full_atf_log_name)
+   module.atf_log = atf_log:New(module.atf_log_name)
   return module
 end
 
