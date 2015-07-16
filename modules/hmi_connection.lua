@@ -36,6 +36,7 @@ local resultCodes =
 
 function module.mt.__index:Send(text)
   self.connection:Send(text)
+  xmlReporter:LOG("HMItoSDL",text)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
@@ -47,7 +48,7 @@ function module.mt.__index:SendRequest(methodName, params)
   data.method = methodName
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
   return self.requestId
 end
 
@@ -60,7 +61,7 @@ function module.mt.__index:SendRequest(methodName, params)
   data.method = methodName
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
   return self.requestId
 end
 
@@ -71,11 +72,11 @@ function module.mt.__index:SendNotification(methodName, params)
   data.jsonrpc = "2.0"
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:SendResponse(id, methodName, code, params)
-  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} ) 
+  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -88,7 +89,7 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
     data.result[k] = v
   end
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:SendError(id, methodName, code, errorMessage)
@@ -96,17 +97,20 @@ function module.mt.__index:SendError(id, methodName, code, errorMessage)
   local data = {}
   data.error = {}
   data.error.data = {}
-  data.id = id  
+  data.id = id
   data.jsonrpc = "2.0"
   data.error.data.method = methodName
   data.error.code = resultCodes[code]
   data.error.message = errorMessage
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:OnInputData(func)
-  self.connection:OnInputData(function(_, data) func(self, data) end)
+  self.connection:OnInputData(function(_, data)
+		  xmlReporter:LOG("SDLtoHMI", data)
+		  func(self, data)
+		  end)
 end
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
@@ -117,7 +121,6 @@ end
 function module.mt.__index:Close()
   self.connection:Close()
 end
-
 
 function module.Connection(connection)
   local res = { }

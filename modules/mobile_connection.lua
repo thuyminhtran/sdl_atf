@@ -1,5 +1,6 @@
 local ph = require('protocol_handler/protocol_handler')
 local file_connection = require("file_connection")
+local reporter = require("reporter")
 local module = { mt = { __index = {} } }
 
 function module.MobileConnection(connection)
@@ -15,6 +16,7 @@ function module.mt.__index:Send(data)
   local messages = { }
   local protocol_handler = ph.ProtocolHandler()
   for _, msg in ipairs(data) do
+    reporter:LOG("MOBtoSDL", msg)
     local msgs = protocol_handler:Compose(msg)
     for _, m in ipairs(msgs) do
       table.insert(messages, m)
@@ -40,6 +42,7 @@ function module.mt.__index:OnInputData(func)
   local f =
     function(self, binary)
       local msg = protocol_handler:Parse(binary)
+      reporter:LOG("SDLtoMOB", msg)
       for _, v in ipairs(msg) do
         func(this, v)
       end

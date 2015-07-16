@@ -2,6 +2,7 @@ local xml     = require('xml')
 local io      = require('atf.stdlib.std.io')
 local sdl_log = require('sdl_logger')
 local atf_log = require('atf_logger')
+local ford_constants = require("protocol_handler/ford_protocol_constants")
 
 local module = {
 --                logLevel = 1, --see log level comment
@@ -122,8 +123,8 @@ function module.init(_name)
 
         module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
    else
-        module.full_atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..'_full.txt')
-        module.atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'.. '.txt')
+        module.full_atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..'full.txt')
+        module.atf_log_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'.txt')
         module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.log')
         module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
    end
@@ -139,6 +140,13 @@ function module.init(_name)
    module.full_atf_log = atf_log:New(module.full_atf_log_name)
    module.atf_log = atf_log:New(module.atf_log_name)
   return module
+end
+
+function module:LOG(tract, message)
+ 	module.full_atf_log[tract](module.full_atf_log, message)
+	if string.find(tract, "HMI") or message.frameType == ford_constants.FRAME_INFO.SINGLE_FRAME then
+		module.atf_log[tract](module.atf_log, message)
+	end
 end
 
 return module
