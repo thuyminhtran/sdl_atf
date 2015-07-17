@@ -36,7 +36,6 @@ local resultCodes =
 
 function module.mt.__index:Send(text)
   self.connection:Send(text)
-  xmlReporter:LOG("HMItoSDL",text)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
@@ -108,10 +107,10 @@ end
 
 function module.mt.__index:OnInputData(func)
   self.connection:OnInputData(function(_, data)
-		  xmlReporter:LOG("SDLtoHMI", data)
 		  func(self, data)
 		  end)
 end
+
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
 end

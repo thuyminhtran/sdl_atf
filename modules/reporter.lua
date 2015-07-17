@@ -144,7 +144,7 @@ end
 
 function module:LOG(tract, message)
  	module.full_atf_log[tract](module.full_atf_log, message)
-	if string.find(tract, "HMI") or message.frameType == ford_constants.FRAME_INFO.SINGLE_FRAME then
+    if string.find(tract, "HMI") or message.frameType ~= ford_constants.FRAME_TYPE.CONTROL_FRAME then
 		module.atf_log[tract](module.atf_log, message)
 	end
 end

@@ -1,17 +1,24 @@
+local json = require("json")
 local Logger = {}
-Logger.mobile_log_format = "%s(%s) [version: %s, frameType: %s, encryption: %s, serviceType: %s, frameInfo: %s, messageID: %s] : %s \n"
+Logger.mobile_log_format = "%s(%s) [version: %s, frameType: %s, encryption: %s, serviceType: %s, frameInfo: %s, messageId: %s] : %s \n"
 Logger.hmi_log_format = "%s(%s) : %s \n"
+
 function formated_time()
 	return os.time()
 end
+
 function Logger:MOBtoSDL(message)
-	local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", formated_time(), message["varsion"], message.frameType, message["encryption"], message["serviceType"], message["frameInfo"], message["messageID"], message.payload)
+	local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", formated_time(), message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo, message.messageId, message.payload)
 	self.atf_log_file:write(log_str)
 end
 
 function Logger:SDLtoMOB(message)
-	local log_str = string.format(Logger.mobile_log_format,"SDL->MOB ", formated_time(), message["varsion"], message.frameType, message["encryption"], message["serviceType"], message["frameInfo"], message["messageID"], message.payload)
-	self.atf_log_file:write(log_str)
+    local payload =  message.payload
+    if type(payload) == "table" then
+         payload = json.encode(payload)
+    end
+    local log_str = string.format(Logger.mobile_log_format,"SDL->MOB", formated_time(), message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo, message.messageId, payload)
+    self.atf_log_file:write(log_str)
 end
 
 function Logger:HMItoSDL(message)
@@ -20,7 +27,7 @@ function Logger:HMItoSDL(message)
 end
 
 function Logger:SDLtoHMI(message)
-	local log_str = string.format(Logger.hmi_log_format, "SDL->HMI", formated_time, message)
+	local log_str = string.format(Logger.hmi_log_format, "SDL->HMI", formated_time(), message)
 	self.atf_log_file:write(log_str)
 end
 
