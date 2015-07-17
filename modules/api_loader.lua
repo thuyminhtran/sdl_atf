@@ -37,27 +37,27 @@ local function loadStructs(api)
     module.struct[s:attr("name")] = struct
   end
 
-    for n, s in pairs(module.struct) do
-      for _, p in pairs(s) do
-        if type(p.type) == 'string' then
-          if p.type == "Integer" then
-            p.class = module.classes.Integer
-          elseif p.type == "String" then
-            p.class = module.classes.String
-          elseif p.type == "Float" then
-            p.class = module.classes.Float
-          elseif p.type == "Boolean" then
-            p.class = module.classes.Boolean
-          elseif module.enum[p.type] then
-            p.class = module.classes.Enum
-            p.type = module.enum[p.type]
-          elseif module.struct[p.type] then
-            p.class = module.classes.Struct
-            p.type = module.struct[p.type]
-          end
+  for n, s in pairs(module.struct) do
+    for _, p in pairs(s) do
+      if type(p.type) == 'string' then
+        if p.type == "Integer" then
+          p.class = module.classes.Integer
+        elseif p.type == "String" then
+          p.class = module.classes.String
+        elseif p.type == "Float" then
+          p.class = module.classes.Float
+        elseif p.type == "Boolean" then
+          p.class = module.classes.Boolean
+        elseif module.enum[p.type] then
+          p.class = module.classes.Enum
+          p.type = module.enum[p.type]
+        elseif module.struct[p.type] then
+          p.class = module.classes.Struct
+          p.type = module.struct[p.type]
         end
       end
     end
+  end
 end
 
 function module.init(path)
@@ -67,6 +67,6 @@ function module.init(path)
   loadEnums(_api)
   loadStructs(_api)
   return module
-end  
+end
 
 return module

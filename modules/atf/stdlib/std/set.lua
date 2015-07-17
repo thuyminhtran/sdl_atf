@@ -1,68 +1,56 @@
 --[[--
- Set container prototype.
+Set container prototype.
 
- Note that Functions listed below are only available from the Set
- prototype returned by requiring this module, because Container
- objects cannot have object methods.
+Note that Functions listed below are only available from the Set
+prototype returned by requiring this module, because Container
+objects cannot have object methods.
 
- Prototype Chain
- ---------------
+Prototype Chain
+---------------
 
-      table
-       `-> Object
-            `-> Container
-                 `-> Set
+table
+`-> Object
+`-> Container
+`-> Set
 
- @classmod std.set
- @see std.container
- ]]
+@classmod std.set
+@see std.container
+]]
 
-local base      = require "atf.stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
 local Container = require "atf.stdlib.std.container" {}
 
 local ielems, pairs, prototype = base.ielems, base.pairs, base.prototype
 
-
 local Set -- forward declaration
-
-
 
 --[[ ==================== ]]--
 --[[ Primitive Functions. ]]--
 --[[ ==================== ]]--
 
-
 -- These functions know about internal implementatation.
 -- The representation is a table whose tags are the elements, and
 -- whose values are true.
 
-
 local elems = base.pairs
-
 
 local function insert (set, e)
   return rawset (set, e, true)
 end
 
-
 local function member (set, e)
   return rawget (set, e) == true
 end
-
-
 
 --[[ ===================== ]]--
 --[[ High Level Functions. ]]--
 --[[ ===================== ]]--
 
-
 -- These functions are independent of the internal implementation.
 
-
 local difference, symmetric_difference, intersection, union, subset,
-      proper_subset, equal
-
+proper_subset, equal
 
 function difference (set1, set2)
   local r = Set {}
@@ -74,11 +62,9 @@ function difference (set1, set2)
   return r
 end
 
-
 function symmetric_difference (set1, set2)
   return difference (union (set1, set2), intersection (set2, set1))
 end
-
 
 function intersection (set1, set2)
   local r = Set {}
@@ -90,7 +76,6 @@ function intersection (set1, set2)
   return r
 end
 
-
 function union (set1, set2)
   local r = set1 {}
   for e in elems (set2) do
@@ -98,7 +83,6 @@ function union (set1, set2)
   end
   return r
 end
-
 
 function subset (set1, set2)
   for e in elems (set1) do
@@ -109,27 +93,21 @@ function subset (set1, set2)
   return true
 end
 
-
 function proper_subset (set1, set2)
   return subset (set1, set2) and not subset (set2, set1)
 end
-
 
 function equal (set1, set2)
   return subset (set1, set2) and subset (set2, set1)
 end
 
-
-
 --[[ =========== ]]--
 --[[ Set Object. ]]--
 --[[ =========== ]]--
 
-
 local function X (decl, fn)
   return require "std.debug".argscheck ("std.set." .. decl, fn)
 end
-
 
 --- Set prototype object.
 --
@@ -144,14 +122,14 @@ end
 -- std.prototype (std.set) --> "Set"
 -- os.exit (0)
 Set = Container {
-  _type      = "Set",
+  _type = "Set",
 
-  _init      = function (self, t)
-                 for e in ielems (t) do
-                   insert (self, e)
-                 end
-                 return self
-               end,
+  _init = function (self, t)
+    for e in ielems (t) do
+      insert (self, e)
+    end
+    return self
+  end,
 
   --- Union operator.
   -- @static
@@ -206,7 +184,7 @@ Set = Container {
   -- @see subset
   -- @usage
   -- issubset = set1 <= set2
-  __le  = subset,
+  __le = subset,
 
   --- Proper subset operator.
   -- @static
@@ -214,24 +192,23 @@ Set = Container {
   -- @tparam Set set1 set
   -- @tparam Set set2 another set
   -- @treturn boolean `true` if *set2* is not equal to *set1*, but does
-  --   contain everything from *set1*
+  -- contain everything from *set1*
   -- @see proper_subset
   -- @usage
   -- ispropersubset = set1 < set2
-  __lt  = proper_subset,
+  __lt = proper_subset,
 
   -- Return a string representation of this set.
   -- @treturn string string representation of a set.
   -- @see std.tostring
   __tostring = function (self)
-                 local keys = {}
-                 for k in pairs (self) do
-                   keys[#keys + 1] = tostring (k)
-                 end
-                 table.sort (keys)
-                 return prototype (self) .. " {" .. table.concat (keys, ", ") .. "}"
-               end,
-
+    local keys = {}
+    for k in pairs (self) do
+      keys[#keys + 1] = tostring (k)
+    end
+    table.sort (keys)
+    return prototype (self) .. " {" .. table.concat (keys, ", ") .. "}"
+  end,
 
   _functions = {
     --- Delete an element from a set.
@@ -243,7 +220,7 @@ Set = Container {
     -- @usage
     -- set.delete (available, found)
     delete = X ("delete (Set, any)",
-                function (set, e) return rawset (set, e, nil) end),
+      function (set, e) return rawset (set, e, nil) end),
 
     --- Find the difference of two sets.
     -- @static
@@ -271,7 +248,7 @@ Set = Container {
     -- @tparam Set set1 a set
     -- @tparam Set set2 another set
     -- @treturn boolean `true` if *set1* and *set2* each contain identical
-    --   elements, `false` otherwise
+    -- elements, `false` otherwise
     -- @usage
     -- if set.equal (keys, {META, CTRL, "x"}) then process (keys) end
     equal = X ( "equal (Set, Set)", equal),
@@ -284,7 +261,7 @@ Set = Container {
     -- @treturn Set the modified *set*
     -- @usage
     -- for byte = 32,126 do
-    --   set.insert (isprintable, string.char (byte))
+    -- set.insert (isprintable, string.char (byte))
     -- end
     insert = X ("insert (Set, any)", insert),
 
@@ -315,12 +292,12 @@ Set = Container {
     -- @tparam Set set1 a set
     -- @tparam Set set2 another set
     -- @treturn boolean `true` if *set2* contains all elements in *set1*
-    --   but not only those elements, `false` otherwise
+    -- but not only those elements, `false` otherwise
     -- @usage
     -- if set.proper_subset (a, b) then
-    --   for e in set.elems (set.difference (b, a)) do
-    --     set.delete (b, e)
-    --   end
+    -- for e in set.elems (set.difference (b, a)) do
+    -- set.delete (b, e)
+    -- end
     -- end
     -- assert (set.equal (a, b))
     proper_subset = X ("proper_subset (Set, Set)", proper_subset),
@@ -331,7 +308,7 @@ Set = Container {
     -- @tparam Set set1 a set
     -- @tparam Set set2 another set
     -- @treturn boolean `true` if all elements in *set1* are also in *set2*,
-    --   `false` otherwise
+    -- `false` otherwise
     -- @usage
     -- if set.subset (a, b) then a = b end
     subset = X ("subset (Set, Set)", subset),
@@ -342,11 +319,11 @@ Set = Container {
     -- @tparam Set set1 a set
     -- @tparam Set set2 another set
     -- @treturn Set a new set with elements that are in *set1* or *set2*
-    --   but not both
+    -- but not both
     -- @usage
     -- unique = set.symmetric_difference (a, b)
     symmetric_difference = X ("symmetric_difference (Set, Set)",
-                              symmetric_difference),
+      symmetric_difference),
 
     --- Find the union of two sets.
     -- @static

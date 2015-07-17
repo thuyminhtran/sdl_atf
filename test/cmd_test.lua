@@ -11,57 +11,55 @@ utils.declare_long_opt("--perflog-connection-port", utils.RequiredArgument, "Per
 utils.declare_long_opt("--report-path", utils.RequiredArgument, "Path for a report collecting.")
 utils.declare_long_opt("--report-mark", utils.RequiredArgument, "Specify label of string for marking test report.")
 
-
 function config_file(config)
-    print("Config file: ".. config)
+  print("Config file: ".. config)
 end
 function mobile_connection(str)
-    print("Mobile Connection String: ".. src)
+  print("Mobile Connection String: ".. src)
 end
 function mobile_connection_port(src)
-    print("Mobile Connection port: ".. src)
+  print("Mobile Connection port: ".. src)
 end
 function hmi_connection(str)
-    print("HMI connection string: ".. str)
+  print("HMI connection string: ".. str)
 end
 function hmi_connection_port(src)
-    print("HMI Connection port: ".. src)
+  print("HMI Connection port: ".. src)
 end
 function perflog_connection(str)
-    print("PerfLog connection string: ".. str)
+  print("PerfLog connection string: ".. str)
 end
 function perflog_connection_port(str)
-    print("PerfLog connection port: ".. str)
+  print("PerfLog connection port: ".. str)
 end
 function report_path(src)
-    print("Report Path: ".. src)
+  print("Report Path: ".. src)
 end
 function report_mark(src)
-    print("Report mark: ".. src)
+  print("Report mark: ".. src)
 end
 function test_keys(src)
-    print("Test file: ".. src)
+  print("Test file: ".. src)
 end
 
 d = qt.dynamic()
 function d.cmd_test()
-    arguments = utils.getopt(argv, opts)
-    if (arguments) then
-        for k,v in pairs(arguments) do
-    	    if type(k) ~= 'number' then
-		k = (k):match ("^%-*(.*)$"):gsub ("%W", "_")
-		_G[k](v)
-	    else
-		if k >= 2 and v ~= "test/cmd_test.lua" then
-    		    test_keys(v)
-		end
-	    end 
-	end
+  arguments = utils.getopt(argv, opts)
+  if (arguments) then
+    for k,v in pairs(arguments) do
+      if type(k) ~= 'number' then
+        k = (k):match ("^%-*(.*)$"):gsub ("%W", "_")
+        _G[k](v)
+      else
+        if k >= 2 and v ~= "test/cmd_test.lua" then
+          test_keys(v)
+        end
+      end
     end
--- utils.PrintUsage()
+  end
+  -- utils.PrintUsage()
 
-    quit()
+  quit()
 end
-
 
 d:cmd_test()

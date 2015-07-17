@@ -1,28 +1,28 @@
 --[[--
- String buffers.
+String buffers.
 
- Buffers are mutable by default, but being based on objects, they can
- also be used in a functional style:
+Buffers are mutable by default, but being based on objects, they can
+also be used in a functional style:
 
-    local StrBuf = require "std.strbuf" {}
-    local a = StrBuf {"a"}
-    local b = a:concat "b"    -- mutate *a*
-    print (a, b)              --> ab   ab
-    local c = a {} .. "c"     -- copy and append
-    print (a, c)              --> ab   abc
+local StrBuf = require "std.strbuf" {}
+local a = StrBuf {"a"}
+local b = a:concat "b" -- mutate *a*
+print (a, b) --> ab ab
+local c = a {} .. "c" -- copy and append
+print (a, c) --> ab abc
 
- Prototype Chain
- ---------------
+Prototype Chain
+---------------
 
-      table
-       `-> Object
-            `-> StrBuf
+table
+`-> Object
+`-> StrBuf
 
- @classmod std.strbuf
+@classmod std.strbuf
 ]]
 
-local base   = require "atf.stdlib.std.base"
-local debug  = require "atf.stdlib.std.debug"
+local base = require "atf.stdlib.std.base"
+local debug = require "atf.stdlib.std.debug"
 
 local Object = require "atf.stdlib.std.object" {}
 
@@ -30,11 +30,9 @@ local ielems, insert, prototype = base.ielems, base.insert, base.prototype
 
 local M, StrBuf
 
-
 local function __concat (self, x)
   return insert (self, x)
 end
-
 
 local function __tostring (self)
   local strs = {}
@@ -42,16 +40,13 @@ local function __tostring (self)
   return table.concat (strs)
 end
 
-
 --[[ ================= ]]--
 --[[ Public Interface. ]]--
 --[[ ================= ]]--
 
-
 local function X (decl, fn)
   return debug.argscheck ("std.strbuf." .. decl, fn)
 end
-
 
 M = {
   --- Add a object to a buffer.
@@ -66,24 +61,19 @@ M = {
   concat = X ("concat (StrBuf, any)", __concat),
 }
 
-
-
 --[[ ============= ]]--
 --[[ Deprecations. ]]--
 --[[ ============= ]]--
 
-
 local DEPRECATED = debug.DEPRECATED
 
 M.tostring = DEPRECATED ("41.1", "std.strbuf.tostring",
-                         "use 'tostring (strbuf)' instead",
-	                 X ("tostring (StrBuf)", __tostring))
-
+  "use 'tostring (strbuf)' instead",
+  X ("tostring (StrBuf)", __tostring))
 
 --[[ ================== ]]--
 --[[ Type Declarations. ]]--
 --[[ ================== ]]--
-
 
 --- StrBuf prototype object.
 --
@@ -99,7 +89,7 @@ M.tostring = DEPRECATED ("41.1", "std.strbuf.tostring",
 -- local b = {a, "five", "six"}
 -- a = a .. 4
 -- b = b:concat "seven"
--- print (a, b) --> 1234   1234fivesixseven
+-- print (a, b) --> 1234 1234fivesixseven
 -- os.exit (0)
 StrBuf = Object {
   _type = "StrBuf",
@@ -125,6 +115,5 @@ StrBuf = Object {
   -- str = tostring (buf)
   __tostring = __tostring,
 }
-
 
 return StrBuf

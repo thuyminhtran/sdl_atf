@@ -29,7 +29,7 @@ function module.mt.__index:StartStreaming(session, service, filename, bandwidth)
 end
 function module.mt.__index:StopStreaming(filename)
   if not self.mapped[filename] then
-    error("Wrong ATF usage. You are trying to stop stream file \"" .. filename ..  "\" which isn't being streamed right now")
+    error("Wrong ATF usage. You are trying to stop stream file \"" .. filename .. "\" which isn't being streamed right now")
   end
   self.fmapper:UnmapFile(self.mapped[filename])
   self.mapped[filename] = nil

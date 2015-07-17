@@ -7,31 +7,31 @@ end
 
 local resultCodes =
 {
-        SUCCESS = 0,
-        UNSUPPORTED_REQUEST = 1,
-        UNSUPPORTED_RESOURCE = 2,
-        DISALLOWED = 3,
-        REJECTED = 4,
-        ABORTED = 5,
-        IGNORED = 6,
-        RETRY = 7,
-        IN_USE = 8,
-        DATA_NOT_AVAILABLE = 9,
-        TIMED_OUT = 10,
-        INVALID_DATA = 11,
-        CHAR_LIMIT_EXCEEDED = 12,
-        INVALID_ID = 13,
-        DUPLICATE_NAME = 14,
-        APPLICATION_NOT_REGISTERED = 15,
-        WRONG_LANGUAGE = 16,
-        OUT_OF_MEMORY = 17,
-        TOO_MANY_PENDING_REQUESTS = 18,
-        NO_APPS_REGISTERED = 19,
-        NO_DEVICES_CONNECTED = 20,
-        WARNINGS = 21,
-        GENERIC_ERROR = 22,
-        USER_DISALLOWED = 23,
-        TRUNCATED_DATA = 24
+  SUCCESS = 0,
+  UNSUPPORTED_REQUEST = 1,
+  UNSUPPORTED_RESOURCE = 2,
+  DISALLOWED = 3,
+  REJECTED = 4,
+  ABORTED = 5,
+  IGNORED = 6,
+  RETRY = 7,
+  IN_USE = 8,
+  DATA_NOT_AVAILABLE = 9,
+  TIMED_OUT = 10,
+  INVALID_DATA = 11,
+  CHAR_LIMIT_EXCEEDED = 12,
+  INVALID_ID = 13,
+  DUPLICATE_NAME = 14,
+  APPLICATION_NOT_REGISTERED = 15,
+  WRONG_LANGUAGE = 16,
+  OUT_OF_MEMORY = 17,
+  TOO_MANY_PENDING_REQUESTS = 18,
+  NO_APPS_REGISTERED = 19,
+  NO_DEVICES_CONNECTED = 20,
+  WARNINGS = 21,
+  GENERIC_ERROR = 22,
+  USER_DISALLOWED = 23,
+  TRUNCATED_DATA = 24
 }
 
 function module.mt.__index:Send(text)
@@ -81,7 +81,7 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
   data.jsonrpc = "2.0"
   data.id = id
   data.result = {
-    method =  methodName,
+    method = methodName,
     code = resultCodes[code]
   }
   for k, v in pairs(params) do
@@ -92,7 +92,7 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
 end
 
 function module.mt.__index:SendError(id, methodName, code, errorMessage)
-  xmlReporter.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] =  errorMessage } )
+  xmlReporter.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] = errorMessage } )
   local data = {}
   data.error = {}
   data.error.data = {}
@@ -107,8 +107,8 @@ end
 
 function module.mt.__index:OnInputData(func)
   self.connection:OnInputData(function(_, data)
-		  func(self, data)
-		  end)
+      func(self, data)
+    end)
 end
 
 function module.mt.__index:OnConnected(func)

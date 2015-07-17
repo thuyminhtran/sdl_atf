@@ -1,29 +1,25 @@
 --[[--
- Additions to the core io module.
+Additions to the core io module.
 
- The module table returned by `std.io` also contains all of the entries from
- the core `io` module table.  An hygienic way to import this module, then,
- is simply to override core `io` locally:
+The module table returned by `std.io` also contains all of the entries from
+the core `io` module table. An hygienic way to import this module, then,
+is simply to override core `io` locally:
 
-    local io = require "std.io"
+local io = require "std.io"
 
- @module std.io
+@module std.io
 ]]
 
-
-local base  = require "atf.stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 local debug = require "atf.stdlib.std.debug"
 
 local argerror = debug.argerror
 local catfile, dirsep, insert, len, leaves, split =
-  base.catfile, base.dirsep, base.insert, base.len, base.leaves, base.split
+base.catfile, base.dirsep, base.insert, base.len, base.leaves, base.split
 local ipairs, pairs = base.ipairs, base.pairs
-local setmetatable  = debug.setmetatable
-
-
+local setmetatable = debug.setmetatable
 
 local M, monkeys
-
 
 local function input_handle (h)
   if h == nil then
@@ -33,7 +29,6 @@ local function input_handle (h)
   end
   return h
 end
-
 
 local function slurp (file)
   local h, err = input_handle (file)
@@ -45,7 +40,6 @@ local function slurp (file)
     return s
   end
 end
-
 
 local function readlines (file)
   local h, err = input_handle (file)
@@ -59,7 +53,6 @@ local function readlines (file)
   return l
 end
 
-
 local function writelines (h, ...)
   if io.type (h) ~= "file" then
     io.write (h, "\n")
@@ -70,21 +63,19 @@ local function writelines (h, ...)
   end
 end
 
-
 local function monkey_patch (namespace)
   namespace = namespace or _G
   namespace.io = base.copy (namespace.io or {}, monkeys)
 
   if namespace.io.stdin then
     local mt = getmetatable (namespace.io.stdin) or {}
-    mt.readlines  = M.readlines
+    mt.readlines = M.readlines
     mt.writelines = M.writelines
     setmetatable (namespace.io.stdin, mt)
   end
 
   return M
 end
-
 
 local function process_files (fn)
   -- N.B. "arg" below refers to the global array of command-line args
@@ -100,7 +91,6 @@ local function process_files (fn)
     fn (v, i)
   end
 end
-
 
 local function warnfmt (msg, ...)
   local prefix = ""
@@ -124,22 +114,17 @@ local function warnfmt (msg, ...)
   return prefix .. string.format (msg, ...)
 end
 
-
 local function warn (msg, ...)
   writelines (io.stderr, warnfmt (msg, ...))
 end
-
-
 
 --[[ ================= ]]--
 --[[ Public Interface. ]]--
 --[[ ================= ]]--
 
-
 local function X (decl, fn)
   return debug.argscheck ("std.io." .. decl, fn)
 end
-
 
 M = {
   --- Concatenate directory names into a path.
@@ -149,8 +134,8 @@ M = {
   -- @see catfile
   -- @usage dirpath = catdir ("", "absolute", "directory")
   catdir = X ("catdir (string...)", function (...)
-	        return (table.concat ({...}, dirsep):gsub("^$", dirsep))
-	      end),
+      return (table.concat ({...}, dirsep):gsub("^$", dirsep))
+    end),
 
   --- Concatenate one or more directories and a filename into a path.
   -- @function catfile
@@ -170,18 +155,18 @@ M = {
   -- @see warn
   -- @usage die ("oh noes! (%s)", tostring (obj))
   die = X ("die (string, [any...])", function (...)
-	     error (warnfmt (...), 0)
-           end),
+      error (warnfmt (...), 0)
+    end),
 
   --- Remove the last dirsep delimited element from a path.
   -- @function dirname
   -- @string path file path
   -- @treturn string a new path with the last dirsep and following
-  --   truncated
+  -- truncated
   -- @usage dir = dirname "/base/subdir/filename"
   dirname = X ("dirname (string)", function (path)
-                 return (path:gsub (catfile ("", "[^", "]*$"), ""))
-	       end),
+      return (path:gsub (catfile ("", "[^", "]*$"), ""))
+    end),
 
   --- Overwrite core `io` methods with `std` enhanced versions.
   --
@@ -195,7 +180,7 @@ M = {
   --- Process files specified on the command-line.
   -- Each filename is made the default input source with `io.input`, and
   -- then the filename and argument number are passed to the callback
-  -- function. In list of filenames, `-` means `io.stdin`.  If no
+  -- function. In list of filenames, `-` means `io.stdin`. If no
   -- filenames were given, behave as if a single `-` was passed.
   -- @todo Make the file list an argument to the function.
   -- @function process_files
@@ -211,7 +196,7 @@ M = {
   -- The lines in the returned list are not `\n` terminated.
   -- @function readlines
   -- @tparam[opt=io.input()] file|string file file handle or name;
-  --   if file is a file handle, that file is closed after reading
+  -- if file is a file handle, that file is closed after reading
   -- @treturn list lines
   -- @usage list = readlines "/etc/passwd"
   readlines = X ("readlines (?file|string)", readlines),
@@ -227,7 +212,7 @@ M = {
   --- Slurp a file handle.
   -- @function slurp
   -- @tparam[opt=io.input()] file|string file file handle or name;
-  --   if file is a file handle, that file is closed after reading
+  -- if file is a file handle, that file is closed after reading
   -- @return contents of file or handle, or nil if error
   -- @see process_files
   -- @usage contents = slurp (filename)
@@ -241,13 +226,13 @@ M = {
   -- @see catdir
   -- @usage dir_components = splitdir (filepath)
   splitdir = X ("splitdir (string)",
-                function (path) return split (path, dirsep) end),
+    function (path) return split (path, dirsep) end),
 
   --- Give warning with the name of program and file (if any).
   -- If there is a global `prog` table, prefix the message with
-  -- `prog.name` or `prog.file`, and `prog.line` if any.  Otherwise
+  -- `prog.name` or `prog.file`, and `prog.line` if any. Otherwise
   -- if there is a global `opts` table, prefix the message with
-  -- `opts.program` and `opts.line` if any.  @{std.optparse:parse}
+  -- `opts.program` and `opts.line` if any. @{std.optparse:parse}
   -- returns an `opts` table that provides the required `program`
   -- field, as long as you assign it back to `_G.opts`.
   -- @function warn
@@ -256,30 +241,26 @@ M = {
   -- @see std.optparse:parse
   -- @see die
   -- @usage
-  --   local OptionParser = require "std.optparse"
-  --   local parser = OptionParser "eg 0\nUsage: eg\n"
-  --   _G.arg, _G.opts = parser:parse (_G.arg)
-  --   if not _G.opts.keep_going then
-  --     require "std.io".warn "oh noes!"
-  --   end
+  -- local OptionParser = require "std.optparse"
+  -- local parser = OptionParser "eg 0\nUsage: eg\n"
+  -- _G.arg, _G.opts = parser:parse (_G.arg)
+  -- if not _G.opts.keep_going then
+  -- require "std.io".warn "oh noes!"
+  -- end
   warn = X ("warn (string, [any...])", warn),
 
   --- Write values adding a newline after each.
   -- @function writelines
   -- @tparam[opt=io.output()] file h open writable file handle;
-  --   the file is **not** closed after writing
+  -- the file is **not** closed after writing
   -- @tparam string|number ... values to write (as for write)
   -- @usage writelines (io.stdout, "first line", "next line")
   writelines = X ("writelines (?file|string|number, [string|number...])", writelines),
 }
 
-
-monkeys = base.copy ({}, M)  -- before deprecations and core merge
-
+monkeys = base.copy ({}, M) -- before deprecations and core merge
 
 return base.merge (M, io)
-
-
 
 --- Types
 -- @section Types
@@ -290,6 +271,6 @@ return base.merge (M, io)
 -- @int i argument number of *filename*
 -- @usage
 -- local fileprocessor = function (filename, i)
---   io.write (tostring (i) .. ":\n===\n" .. io.slurp (filename) .. "\n")
+-- io.write (tostring (i) .. ":\n===\n" .. io.slurp (filename) .. "\n")
 -- end
 -- io.process_files (fileprocessor)

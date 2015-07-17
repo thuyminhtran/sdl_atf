@@ -1,14 +1,13 @@
 --[[--
- Functional forms of Lua operators.
+Functional forms of Lua operators.
 
- @module std.operator
+@module std.operator
 ]]
 
 local base = require "atf.stdlib.std.base"
 
 local pairs, prototype, tostring =
-  base.pairs, base.prototype, base.tostring
-
+base.pairs, base.prototype, base.tostring
 
 local function eqv (a, b)
   -- If they are the same primitive value, or they share a metatable
@@ -50,7 +49,6 @@ local function eqv (a, b)
   local _, k = next (keyeqv)
   return eqv (a[k], b[k])
 end
-
 
 local M = {
   --- Stringify and concatenate arguments.

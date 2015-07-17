@@ -12,16 +12,16 @@ function module.PrintCaseResult(caseName, success, errorMessage, timespan)
   if config.color then
     result = console.setattr(
       success and "[SUCCESS]" or "[FAIL]",
-      success and "green"     or "red",
+      success and "green" or "red",
       2, false)
   else
     result = success and "[SUCCESS]" or "[FAIL]"
   end
 
-  print(string.format("%s    %s (%d ms)", caseName, result, timespan))
+  print(string.format("%s %s (%d ms)", caseName, result, timespan))
   if not success and errorMessage then
     for k, v in pairs(errorMessage) do
-      local errmsg = "  " .. k .. ": " .. v
+      local errmsg = " " .. k .. ": " .. v
       if config.color then
         print(console.setattr(errmsg, "cyan", 1))
       else

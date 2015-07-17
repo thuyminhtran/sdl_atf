@@ -12,14 +12,14 @@ SDL.CRASH = -1
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   if ExitOnCrash then
     self.exitOnCrash = ExitOnCrash
-  end  
+  end
   local status = self:CheckStatusSDL()
   if status == self.STOPPED then
-    local result = os.execute ('./StartSDL.sh ' .. pathToSDL .. ' ' ..  smartDeviceLinkCore)
+    local result = os.execute ('./StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
     if result then
       return true
     else
-      local msg = "SDL had already started not from ATF or unexpectedly crashed" 
+      local msg = "SDL had already started not from ATF or unexpectedly crashed"
       print(console.setattr(msg, "cyan", 1))
       return nil, msg
     end
@@ -34,7 +34,7 @@ function SDL:StopSDL()
   local status = self:CheckStatusSDL()
   if status == self.RUNNING then
     local result = os.execute ('./StopSDL.sh')
-    if result then 
+    if result then
       return true
     end
   else
@@ -46,7 +46,7 @@ end
 
 function SDL:CheckStatusSDL()
   local testFile = os.execute ('test -e sdl.pid')
-  if testFile then 
+  if testFile then
     local testCatFile = os.execute ('test -e /proc/$(cat sdl.pid)')
     if not testCatFile then
       return self.CRASH
@@ -56,9 +56,9 @@ function SDL:CheckStatusSDL()
   return self.STOPPED
 end
 
-function SDL:DeleteFile()  
+function SDL:DeleteFile()
   if os.execute ('test -e sdl.pid') then
-    os.execute('rm -f sdl.pid') 
+    os.execute('rm -f sdl.pid')
   end
 end
 

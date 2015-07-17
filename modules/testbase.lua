@@ -1,21 +1,21 @@
-local ed           = require("event_dispatcher")
-local events       = require("events")
+local ed = require("event_dispatcher")
+local events = require("events")
 local expectations = require('expectations')
-local console      = require('console')
-local fmt          = require('format')
-local SDL          = require('SDL')
+local console = require('console')
+local fmt = require('format')
+local SDL = require('SDL')
 
 local module = { }
 
 local Expectation = expectations.Expectation
-local SUCCESS     = expectations.SUCCESS
-local FAILED      = expectations.FAILED
+local SUCCESS = expectations.SUCCESS
+local FAILED = expectations.FAILED
 
-local STOPPED = SDL.STOPPED 
-local RUNNING = SDL.RUNNING 
+local STOPPED = SDL.STOPPED
+local RUNNING = SDL.RUNNING
 local CRASH = SDL.CRASH
 
-local control     = qt.dynamic()
+local control = qt.dynamic()
 
 local function isCapital(c)
   return 'A' <= c and c <= 'Z'
@@ -35,33 +35,33 @@ local mt =
     current_case_mandatory = false,
     expectations_list = expectations.ExpectationsList(),
     AddExpectation = function(self,e)
-                       self.expectations_list:Add(e)
-                     end,
+      self.expectations_list:Add(e)
+    end,
     RemoveExpectation = function(self, e)
-                          self.expectations_list:Remove(e)
-                        end,
+      self.expectations_list:Remove(e)
+    end,
   },
   __newindex = function(t, k, v)
-                 local firstLetter = string.sub(k, 1, 1)
-                 if type(v) == "function" and isCapital(firstLetter)then
-                   local function testcase(test)
-                     function description(desc)
-                       t.descriptions[k] = desc
-                     end
-                     function critical(val)
-                       t.current_case_mandatory = val
-                     end
-                     t.current_case_name = k
-                     t.current_case_mandatory = false
-                     v(test)
-                     t.ts = timestamp()
-                   end
-                   t.case_names[testcase] = k
-                   table.insert(t.test_cases, testcase)
-                 else
-                   rawset(t, k, v)
-                 end
-               end,
+    local firstLetter = string.sub(k, 1, 1)
+    if type(v) == "function" and isCapital(firstLetter)then
+      local function testcase(test)
+        function description(desc)
+          t.descriptions[k] = desc
+        end
+        function critical(val)
+          t.current_case_mandatory = val
+        end
+        t.current_case_name = k
+        t.current_case_mandatory = false
+        v(test)
+        t.ts = timestamp()
+      end
+      t.case_names[testcase] = k
+      table.insert(t.test_cases, testcase)
+    else
+      rawset(t, k, v)
+    end
+  end,
   __metatable = { }
 }
 
@@ -81,7 +81,7 @@ function control.runNextCase()
     print_stopscript()
     quit()
     xmlReporter:finalize()
- end
+  end
 end
 
 function control:start()
@@ -102,9 +102,9 @@ local function CheckStatus()
   local errorMessage = {}
   if SDL:CheckStatusSDL() == CRASH then
     success = false
-    print(console.setattr("SDL has unexpectedly crashed or stop responding!", "cyan", 1))   
+    print(console.setattr("SDL has unexpectedly crashed or stop responding!", "cyan", 1))
     critical(SDL.exitOnCrash)
-    SDL:DeleteFile() 
+    SDL:DeleteFile()
   elseif module.expectations_list:Any(function(e) return not e.status end) then return end
   for _, e in ipairs(module.expectations_list) do
     if e.status ~= SUCCESS then
@@ -119,7 +119,7 @@ local function CheckStatus()
   end
   fmt.PrintCaseResult(module.current_case_name, success, errorMessage, timestamp() - module.ts)
   xmlReporter.CaseMessageTotal(module.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - module.ts)} )
-  if (not success) then  xmlReporter.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
+  if (not success) then xmlReporter.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   module.expectations_list:Clear()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then

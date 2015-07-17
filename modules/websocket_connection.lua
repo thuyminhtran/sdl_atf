@@ -18,7 +18,7 @@ function module.mt.__index:Connect()
 end
 local function checkSelfArg(s)
   if type(s) ~= "table" or
-    getmetatable(s) ~= module.mt then
+  getmetatable(s) ~= module.mt then
     error("Invalid argument 'self': must be connection (use ':', not '.')")
   end
 end

@@ -1,36 +1,35 @@
 --[[--
- Additions to the core debug module.
+Additions to the core debug module.
 
- The module table returned by `std.debug` also contains all of the entries
- from the core debug table.  An hygienic way to import this module, then, is
- simply to override the core `debug` locally:
+The module table returned by `std.debug` also contains all of the entries
+from the core debug table. An hygienic way to import this module, then, is
+simply to override the core `debug` locally:
 
-    local debug = require "std.debug"
+local debug = require "std.debug"
 
- The behaviour of the functions in this module are controlled by the value
- of the global `_DEBUG`.  Not setting `_DEBUG` prior to requiring **any** of
- stdlib's modules is equivalent to having `_DEBUG = true`.
+The behaviour of the functions in this module are controlled by the value
+of the global `_DEBUG`. Not setting `_DEBUG` prior to requiring **any** of
+stdlib's modules is equivalent to having `_DEBUG = true`.
 
- The first line of Lua code in production quality projects that use stdlib
- should be either:
+The first line of Lua code in production quality projects that use stdlib
+should be either:
 
-     _DEBUG = false
+_DEBUG = false
 
- or alternatively, if you need to be careful not to damage the global
- environment:
+or alternatively, if you need to be careful not to damage the global
+environment:
 
-     local init = require "std.debug_init"
-     init._DEBUG = false
+local init = require "std.debug_init"
+init._DEBUG = false
 
- This mitigates almost all of the overhead of argument typechecking in
- stdlib API functions.
+This mitigates almost all of the overhead of argument typechecking in
+stdlib API functions.
 
- @module std.debug
+@module std.debug
 ]]
 
-
 local debug_init = require "atf.stdlib.std.debug_init"
-local base       = require "atf.stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
 local _DEBUG = debug_init._DEBUG
 local argerror, raise = base.argerror, base.raise
@@ -39,9 +38,7 @@ local copy, split, tostring = base.copy, base.split, base.tostring
 local insert, last, len, maxn = base.insert, base.last, base.len, base.maxn
 local ipairs, pairs = base.ipairs, base.pairs
 
-
 local M
-
 
 -- Return a deprecation message if _DEBUG.deprecate is `nil`, otherwise "".
 local function DEPRECATIONMSG (version, name, extramsg, level)
@@ -51,12 +48,11 @@ local function DEPRECATIONMSG (version, name, extramsg, level)
   local _, where = pcall (function () error ("", level + 3) end)
   if _DEBUG.deprecate == nil then
     return (where .. string.format ("%s was deprecated in release %s, %s.\n",
-                                    name, tostring (version), extramsg))
+        name, tostring (version), extramsg))
   end
 
   return ""
 end
-
 
 -- Define deprecated functions when _DEBUG.deprecate is not "truthy",
 -- and write `DEPRECATIONMSG` output to stderr.
@@ -70,7 +66,6 @@ local function DEPRECATED (version, name, extramsg, fn)
     end
   end
 end
-
 
 local _setfenv = debug.setfenv
 
@@ -99,7 +94,6 @@ local function setfenv (fn, env)
     return fn
   end
 end
-
 
 local _getfenv = rawget (_G, "getfenv")
 
@@ -133,18 +127,15 @@ local getfenv = function (fn)
   end
 end
 
-
 local function resulterror (name, i, extramsg, level)
   level = level or 1
   raise ("result", "from", name, i, extramsg, level + 1)
 end
 
-
 local function extramsg_toomany (bad, expected, actual)
   local s = "no more than %d %s%s expected, got %d"
   return s:format (expected, bad, expected == 1 and "" or "s", actual)
 end
-
 
 --- Strip trailing ellipsis from final argument if any, storing maximum
 -- number of values that can be matched directly in `t.maxvalues`.
@@ -154,7 +145,6 @@ end
 local function markdots (t, v)
   return (v:gsub ("%.%.%.$", function () t.dots = true return "" end))
 end
-
 
 --- Calculate permutations of type lists with and without [optionals].
 -- @tparam table t a list of expected types by argument position
@@ -169,7 +159,7 @@ local function permute (t)
     if optional == nil then
       -- Append non-optional type-spec to each permutation.
       for b = 1, #p do
-	insert (p[b], markdots (p[b], v))
+        insert (p[b], markdots (p[b], v))
       end
     else
       -- Duplicate all existing permutations, and add optional type-spec
@@ -183,7 +173,6 @@ local function permute (t)
   end
   return p
 end
-
 
 local function typesplit (types)
   if type (types) == "string" then
@@ -206,7 +195,6 @@ local function typesplit (types)
   return r
 end
 
-
 local function projectuniq (fkey, tt)
   -- project
   local t = {}
@@ -219,13 +207,12 @@ local function projectuniq (fkey, tt)
   for _, e in ipairs (t) do
     for _, v in ipairs (typesplit (e)) do
       if s[v] == nil then
-	r[#r + 1], s[v] = v, true
+        r[#r + 1], s[v] = v, true
       end
     end
   end
   return r
 end
-
 
 local function parsetypes (types)
   local r, permutations = {}, permute (types)
@@ -236,11 +223,10 @@ local function parsetypes (types)
   return r
 end
 
-
 --- Concatenate a table of strings using ", " and " or " delimiters.
 -- @tparam table alternatives a table of strings
 -- @treturn string string of elements from alternatives delimited by ", "
---   and " or "
+-- and " or "
 local function concat (alternatives)
   if len (alternatives) > 1 then
     local t = copy (alternatives)
@@ -250,7 +236,6 @@ local function concat (alternatives)
   end
   return table.concat (alternatives, ", ")
 end
-
 
 local function extramsg_mismatch (expectedtypes, actual, index)
   local actualtype = prototype (actual)
@@ -293,20 +278,19 @@ local function extramsg_mismatch (expectedtypes, actual, index)
       end
     end
     expectedstr = (concat (t) .. " expected"):
-                  gsub ("#table", "non-empty table"):
-                  gsub ("#list", "non-empty list"):
-                  gsub ("(%S+ of [^,%s]-)s? ", "%1s "):
-                  gsub ("(%S+ of [^,%s]-)s?,", "%1s,"):
-		  gsub ("(s, [^,%s]-)s? ", "%1s "):
-		  gsub ("(s, [^,%s]-)s?,", "%1s,"):
-		  gsub ("(of .-)s? or ([^,%s]-)s? ", "%1s or %2s ")
+    gsub ("#table", "non-empty table"):
+    gsub ("#list", "non-empty list"):
+    gsub ("(%S+ of [^,%s]-)s? ", "%1s "):
+    gsub ("(%S+ of [^,%s]-)s?,", "%1s,"):
+    gsub ("(s, [^,%s]-)s? ", "%1s "):
+    gsub ("(s, [^,%s]-)s?,", "%1s,"):
+    gsub ("(of .-)s? or ([^,%s]-)s? ", "%1s or %2s ")
   end
 
   return expectedstr .. ", got " .. actualtype
 end
 
-
-local argcheck, argscheck  -- forward declarations
+local argcheck, argscheck -- forward declarations
 
 if _DEBUG.argcheck then
 
@@ -316,7 +300,7 @@ if _DEBUG.argcheck then
   -- @treturn int|nil position of first mismatch in *typelist*
   local function match (typelist, valuelist)
     local n = #typelist
-    for i = 1, n do  -- normal parameters
+    for i = 1, n do -- normal parameters
       local ok = pcall (argcheck, "pcall", i, typelist[i], valuelist[i])
       if not ok then return i end
     end
@@ -326,12 +310,11 @@ if _DEBUG.argcheck then
     end
   end
 
-
   --- Compare *check* against type of *actual*
   -- @string check extended type name expected
   -- @param actual object being typechecked
   -- @treturn boolean `true` if *actual* is of type *check*, otherwise
-  --   `false`
+  -- `false`
   local function checktype (check, actual)
     if check == "any" and actual ~= nil then
       return true
@@ -350,9 +333,9 @@ if _DEBUG.argcheck then
       end
     elseif check == "function" or check == "func" then
       if actualtype == "function" or
-          (getmetatable (actual) or {}).__call ~= nil
+      (getmetatable (actual) or {}).__call ~= nil
       then
-         return true
+        return true
       end
     elseif check == "int" then
       if actualtype == "number" and actual == math.floor (actual) then
@@ -372,7 +355,7 @@ if _DEBUG.argcheck then
         local len, count = len (actual), 0
         local i = next (actual)
         repeat
-	  if i ~= nil then count = count + 1 end
+          if i ~= nil then count = count + 1 end
           i = next (actual, i)
         until i == nil or count > len
         if count == len and (check == "list" or count > 0) then
@@ -387,7 +370,6 @@ if _DEBUG.argcheck then
 
     return false
   end
-
 
   local function empty (t) return not next (t) end
 
@@ -415,9 +397,9 @@ if _DEBUG.argcheck then
       -- Report an error for all possible types at bestmismatch index.
       local i, expected = bestmismatch
       if t.dots and i > #t then
-	expected = typesplit (t[#t])
+        expected = typesplit (t[#t])
       else
-	expected = projectuniq (i, permutations)
+        expected = projectuniq (i, permutations)
       end
 
       -- This relies on the `permute()` algorithm leaving the longest
@@ -426,14 +408,14 @@ if _DEBUG.argcheck then
 
       -- For "container of things", check all elements are a thing too.
       if typelist[i] then
-	local check, contents = typelist[i]:match "^(%S+) of (%S-)s?$"
-	if contents and type (valuelist[i]) == "table" then
-	  for k, v in pairs (valuelist[i]) do
-	    if not checktype (contents, v) then
-	      argt.badtype (i, extramsg_mismatch (expected, v, k), 3)
-	    end
-	  end
-	end
+        local check, contents = typelist[i]:match "^(%S+) of (%S-)s?$"
+        if contents and type (valuelist[i]) == "table" then
+          for k, v in pairs (valuelist[i]) do
+            if not checktype (contents, v) then
+              argt.badtype (i, extramsg_mismatch (expected, v, k), 3)
+            end
+          end
+        end
       end
 
       -- Otherwise the argument type itself was mismatched.
@@ -447,7 +429,6 @@ if _DEBUG.argcheck then
       argt.badtype (#t + 1, extramsg_toomany (argt.bad, #t, n), 3)
     end
   end
-
 
   function argcheck (name, i, expected, actual, level)
     level = level or 2
@@ -478,7 +459,6 @@ if _DEBUG.argcheck then
     end
   end
 
-
   -- Pattern to extract: fname ([types]?[, types]*)
   local args_pat = "^%s*([%w_][%.%:%d%w_]*)%s*%(%s*(.*)%s*%)"
 
@@ -495,11 +475,11 @@ if _DEBUG.argcheck then
 
     -- Precalculate vtables once to make multiple calls faster.
     local input, output = {
-      bad          = "argument",
-      badtype      = function (i, extramsg, level)
-		       level = level or 1
-		       argerror (fname, i, extramsg, level + 1)
-		     end,
+      bad = "argument",
+      badtype = function (i, extramsg, level)
+        level = level or 1
+        argerror (fname, i, extramsg, level + 1)
+      end,
       permutations = permute (argtypes),
     }
 
@@ -508,22 +488,22 @@ if _DEBUG.argcheck then
     if returntypes then
       local i, permutations = 0, {}
       for _, group in ipairs (split (returntypes, "%s+or%s+")) do
-	returntypes = split (group, ",%s*")
-	for _, t in ipairs (permute (returntypes)) do
-	  i = i + 1
+        returntypes = split (group, ",%s*")
+        for _, t in ipairs (permute (returntypes)) do
+          i = i + 1
           permutations[i] = t
-	end
+        end
       end
 
       -- Ensure the longest permutation is first in the list.
       table.sort (permutations, function (a, b) return #a > #b end)
 
       output = {
-        bad          = "result",
-        badtype      = function (i, extramsg, level)
-		         level = level or 1
-		         resulterror (fname, i, extramsg, level + 1)
-		       end,
+        bad = "result",
+        badtype = function (i, extramsg, level)
+          level = level or 1
+          resulterror (fname, i, extramsg, level + 1)
+        end,
         permutations = permutations,
       }
     end
@@ -546,7 +526,7 @@ if _DEBUG.argcheck then
 
       -- Diagnose bad outputs.
       if returntypes then
-	diagnose (results, output)
+        diagnose (results, output)
       end
 
       return unpack (results, 1, maxn (results))
@@ -558,11 +538,10 @@ else
   -- Turn off argument checking if _DEBUG is false, or a table containing
   -- a false valued `argcheck` field.
 
-  argcheck  = base.nop
+  argcheck = base.nop
   argscheck = function (decl, inner) return inner end
 
 end
-
 
 local function say (n, ...)
   local level, argt = n, {...}
@@ -570,14 +549,13 @@ local function say (n, ...)
     level, argt = 1, {n, ...}
   end
   if _DEBUG.level ~= math.huge and
-      ((type (_DEBUG.level) == "number" and _DEBUG.level >= level) or level <= 1)
+  ((type (_DEBUG.level) == "number" and _DEBUG.level >= level) or level <= 1)
   then
     local t = {}
     for k, v in pairs (argt) do t[k] = tostring (v) end
     io.stderr:write (table.concat (t, "\t") .. "\n")
   end
 end
-
 
 local level = 0
 
@@ -602,7 +580,7 @@ local function trace (event)
     end
   elseif t.what == "Lua" then
     s = s .. event .. " " .. (t.name or "(Lua)") .. " <" ..
-      t.linedefined .. ":" .. t.short_src .. ">"
+    t.linedefined .. ":" .. t.short_src .. ">"
   else
     s = s .. event .. " " .. (t.name or "(C)") .. " [" .. t.what .. "]"
   end
@@ -614,12 +592,10 @@ if type (_DEBUG) == "table" and _DEBUG.call then
   debug.sethook (trace, "cr")
 end
 
-
-
 M = {
   --- Provide a deprecated function definition according to _DEBUG.deprecate.
   -- You can check whether your covered code uses deprecated functions by
-  -- setting `_DEBUG.deprecate` to  `true` before loading any stdlib modules,
+  -- setting `_DEBUG.deprecate` to `true` before loading any stdlib modules,
   -- or silence deprecation warnings by setting `_DEBUG.deprecate = false`.
   -- @function DEPRECATED
   -- @string version first deprecation release version
@@ -651,29 +627,29 @@ M = {
   -- of which can be the name of a primitive Lua type, a stdlib object type,
   -- or one of the special options below:
   --
-  --    #table    accept any non-empty table
-  --    any       accept any non-nil argument type
-  --    file      accept an open file object
-  --    function  accept a function, or object with a __call metamethod
-  --    int       accept an integer valued number
-  --    list      accept a table where all keys are a contiguous 1-based integer range
-  --    #list     accept any non-empty list
-  --    object    accept any std.Object derived type
-  --    :foo      accept only the exact string ":foo", works for any :-prefixed string
+  -- #table accept any non-empty table
+  -- any accept any non-nil argument type
+  -- file accept an open file object
+  -- function accept a function, or object with a __call metamethod
+  -- int accept an integer valued number
+  -- list accept a table where all keys are a contiguous 1-based integer range
+  -- #list accept any non-empty list
+  -- object accept any std.Object derived type
+  -- :foo accept only the exact string ":foo", works for any :-prefixed string
   --
   -- The `:foo` format allows for type-checking of self-documenting
   -- boolean-like constant string parameters predicated on `nil` versus
-  -- `:option` instead of `false` versus `true`.  Or you could support
+  -- `:option` instead of `false` versus `true`. Or you could support
   -- both:
   --
-  --    argcheck ("table.copy", 2, "boolean|:nometa|nil", nometa)
+  -- argcheck ("table.copy", 2, "boolean|:nometa|nil", nometa)
   --
   -- A very common pattern is to have a list of possible types including
-  -- "nil" when the argument is optional.  Rather than writing long-hand
+  -- "nil" when the argument is optional. Rather than writing long-hand
   -- as above, prepend a question mark to the list of types and omit the
   -- explicit "nil" entry:
   --
-  --    argcheck ("table.copy", 2, "?boolean|:nometa", predicate)
+  -- argcheck ("table.copy", 2, "?boolean|:nometa", predicate)
   --
   -- Normally, you should not need to use the `level` parameter, as the
   -- default is to blame the caller of the function using `argcheck` in
@@ -686,13 +662,13 @@ M = {
   -- @int[opt=2] level call stack level to blame for the error
   -- @usage
   -- local function case (with, branches)
-  --   argcheck ("std.functional.case", 2, "#table", branches)
-  --   ...
+  -- argcheck ("std.functional.case", 2, "#table", branches)
+  -- ...
   argcheck = argcheck,
 
   --- Raise a bad argument error.
   -- Equivalent to luaL_argerror in the Lua C API. This function does not
-  -- return.  The `level` argument behaves just like the core `error`
+  -- return. The `level` argument behaves just like the core `error`
   -- function.
   -- @function argerror
   -- @string name function to callout in error message
@@ -703,9 +679,9 @@ M = {
   -- @see extramsg_mismatch
   -- @usage
   -- local function slurp (file)
-  --   local h, err = input_handle (file)
-  --   if h == nil then argerror ("std.io.slurp", 1, err, 2) end
-  --   ...
+  -- local h, err = input_handle (file)
+  -- if h == nil then argerror ("std.io.slurp", 1, err, 2) end
+  -- ...
   argerror = argerror,
 
   --- Wrap a function definition with argument type and arity checking.
@@ -714,35 +690,35 @@ M = {
   -- *types* ends with an ellipsis, remaining unchecked arguments are checked
   -- against that type:
   --
-  --     format = argscheck ("string.format (string, ?any...)", string.format)
+  -- format = argscheck ("string.format (string, ?any...)", string.format)
   --
   -- A colon in the function name indicates that the argument type list does
   -- not have a type for `self`:
   --
-  --     format = argscheck ("string:format (?any...)", string.format)
+  -- format = argscheck ("string:format (?any...)", string.format)
   --
   -- If an argument can be omitted entirely, then put its type specification
   -- in square brackets:
   --
-  --     insert = argscheck ("table.insert (table, [int], ?any)", table.insert)
+  -- insert = argscheck ("table.insert (table, [int], ?any)", table.insert)
   --
   -- Similarly return types can be checked with the same list syntax as
   -- arguments:
   --
-  --     len = argscheck ("string.len (string) => int", string.len)
+  -- len = argscheck ("string.len (string) => int", string.len)
   --
   -- Additionally, variant return type lists can be listed like this:
   --
-  --     open = argscheck ("io.open (string, ?string) => file or nil, string",
-  --                       io.open)
+  -- open = argscheck ("io.open (string, ?string) => file or nil, string",
+  -- io.open)
   --
   -- @function argscheck
   -- @string decl function type declaration string
   -- @func inner function to wrap with argument checking
   -- @usage
   -- local case = argscheck ("std.functional.case (?any, #table) => [any...]",
-  --   function (with, branches)
-  --     ...
+  -- function (with, branches)
+  -- ...
   -- end)
   argscheck = argscheck,
 
@@ -755,9 +731,9 @@ M = {
   -- @see argerror
   -- @see resulterror
   -- @usage
-  --   if fmt ~= nil and type (fmt) ~= "string" then
-  --     argerror ("format", 1, extramsg_mismatch ("?string", fmt))
-  --   end
+  -- if fmt ~= nil and type (fmt) ~= "string" then
+  -- argerror ("format", 1, extramsg_mismatch ("?string", fmt))
+  -- end
   extramsg_mismatch = function (expected, actual, index)
     return extramsg_mismatch (typesplit (expected), actual, index)
   end,
@@ -770,9 +746,9 @@ M = {
   -- @see resulterror
   -- @see extramsg_mismatch
   -- @usage
-  --   if maxn (argt) > 7 then
-  --     argerror ("sevenses", 8, extramsg_toomany ("argument", 7, maxn (argt)))
-  --   end
+  -- if maxn (argt) > 7 then
+  -- argerror ("sevenses", 8, extramsg_toomany ("argument", 7, maxn (argt)))
+  -- end
   extramsg_toomany = extramsg_toomany,
 
   --- Extend `debug.getfenv` to unwrap functables correctly.
@@ -790,7 +766,7 @@ M = {
 
   --- Raise a bad result error.
   -- Like @{argerror} for bad results. This function does not
-  -- return.  The `level` argument behaves just like the core `error`
+  -- return. The `level` argument behaves just like the core `error`
   -- function.
   -- @string name function to callout in error message
   -- @int i argument number
@@ -798,9 +774,9 @@ M = {
   -- @int[opt=1] level call stack level to blame for the error
   -- @usage
   -- local function slurp (file)
-  --   local h, err = input_handle (file)
-  --   if h == nil then argerror ("std.io.slurp", 1, err, 2) end
-  --   ...
+  -- local h, err = input_handle (file)
+  -- if h == nil then argerror ("std.io.slurp", 1, err, 2) end
+  -- ...
   resulterror = resulterror,
 
   --- Extend `debug.setfenv` to unwrap functables correctly.
@@ -812,7 +788,7 @@ M = {
   --- Print a debugging message to `io.stderr`.
   -- Display arguments passed through `std.tostring` and separated by tab
   -- characters when `_DEBUG` is `true` and *n* is 1 or less; or `_DEBUG.level`
-  -- is a number greater than or equal to *n*.  If `_DEBUG` is false or
+  -- is a number greater than or equal to *n*. If `_DEBUG` is false or
   -- nil, nothing is written.
   -- @function say
   -- @int[opt=1] n debugging level, smaller is higher priority
@@ -837,9 +813,8 @@ M = {
   --- Split a typespec string into a table of normalized type names.
   -- @tparam string|table either `"?bool|:nometa"` or `{"boolean", ":nometa"}`
   -- @treturn table a new list with duplicates removed and leading "?"s
-  --   replaced by a "nil" element
+  -- replaced by a "nil" element
   typesplit = typesplit,
-
 
   -- Private:
   _setdebug = function (t)
@@ -849,7 +824,6 @@ M = {
     end
   end,
 }
-
 
 for k, v in pairs (debug) do
   M[k] = M[k] or v
@@ -863,16 +837,13 @@ end
 -- debug "oh noes!"
 local metatable = {
   __call = function (self, ...)
-             M.say (1, ...)
-           end,
+    M.say (1, ...)
+  end,
 }
-
-
 
 --[[ =========== ]]--
 --[[ Deprecated. ]]--
 --[[ =========== ]]--
-
 
 M.toomanyargmsg = DEPRECATED ("41.2.0", "debug.toomanyargmsg",
   "use 'debug.extramsg_toomany' instead",
@@ -881,10 +852,7 @@ M.toomanyargmsg = DEPRECATED ("41.2.0", "debug.toomanyargmsg",
     return s:format (expect + 1, name, expect, expect == 1 and "" or "s", actual)
   end)
 
-
 return setmetatable (M, metatable)
-
-
 
 --- Control std.debug function behaviour.
 -- To declare debugging state, set _DEBUG either to `false` to disable all
@@ -895,8 +863,8 @@ return setmetatable (M, metatable)
 -- @tfield[opt=true] boolean argcheck honor argcheck and argscheck calls
 -- @tfield[opt=false] boolean call do call trace debugging
 -- @field[opt=nil] deprecate if `false`, deprecated APIs are defined,
---   and do not issue deprecation warnings when used; if `nil` issue a
---   deprecation warning each time a deprecated api is used; any other
---   value causes deprecated APIs not to be defined at all
+-- and do not issue deprecation warnings when used; if `nil` issue a
+-- deprecation warning each time a deprecated api is used; any other
+-- value causes deprecated APIs not to be defined at all
 -- @tfield[opt=1] int level debugging level
 -- @usage _DEBUG = { argcheck = false, level = 9 }

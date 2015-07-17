@@ -1,15 +1,15 @@
 --[[--
- Checks uses of undeclared global variables.
+Checks uses of undeclared global variables.
 
- All global variables must be 'declared' through a regular
- assignment (even assigning `nil` will do) in a top-level
- chunk before being used anywhere or assigned to inside a function.
+All global variables must be 'declared' through a regular
+assignment (even assigning `nil` will do) in a top-level
+chunk before being used anywhere or assigned to inside a function.
 
- To use this module, just require it near the start of your program.
+To use this module, just require it near the start of your program.
 
- From Lua distribution (`etc/strict.lua`).
+From Lua distribution (`etc/strict.lua`).
 
- @module std.strict
+@module std.strict
 ]]
 
 local getinfo, error, rawset, rawget = debug.getinfo, error, rawset, rawget
@@ -20,10 +20,8 @@ if mt == nil then
   setmetatable (_G, mt)
 end
 
-
 -- The set of globally declared variables.
 mt.__declared = {}
-
 
 --- What kind of variable declaration is this?
 -- @treturn string "C", "Lua" or "main"
@@ -31,7 +29,6 @@ local function what ()
   local d = getinfo (3, "S")
   return d and d.what or "C"
 end
-
 
 --- Detect assignment to undeclared global.
 -- @function __newindex
@@ -48,7 +45,6 @@ mt.__newindex = function (t, n, v)
   end
   rawset (t, n, v)
 end
-
 
 --- Detect dereference of undeclared global.
 -- @function __index
