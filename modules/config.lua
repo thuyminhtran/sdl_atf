@@ -18,7 +18,8 @@ config.autorunSDL = true
 
 config.excludeReport=false
 config.storeFullSDLLogs = false
-config.reportPath = "./Testing Reports"
+config.storeFullATFLogs = false
+config.reportPath = "./TestingReports"
 --for store sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).
 config.x_sdllog = 100
 config.application1 =
