@@ -118,6 +118,11 @@ end
 function module.heartbeat(str)
   config.heartbeatTimeout=str
 end
+
+function module.sdl_core(str)
+    config.pathToSDL = str
+end
+
 function parse_cmdl()
   arguments = utils.getopt(argv, opts)
   if (arguments) then
