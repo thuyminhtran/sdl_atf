@@ -120,7 +120,7 @@ function module.heartbeat(str)
 end
 
 function module.sdl_core(str)
-    config.pathToSDL = str
+  config.pathToSDL = str
 end
 
 function parse_cmdl()
