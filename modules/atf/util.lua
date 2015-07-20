@@ -120,7 +120,13 @@ function module.heartbeat(str)
 end
 
 function module.sdl_core(str)
-  config.pathToSDL = str
+  if (is_file_exists(str)) then
+    config.pathToSDL = str
+  else
+    print("Incorrect path to sdl binary dir")
+    print("Use default from config")
+    print("=======================")
+  end
 end
 
 function parse_cmdl()
