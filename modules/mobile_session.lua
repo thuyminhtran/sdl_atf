@@ -1,16 +1,16 @@
 require('atf.util')
-local expectations   = require('expectations')
-local events         = require('events')
-local functionId     = require('function_id')
-local json           = require('json')
-local expectations   = require('expectations')
-local constants      = require('protocol_handler/ford_protocol_constants')
-local validator      = require('schema_validation')
-local Expectation    = expectations.Expectation
-local Event          = events.Event
-local SUCCESS        = expectations.SUCCESS
-local FAILED         = expectations.FAILED
-local module         = {}
+local expectations = require('expectations')
+local events = require('events')
+local functionId = require('function_id')
+local json = require('json')
+local expectations = require('expectations')
+local constants = require('protocol_handler/ford_protocol_constants')
+local validator = require('schema_validation')
+local Expectation = expectations.Expectation
+local Event = events.Event
+local SUCCESS = expectations.SUCCESS
+local FAILED = expectations.FAILED
+local module = {}
 local mt = { __index = { } }
 mt.__index.cor_id_func_map = { }
 function mt.__index:ExpectEvent(event, name)
@@ -35,7 +35,7 @@ function mt.__index:ExpectResponse(cor_id, ...)
   end
   event.matches = function(_, data)
     return data.rpcCorrelationId == cor_id and
-    data.sessionId        == self.sessionId
+    data.sessionId == self.sessionId
   end
   local ret = Expectation("response to " .. cor_id, self.connection)
   if #args > 0 then
@@ -46,10 +46,10 @@ function mt.__index:ExpectResponse(cor_id, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlLogger.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_response(func_name, arguments)
-        if (not _res) then  return _res,_err end
+        if (not _res) then return _res,_err end
         return compareValues(arguments, data.payload, "payload")
       end)
   end
@@ -75,7 +75,7 @@ function mt.__index:ExpectNotification(funcName, ...)
   local event = events.Event()
   event.matches = function(_, data)
     return data.rpcFunctionId == functionId[funcName] and
-    data.sessionId     == self.sessionId
+    data.sessionId == self.sessionId
   end
   local ret = Expectation(funcName .. " notification", self.connection)
   if #args > 0 then
@@ -86,10 +86,10 @@ function mt.__index:ExpectNotification(funcName, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlLogger.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_notification(funcName, arguments)
-        if (not _res) then  return _res,_err end
+        if (not _res) then return _res,_err end
         return compareValues(arguments, data.payload, "payload")
       end)
   end
@@ -109,31 +109,31 @@ function mt.__index:Send(message)
   self.connection:Send(
     {
       {
-        version          = message.version or self.version,
-        encryption       = message.encryption or false,
-        frameType        = message.frameType or 1,
-        serviceType      = message.serviceType,
-        frameInfo        = message.frameInfo,
-        sessionId        = self.sessionId,
-        messageId        = self.messageId,
-        rpcType          = message.rpcType,
-        rpcFunctionId    = message.rpcFunctionId,
+        version = message.version or self.version,
+        encryption = message.encryption or false,
+        frameType = message.frameType or 1,
+        serviceType = message.serviceType,
+        frameInfo = message.frameInfo,
+        sessionId = self.sessionId,
+        messageId = self.messageId,
+        rpcType = message.rpcType,
+        rpcFunctionId = message.rpcFunctionId,
         rpcCorrelationId = message.rpcCorrelationId,
-        payload          = message.payload,
-        binaryData       = message.binaryData
+        payload = message.payload,
+        binaryData = message.binaryData
       }
     })
-  xmlLogger.AddMessage("mobile_connection","Send",
+  xmlReporter.AddMessage("mobile_connection","Send",
     {
-      version          = message.version or self.version,
-      encryption       = message.encryption or false,
-      frameType        = message.frameType or 1,
-      serviceType      = message.serviceType,
-      frameInfo        = message.frameInfo,
-      sessionId        = self.sessionId,
-      messageId        = self.messageId,
-      rpcType          = message.rpcType,
-      rpcFunctionId    = message.rpcFunctionId,
+      version = message.version or self.version,
+      encryption = message.encryption or false,
+      frameType = message.frameType or 1,
+      serviceType = message.serviceType,
+      frameInfo = message.frameInfo,
+      sessionId = self.sessionId,
+      messageId = self.messageId,
+      rpcType = message.rpcType,
+      rpcFunctionId = message.rpcFunctionId,
       rpcCorrelationId = message.rpcCorrelationId
     }
   )
@@ -149,12 +149,12 @@ function mt.__index:SendRPC(func, arguments, fileName)
   self.cor_id_func_map[self.correlationId] = func
   local msg =
   {
-    serviceType      = 7,
-    frameInfo        = 0,
-    rpcType          = 0,
-    rpcFunctionId    = functionId[func],
+    serviceType = 7,
+    frameInfo = 0,
+    rpcType = 0,
+    rpcFunctionId = functionId[func],
     rpcCorrelationId = self.correlationId,
-    payload          = json.encode(arguments)
+    payload = json.encode(arguments)
   }
   if fileName then
     local f = assert(io.open(fileName))
@@ -165,30 +165,30 @@ function mt.__index:SendRPC(func, arguments, fileName)
   return self.correlationId
 end
 function mt.__index:StartService(service)
-  xmlLogger.AddMessage("StartService", service)
+  xmlReporter.AddMessage("StartService", service)
   if service ~= 7 and self.sessionId == 0 then error("Session cannot be started") end
   local startSession =
   {
-    frameType   = 0,
+    frameType = 0,
     serviceType = service,
-    frameInfo   = 1,
-    sessionId   = self.sessionId,
+    frameInfo = 1,
+    sessionId = self.sessionId,
   }
   self:Send(startSession)
   -- prepare event to expect
   local startserviceEvent = Event()
   startserviceEvent.matches = function(_, data)
-    return data.frameType   == 0 and
+    return data.frameType == 0 and
     data.serviceType == service and
-    (service == 7 or data.sessionId   == self.sessionId) and
-    (data.frameInfo  == 2 or  -- Start Service ACK
-      data.frameInfo  == 3)    -- Start Service NACK
+    (service == 7 or data.sessionId == self.sessionId) and
+    (data.frameInfo == 2 or -- Start Service ACK
+      data.frameInfo == 3) -- Start Service NACK
   end
 
   local ret = self:ExpectEvent(startserviceEvent, "StartService ACK")
   :ValidIf(function(s, data)
       if data.frameInfo == 2 then
-        xmlLogger.AddMessage("StartService", "StartService ACK", "True")
+        xmlReporter.AddMessage("StartService", "StartService ACK", "True")
         return true
       else return false, "StartService NACK received" end
     end)
@@ -202,26 +202,25 @@ function mt.__index:StartService(service)
   return ret
 end
 function mt.__index:StopService(service)
-  xmlLogger.AddMessage("StopService", service)
+  xmlReporter.AddMessage("StopService", service)
   local stopService =
   self:Send(
     {
-      frameType   = 0,
+      frameType = 0,
       serviceType = service,
-      frameInfo   = 4,
-      sessionId   = self.sessionId,
-      binaryData  = self.hashCode,
+      frameInfo = 4,
+      sessionId = self.sessionId,
+      binaryData = self.hashCode,
     })
   local event = Event()
   -- prepare event to expect
   event.matches = function(_, data)
-    return data.frameType   == 0 and
+    return data.frameType == 0 and
     data.serviceType == service and
     (service == 7 or data.sessionId == self.sessionId) and
-    (data.frameInfo   == 5 or -- End Service ACK
-      data.frameInfo   == 6)   -- End Service NACK
+    (data.frameInfo == 5 or -- End Service ACK
+      data.frameInfo == 6) -- End Service NACK
   end
-
 
   local ret = self:ExpectEvent(event, "EndService ACK")
   :ValidIf(function(s, data)
@@ -237,7 +236,7 @@ function mt.__index:StopHeartbeat()
     self.heartbeatEnabled = false
     self.heartbeatToSDLTimer:stop()
     self.heartbeatFromSDLTimer:stop()
-    xmlLogger.AddMessage("StopHearbeat", "True")
+    xmlReporter.AddMessage("StopHearbeat", "True")
   end
 end
 
@@ -246,7 +245,7 @@ function mt.__index:StartHeartbeat()
     self.heartbeatEnabled = true
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
     self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)
-    xmlLogger.AddMessage("StartHearbeat", "True", (config.heartbeatTimeout + 1000))
+    xmlReporter.AddMessage("StartHearbeat", "True", (config.heartbeatTimeout + 1000))
   end
 end
 
@@ -258,25 +257,25 @@ function mt.__index:SetHeartbeatTimeout(timeout)
 end
 
 function mt.__index:Start()
-  return  self:StartService(7)
+  return self:StartService(7)
   :Do(function()
       -- Heartbeat
       if self.version > 2 then
         local event = events.Event()
         event.matches = function(s, data)
-          return data.frameType   == constants.FRAME_TYPE.CONTROL_FRAME and
-          data.serviceType == constants.SERVICE_TYPE.CONTROL     and
-          data.frameInfo   == constants.FRAME_INFO.HEARTBEAT     and
-          self.sessionId   == data.sessionId
+          return data.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
+          data.serviceType == constants.SERVICE_TYPE.CONTROL and
+          data.frameInfo == constants.FRAME_INFO.HEARTBEAT and
+          self.sessionId == data.sessionId
         end
         self:ExpectEvent(event, "Heartbeat")
         :Pin()
         :Times(AnyNumber())
         :Do(function(data)
             if self.heartbeatEnabled and self.answerHeartbeatFromSDL then
-              self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME,
+              self:Send( { frameType = constants.FRAME_TYPE.CONTROL_FRAME,
                   serviceType = constants.SERVICE_TYPE.CONTROL,
-                  frameInfo   = constants.FRAME_INFO.HEARTBEAT_ACK } )
+                  frameInfo = constants.FRAME_INFO.HEARTBEAT_ACK } )
             end
           end)
 
@@ -286,9 +285,9 @@ function mt.__index:Start()
 
         function d.SendHeartbeat()
           if self.heartbeatEnabled and self.sendHeartbeatToSDL then
-            self:Send( { frameType   = constants.FRAME_TYPE.CONTROL_FRAME,
+            self:Send( { frameType = constants.FRAME_TYPE.CONTROL_FRAME,
                 serviceType = constants.SERVICE_TYPE.CONTROL,
-                frameInfo   = constants.FRAME_INFO.HEARTBEAT } )
+                frameInfo = constants.FRAME_INFO.HEARTBEAT } )
           end
         end
 
@@ -302,8 +301,8 @@ function mt.__index:Start()
 
         self.connection:OnInputData(function(_, msg)
             if self.heartbeatEnabled and self.sessionId == msg.sessionId
-               and not (self.ignoreHeartBeatAck and msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK) then
-                 self.heartbeatFromSDLTimer:reset()
+            and not (self.ignoreHeartBeatAck and msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK) then
+              self.heartbeatFromSDLTimer:reset()
             end
           end)
         self.connection:OnMessageSent(function(sessionId)
@@ -331,8 +330,8 @@ function module.MobileSession(test, connection, regAppParams)
   res.regAppParams = regAppParams
   res.connection = connection
   res.exp_list = test.expectations_list
-  res.messageId  = 1
-  res.sessionId  = 0
+  res.messageId = 1
+  res.sessionId = 0
   res.correlationId = 1
   res.version = config.defaultProtocolVersion or 2
   res.hashCode = 0

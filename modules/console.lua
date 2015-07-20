@@ -1,13 +1,13 @@
 local module = { }
 function module.setattr(string, color, bold, underline)
-  if     color == "black"   then c = '30'
-  elseif color == "red"     then c = '31'
-  elseif color == "green"   then c = '32'
-  elseif color == "brown"   then c = '33'
-  elseif color == "blue"    then c = '34'
+  if color == "black" then c = '30'
+  elseif color == "red" then c = '31'
+  elseif color == "green" then c = '32'
+  elseif color == "brown" then c = '33'
+  elseif color == "blue" then c = '34'
   elseif color == "magenta" then c = '35'
-  elseif color == "cyan"    then c = '36'
-  elseif color == "white"   then c = '37'
+  elseif color == "cyan" then c = '36'
+  elseif color == "white" then c = '37'
   end
   if bold == 1 then b = '2' end
   if bold == 2 then b = '22' end

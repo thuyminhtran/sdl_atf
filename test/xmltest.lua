@@ -22,16 +22,16 @@ print(p[1]:attr("name"), p[1]:attr("type"))
 local ndoc = xml.new()
 local root = ndoc:createRootNode("test")
 for i = 1, 10 do
-    local node = root:addChild("hello")
-    node:attr("a", i)
-    node:text("Hi")
+  local node = root:addChild("hello")
+  node:attr("a", i)
+  node:text("Hi")
 end
 
 x = ndoc:xpath("//hello[last()]")[1]
-  :text("")
-  :addChild("bye")
-  :attr("until", "Friday")
-  :text("Good luck")
+:text("")
+:addChild("bye")
+:attr("until", "Friday")
+:text("Good luck")
 
 ndoc:write("test.xml")
 

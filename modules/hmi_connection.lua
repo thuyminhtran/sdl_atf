@@ -7,31 +7,31 @@ end
 
 local resultCodes =
 {
-        SUCCESS = 0,
-        UNSUPPORTED_REQUEST = 1,
-        UNSUPPORTED_RESOURCE = 2,
-        DISALLOWED = 3,
-        REJECTED = 4,
-        ABORTED = 5,
-        IGNORED = 6,
-        RETRY = 7,
-        IN_USE = 8,
-        DATA_NOT_AVAILABLE = 9,
-        TIMED_OUT = 10,
-        INVALID_DATA = 11,
-        CHAR_LIMIT_EXCEEDED = 12,
-        INVALID_ID = 13,
-        DUPLICATE_NAME = 14,
-        APPLICATION_NOT_REGISTERED = 15,
-        WRONG_LANGUAGE = 16,
-        OUT_OF_MEMORY = 17,
-        TOO_MANY_PENDING_REQUESTS = 18,
-        NO_APPS_REGISTERED = 19,
-        NO_DEVICES_CONNECTED = 20,
-        WARNINGS = 21,
-        GENERIC_ERROR = 22,
-        USER_DISALLOWED = 23,
-        TRUNCATED_DATA = 24
+  SUCCESS = 0,
+  UNSUPPORTED_REQUEST = 1,
+  UNSUPPORTED_RESOURCE = 2,
+  DISALLOWED = 3,
+  REJECTED = 4,
+  ABORTED = 5,
+  IGNORED = 6,
+  RETRY = 7,
+  IN_USE = 8,
+  DATA_NOT_AVAILABLE = 9,
+  TIMED_OUT = 10,
+  INVALID_DATA = 11,
+  CHAR_LIMIT_EXCEEDED = 12,
+  INVALID_ID = 13,
+  DUPLICATE_NAME = 14,
+  APPLICATION_NOT_REGISTERED = 15,
+  WRONG_LANGUAGE = 16,
+  OUT_OF_MEMORY = 17,
+  TOO_MANY_PENDING_REQUESTS = 18,
+  NO_APPS_REGISTERED = 19,
+  NO_DEVICES_CONNECTED = 20,
+  WARNINGS = 21,
+  GENERIC_ERROR = 22,
+  USER_DISALLOWED = 23,
+  TRUNCATED_DATA = 24
 }
 
 function module.mt.__index:Send(text)
@@ -39,7 +39,7 @@ function module.mt.__index:Send(text)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
-  xmlLogger.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
   data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -47,12 +47,12 @@ function module.mt.__index:SendRequest(methodName, params)
   data.method = methodName
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
   return self.requestId
 end
 
 function module.mt.__index:SendRequest(methodName, params)
-  xmlLogger.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName, ["params"]= params} )
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName, ["params"]= params} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -60,54 +60,57 @@ function module.mt.__index:SendRequest(methodName, params)
   data.method = methodName
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
   return self.requestId
 end
 
 function module.mt.__index:SendNotification(methodName, params)
-  xmlLogger.AddMessage("hmi_connection","SendNotification",{ ["methodName"] = methodName, ["params"] = params } )
+  xmlReporter.AddMessage("hmi_connection","SendNotification",{ ["methodName"] = methodName, ["params"] = params } )
   local data = {}
   data.method = methodName
   data.jsonrpc = "2.0"
   data.params = params
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:SendResponse(id, methodName, code, params)
-  xmlLogger.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} ) 
+  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
   data.id = id
   data.result = {
-    method =  methodName,
+    method = methodName,
     code = resultCodes[code]
   }
   for k, v in pairs(params) do
     data.result[k] = v
   end
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:SendError(id, methodName, code, errorMessage)
-  xmlLogger.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] =  errorMessage } )
+  xmlReporter.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] = errorMessage } )
   local data = {}
   data.error = {}
   data.error.data = {}
-  data.id = id  
+  data.id = id
   data.jsonrpc = "2.0"
   data.error.data.method = methodName
   data.error.code = resultCodes[code]
   data.error.message = errorMessage
   local text = json.encode(data)
-  self.connection:Send(text)
+  self:Send(text)
 end
 
 function module.mt.__index:OnInputData(func)
-  self.connection:OnInputData(function(_, data) func(self, data) end)
+  self.connection:OnInputData(function(_, data)
+      func(self, data)
+    end)
 end
+
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
 end
@@ -117,7 +120,6 @@ end
 function module.mt.__index:Close()
   self.connection:Close()
 end
-
 
 function module.Connection(connection)
   local res = { }

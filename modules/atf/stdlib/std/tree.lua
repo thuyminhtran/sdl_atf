@@ -1,35 +1,33 @@
 --[[--
- Tree container prototype.
+Tree container prototype.
 
- Note that Functions listed below are only available from the Tree
- prototype returned by requiring this module, because Container objects
- cannot have object methods.
+Note that Functions listed below are only available from the Tree
+prototype returned by requiring this module, because Container objects
+cannot have object methods.
 
- Prototype Chain
- ---------------
+Prototype Chain
+---------------
 
-      table
-       `-> Object
-            `-> Container
-                 `-> Tree
+table
+`-> Object
+`-> Container
+`-> Tree
 
- @classmod std.tree
- @see std.container
+@classmod std.tree
+@see std.container
 ]]
 
-local base      = require "atf.stdlib.std.base"
-local operator  = require "atf.stdlib.std.operator"
+local base = require "atf.stdlib.std.base"
+local operator = require "atf.stdlib.std.operator"
 
 local Container = require "atf.stdlib.std.container" {}
 
 local ielems, ipairs, leaves, pairs, prototype =
-  base.ielems, base.ipairs, base.leaves, base.pairs, base.prototype
+base.ielems, base.ipairs, base.leaves, base.pairs, base.prototype
 local last, len = base.last, base.len
 local reduce = base.reduce
 
 local Tree -- forward declaration
-
-
 
 --- Tree iterator.
 -- @tparam function it iterator function
@@ -54,7 +52,6 @@ local function _nodes (it, tr)
   end
   return coroutine.wrap (visit), tr
 end
-
 
 local function clone (t, nometa)
   local r = {}
@@ -83,7 +80,6 @@ local function clone (t, nometa)
   return copy (r, t)
 end
 
-
 local function merge (t, u)
   for ty, p, n in _nodes (pairs, u) do
     if ty == "leaf" then
@@ -93,17 +89,13 @@ local function merge (t, u)
   return t
 end
 
-
-
 --[[ ============ ]]--
 --[[ Tree Object. ]]--
 --[[ ============ ]]--
 
-
 local function X (decl, fn)
   return require "std.debug".argscheck ("std.tree." .. decl, fn)
 end
-
 
 --- Tree prototype object.
 -- @object Tree
@@ -117,12 +109,12 @@ end
 -- tr[{"branch1", 1}] = "leaf1"
 -- tr[{"branch1", 2}] = "leaf2"
 -- tr[{"branch2", 1}] = "leaf3"
--- print (tr[{"branch1"}])      --> Tree {leaf1, leaf2}
--- print (tr[{"branch1", 2}])   --> leaf2
--- print (tr[{"branch1", 3}])   --> nil
--- --> leaf1	leaf2	leaf3
+-- print (tr[{"branch1"}]) --> Tree {leaf1, leaf2}
+-- print (tr[{"branch1", 2}]) --> leaf2
+-- print (tr[{"branch1", 3}]) --> nil
+-- --> leaf1 leaf2 leaf3
 -- for leaf in std.tree.leaves (tr) do
---   io.write (leaf .. "\t")
+-- io.write (leaf .. "\t")
 -- end
 Tree = Container {
   _type = "Tree",
@@ -134,16 +126,16 @@ Tree = Container {
   -- @param i non-table, or list of keys `{i1, ...i_n}`
   -- @return `tr[i1]...[i_n]` if *i* is a key list, `tr[i]` otherwise
   -- @todo the following doesn't treat list keys correctly
-  --       e.g. tr[{{1, 2}, {3, 4}}], maybe flatten first?
+  -- e.g. tr[{{1, 2}, {3, 4}}], maybe flatten first?
   -- @usage
   -- del_other_window = keymap[{"C-x", "4", KEY_DELETE}]
   __index = function (tr, i)
-              if prototype (i) == "table" then
-                return reduce (operator.get, tr, ielems, i)
-              else
-                return rawget (tr, i)
-              end
-            end,
+    if prototype (i) == "table" then
+      return reduce (operator.get, tr, ielems, i)
+    else
+      return rawget (tr, i)
+    end
+  end,
 
   --- Deep insertion.
   -- @static
@@ -154,18 +146,18 @@ Tree = Container {
   -- @usage
   -- function bindkey (keylist, fn) keymap[keylist] = fn end
   __newindex = function (tr, i, v)
-                 if prototype (i) == "table" then
-                   for n = 1, len (i) - 1 do
-                     if prototype (tr[i[n]]) ~= "Tree" then
-                       rawset (tr, i[n], Tree {})
-                     end
-                     tr = tr[i[n]]
-                   end
-                   rawset (tr, last (i), v)
-                 else
-                   rawset (tr, i, v)
-                 end
-               end,
+    if prototype (i) == "table" then
+      for n = 1, len (i) - 1 do
+        if prototype (tr[i[n]]) ~= "Tree" then
+          rawset (tr, i[n], Tree {})
+        end
+        tr = tr[i[n]]
+      end
+      rawset (tr, last (i), v)
+    else
+      rawset (tr, i, v)
+    end
+  end,
 
   _functions = {
     --- Make a deep copy of a tree, including any metatables.
@@ -194,7 +186,7 @@ Tree = Container {
     -- --> t = {"one", "three", "five"}
     -- for leaf in ileaves {"one", {two=2}, {{"three"}, four=4}}, foo="bar", "five"}
     -- do
-    --   t[#t + 1] = leaf
+    -- t[#t + 1] = leaf
     -- end
     ileaves = X ("ileaves (table)", function (t) return leaves (ipairs, t) end),
 
@@ -221,7 +213,7 @@ Tree = Container {
     -- @usage
     -- for leaf in leaves {"one", {two=2}, {{"three"}, four=4}}, foo="bar", "five"}
     -- do
-    --   t[#t + 1] = leaf
+    -- t[#t + 1] = leaf
     -- end
     -- --> t = {2, 4, "five", "foo", "one", "three"}
     -- table.sort (t, lambda "=tostring(_1) < tostring(_2)")
@@ -258,20 +250,20 @@ Tree = Container {
     -- @see inodes
     -- @usage
     -- -- tree = +-- node1
-    -- --        |    +-- leaf1
-    -- --        |    '-- leaf2
-    -- --        '-- leaf 3
+    -- -- | +-- leaf1
+    -- -- | '-- leaf2
+    -- -- '-- leaf 3
     -- tree = Tree { Tree { "leaf1", "leaf2"}, "leaf3" }
     -- for node_type, path, node in nodes (tree) do
-    --   print (node_type, path, node)
+    -- print (node_type, path, node)
     -- end
-    -- --> "branch"   {}      {{"leaf1", "leaf2"}, "leaf3"}
-    -- --> "branch"   {1}     {"leaf1", "leaf"2")
-    -- --> "leaf"     {1,1}   "leaf1"
-    -- --> "leaf"     {1,2}   "leaf2"
-    -- --> "join"     {1}     {"leaf1", "leaf2"}
-    -- --> "leaf"     {2}     "leaf3"
-    -- --> "join"     {}      {{"leaf1", "leaf2"}, "leaf3"}
+    -- --> "branch" {} {{"leaf1", "leaf2"}, "leaf3"}
+    -- --> "branch" {1} {"leaf1", "leaf"2")
+    -- --> "leaf" {1,1} "leaf1"
+    -- --> "leaf" {1,2} "leaf2"
+    -- --> "join" {1} {"leaf1", "leaf2"}
+    -- --> "leaf" {2} "leaf3"
+    -- --> "join" {} {{"leaf1", "leaf2"}, "leaf3"}
     -- os.exit (0)
     nodes = X ("nodes (table)", function (t) return _nodes (pairs, t) end),
   },

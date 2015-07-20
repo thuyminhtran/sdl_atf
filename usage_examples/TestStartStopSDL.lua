@@ -1,7 +1,7 @@
 Test = require('connecttest')
 require('cardinalities')
 config = require('config')
-module         = require('testbase')
+module = require('testbase')
 
 function Test:WaitActivation()
   EXPECT_NOTIFICATION("OnHMIStatus")
@@ -10,31 +10,31 @@ function Test:WaitActivation()
 end
 
 function Test:Any_Test()
-  EXPECT_HMICALL("UI.Slider", 
-  { 		
-    numTicks = 2,
-    position = 2,
-    sliderHeader = "Slider Header",
-    timeout = 5000,
-    sliderFooter = { "Slider Footer" }
-  })
+  EXPECT_HMICALL("UI.Slider",
+    {
+      numTicks = 2,
+      position = 2,
+      sliderHeader = "Slider Header",
+      timeout = 5000,
+      sliderFooter = { "Slider Footer" }
+    })
   :Do(function(_,data)
-    self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
-  end)
-  local cid = self.mobileSession:SendRPC("Slider", 
-  {
-    numTicks = 2,
-    position = 2,
-    sliderHeader = "Slider Header",
-    timeout = 5000,
-    sliderFooter = { "Slider Footer" }
-  })
+      self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  local cid = self.mobileSession:SendRPC("Slider",
+    {
+      numTicks = 2,
+      position = 2,
+      sliderHeader = "Slider Header",
+      timeout = 5000,
+      sliderFooter = { "Slider Footer" }
+    })
   EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
 end
 
 function Test:StopSDL()
   StopSDL()
-end 
+end
 
 function Test:StartSDL()
   StartSDL(config.pathToSDL, config.ExitOnCrash)
@@ -57,25 +57,25 @@ function module:StartSession2()
 end
 
 function Test:Any_Test2()
-  EXPECT_HMICALL("UI.Slider", 
-  { 		
-    numTicks = 2,
-    position = 2,
-    sliderHeader = "Slider Header",
-    timeout = 5000,
-    sliderFooter = { "Slider Footer" }
-  })
+  EXPECT_HMICALL("UI.Slider",
+    {
+      numTicks = 2,
+      position = 2,
+      sliderHeader = "Slider Header",
+      timeout = 5000,
+      sliderFooter = { "Slider Footer" }
+    })
   :Do(function(_,data)
-    self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
-  end)
-  local cid = self.mobileSession:SendRPC("Slider", 
-  {
-    numTicks = 2,
-    position = 2,
-    sliderHeader = "Slider Header",
-    timeout = 5000,
-    sliderFooter = { "Slider Footer" }
-  })
+      self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", {})
+    end)
+  local cid = self.mobileSession:SendRPC("Slider",
+    {
+      numTicks = 2,
+      position = 2,
+      sliderHeader = "Slider Header",
+      timeout = 5000,
+      sliderFooter = { "Slider Footer" }
+    })
   EXPECT_RESPONSE(cid, { success = true, resultCode = "SUCCESS" })
 end
 
@@ -99,10 +99,10 @@ function Test:DelayedExp()
   event.matches = function(self, e) return self == e end
   EXPECT_EVENT(event, "Delayed event")
   RUN_AFTER(function()
-              RAISE_EVENT(event, event)
-            end, 10000)
-end
+      RAISE_EVENT(event, event)
+      end, 10000)
+  end
 
-function Test:StopSDL()
-  StopSDL()
-end
+  function Test:StopSDL()
+    StopSDL()
+  end

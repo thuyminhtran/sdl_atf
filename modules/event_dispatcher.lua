@@ -4,10 +4,10 @@ local module = {}
 
 local mt = { __index = { } }
 
-function mt.__index:GetHandler(conn, ev) 
+function mt.__index:GetHandler(conn, ev)
   res = self._pool3[conn][ev] or
-        self._pool2[conn][ev] or
-        self._pool1[conn][ev]
+  self._pool2[conn][ev] or
+  self._pool1[conn][ev]
   return res
 end
 
@@ -22,8 +22,8 @@ function mt.__index:FindHandler(obj, data)
     return nil
   end
   return findInPool(self._pool3[obj], data) or
-         findInPool(self._pool2[obj], data) or
-         findInPool(self._pool1[obj], data)
+  findInPool(self._pool2[obj], data) or
+  findInPool(self._pool1[obj], data)
 end
 
 function mt.__index:OnPreEvent(func)
@@ -53,50 +53,50 @@ function mt.__index:AddConnection(connection)
   self._pool2[connection] = { }
   self._pool3[connection] = { }
   connection:OnConnected(function (self)
-                           if this.preEventHandler then
-                             this.preEventHandler(events.connectedEvent)
-                           end
-                           exp = this:GetHandler(self, events.connectedEvent)
-                           if exp then
-                             exp.occurences = exp.occurences + 1
-                             exp:Action()
-                             this:validateAll()
-                           end
-                           if this.postEventHandler then
-                             this.postEventHandler(events.connectedEvent)
-                           end
-                         end)
+      if this.preEventHandler then
+        this.preEventHandler(events.connectedEvent)
+      end
+      exp = this:GetHandler(self, events.connectedEvent)
+      if exp then
+        exp.occurences = exp.occurences + 1
+        exp:Action()
+        this:validateAll()
+      end
+      if this.postEventHandler then
+        this.postEventHandler(events.connectedEvent)
+      end
+    end)
   connection:OnDisconnected(function (self)
-                              if this.preEventHandler then
-                                this.preEventHandler(events.disconnectedEvent)
-                              end
-                              exp = this:GetHandler(self, events.disconnectedEvent)
-                              if exp then
-                                exp.occurences = exp.occurences + 1
-                                exp:Action()
-                                this:validateAll()
-                              end
-                              if this.postEventHandler then
-                                this.postEventHandler(events.disconnectedEvent)
-                              end
-                            end)
+      if this.preEventHandler then
+        this.preEventHandler(events.disconnectedEvent)
+      end
+      exp = this:GetHandler(self, events.disconnectedEvent)
+      if exp then
+        exp.occurences = exp.occurences + 1
+        exp:Action()
+        this:validateAll()
+      end
+      if this.postEventHandler then
+        this.postEventHandler(events.disconnectedEvent)
+      end
+    end)
   connection:OnInputData(function (self, data)
-                           if this.preEventHandler then
-                             this.preEventHandler(data)
-                           end
-                           exp = this:FindHandler(self, data)
-                           if exp then
-                             exp.occurences = exp.occurences + 1
-                             if exp.verifyData then
-                               exp:verifyData(data)
-                             end
-                             exp:Action(data)
-                             this:validateAll()
-                           end
-                           if this.postEventHandler then
-                             this.postEventHandler(data)
-                           end
-                         end)
+      if this.preEventHandler then
+        this.preEventHandler(data)
+      end
+      exp = this:FindHandler(self, data)
+      if exp then
+        exp.occurences = exp.occurences + 1
+        if exp.verifyData then
+          exp:verifyData(data)
+        end
+        exp:Action(data)
+        this:validateAll()
+      end
+      if this.postEventHandler then
+        this.postEventHandler(data)
+      end
+    end)
 end
 function mt.__index:RaiseEvent(connection, event, data)
   if self.preEventHandler and data then
@@ -105,13 +105,13 @@ function mt.__index:RaiseEvent(connection, event, data)
   exp = self:FindHandler(connection, data)
   if exp then
     exp.occurences = exp.occurences + 1
-  if data then
-    if exp.verifyData then
-      exp:verifyData(data)
+    if data then
+      if exp.verifyData then
+        exp:verifyData(data)
+      end
+      exp:Action(data)
     end
-    exp:Action(data)
-  end
-  self:validateAll()
+    self:validateAll()
   end
   if self.postEventHandler then
     self.postEventHandler(data)

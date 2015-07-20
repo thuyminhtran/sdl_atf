@@ -1,22 +1,20 @@
 --[[--
- Additions to the core math module.
+Additions to the core math module.
 
- The module table returned by `std.math` also contains all of the entries from
- the core math table.  An hygienic way to import this module, then, is simply
- to override the core `math` locally:
+The module table returned by `std.math` also contains all of the entries from
+the core math table. An hygienic way to import this module, then, is simply
+to override the core `math` locally:
 
-    local math = require "std.math"
+local math = require "std.math"
 
- @module std.math
+@module std.math
 ]]
 
-
-local base  = require "atf.stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 
 local M
 
-
-local _floor  = math.floor
+local _floor = math.floor
 
 local function floor (n, p)
   if p and p ~= 0 then
@@ -27,30 +25,24 @@ local function floor (n, p)
   end
 end
 
-
 local function monkey_patch (namespace)
   namespace = namespace or _G
   namespace.math = base.copy (namespace.math or {}, M)
   return M
 end
 
-
 local function round (n, p)
   local e = 10 ^ (p or 0)
   return _floor (n * e + 0.5) / e
 end
 
-
-
 --[[ ================= ]]--
 --[[ Public Interface. ]]--
 --[[ ================= ]]--
 
-
 local function X (decl, fn)
   return require "std.debug".argscheck ("std.math." .. decl, fn)
 end
-
 
 M = {
   --- Extend `math.floor` to take the number of decimal places.
@@ -76,6 +68,5 @@ M = {
   -- @usage roughly = round (exactly, 2)
   round = X ("round (number, ?int)", round),
 }
-
 
 return base.merge (M, math)

@@ -1,5 +1,5 @@
 local module = { }
-module.FAILED  = { }
+module.FAILED = { }
 module.SUCCESS = { }
 
 local cardinalities = require('cardinalities')
@@ -38,10 +38,10 @@ function module.Expectation(name, connection)
   function mt.__index:DoOnce(func)
     local idx = #self.actions + 1
     table.insert(self.actions,
-                 function(self, data)
-                   func(self, data)
-                   table.remove(self.actions, idx)
-                 end)
+      function(self, data)
+        func(self, data)
+        table.remove(self.actions, idx)
+      end)
     return self
   end
   function mt.__index:Do(func)
@@ -71,8 +71,8 @@ function module.Expectation(name, connection)
         if not e.status then
           exp.status = module.FAILED
           exp.errorMessage["Sequence"] =
-            string.format("\nSequence order violated:\n\"%s\""..
-              " must have got occured before \"%s\"", e, exp)
+          string.format("\nSequence order violated:\n\"%s\""..
+            " must have got occured before \"%s\"", e, exp)
         end
       end
     end
@@ -90,20 +90,20 @@ function module.Expectation(name, connection)
   function mt:__tostring() return self.name end
   local e =
   {
-    timesLE    = 1,    -- Times Less or Equal
-    timesGE    = 1,    -- Times Greater or Equal
-    after      = { },  -- Expectations that should get complied before this one
-    ts         = timestamp(), -- Timestamp
-    timeout    = 10000, -- Maximum allowed age
-    name       = name,  -- Name to display in error message if failed
+    timesLE = 1, -- Times Less or Equal
+    timesGE = 1, -- Times Greater or Equal
+    after = { }, -- Expectations that should get complied before this one
+    ts = timestamp(), -- Timestamp
+    timeout = 10000, -- Maximum allowed age
+    name = name, -- Name to display in error message if failed
     connection = connection, -- Network connection
-    occurences = 0,    -- Expectation complience times
+    occurences = 0, -- Expectation complience times
     errorMessage = { }, -- If failed, error message to display
-    actions    = { },  -- Sequence of actions to be executed when complied
-    pinned     = false, -- True if the expectation is pinned
-    list       = nil   -- ExpectationsList the expectation belongs to
+    actions = { }, -- Sequence of actions to be executed when complied
+    pinned = false, -- True if the expectation is pinned
+    list = nil -- ExpectationsList the expectation belongs to
   }
-  
+
   setmetatable(e, mt)
   return e
 end

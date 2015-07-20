@@ -18,24 +18,27 @@ function module.mt.__index:Connect()
 end
 local function checkSelfArg(s)
   if type(s) ~= "table" or
-    getmetatable(s) ~= module.mt then
+  getmetatable(s) ~= module.mt then
     error("Invalid argument 'self': must be connection (use ':', not '.')")
   end
 end
 function module.mt.__index:Send(text)
-  --print("ws output:", text)
+  xmlReporter:LOG("HMItoSDL", text)
   self.socket:write(text)
 end
+
 function module.mt.__index:OnInputData(func)
   local d = qt.dynamic()
   local this = self
   function d:textMessageReceived(text)
+    xmlReporter:LOG("SDLtoHMI", text)
     local data = json.decode(text)
     --print("ws input:", text)
     func(this, data)
   end
   qt.connect(self.socket, "textMessageReceived(QString)", d, "textMessageReceived(QString)")
 end
+
 function module.mt.__index:OnDataSent(func)
   local d = qt.dynamic()
   local this = self
@@ -44,6 +47,7 @@ function module.mt.__index:OnDataSent(func)
   end
   qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
 end
+
 function module.mt.__index:OnConnected(func)
   if self.qtproxy.connected then
     error("Websocket connection: connected signal is handled already")
@@ -52,6 +56,7 @@ function module.mt.__index:OnConnected(func)
   self.qtproxy.connected = function() func(this) end
   qt.connect(self.socket, "connected()", self.qtproxy, "connected()")
 end
+
 function module.mt.__index:OnDisconnected(func)
   if self.qtproxy.disconnected then
     error("Websocket connection: disconnected signal is handled already")

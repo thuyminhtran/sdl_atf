@@ -1,39 +1,38 @@
 --[[--
- Container prototype.
+Container prototype.
 
- A container is a @{std.object} with no methods.  It's functionality is
- instead defined by its *meta*methods.
+A container is a @{std.object} with no methods. It's functionality is
+instead defined by its *meta*methods.
 
- Where an Object uses the `__index` metatable entry to hold object
- methods, a Container stores its contents using `__index`, preventing
- it from having methods in there too.
+Where an Object uses the `__index` metatable entry to hold object
+methods, a Container stores its contents using `__index`, preventing
+it from having methods in there too.
 
- Although there are no actual methods, Containers are free to use
- metamethods (`__index`, `__sub`, etc) and, like Objects, can supply
- module functions by listing them in `_functions`.  Also, since a
- @{std.container} is a @{std.object}, it can be passed to the
- @{std.object} module functions, or anywhere else a @{std.object} is
- expected.
+Although there are no actual methods, Containers are free to use
+metamethods (`__index`, `__sub`, etc) and, like Objects, can supply
+module functions by listing them in `_functions`. Also, since a
+@{std.container} is a @{std.object}, it can be passed to the
+@{std.object} module functions, or anywhere else a @{std.object} is
+expected.
 
- When making your own prototypes, derive from @{std.container} if you want
- to access the contents of your objects with the `[]` operator, or from
- @{std.object} if you want to access the functionality of your objects with
- named object methods.
+When making your own prototypes, derive from @{std.container} if you want
+to access the contents of your objects with the `[]` operator, or from
+@{std.object} if you want to access the functionality of your objects with
+named object methods.
 
- Prototype Chain
- ---------------
+Prototype Chain
+---------------
 
-      table
-       `-> Object
-            `-> Container
+table
+`-> Object
+`-> Container
 
- @classmod std.container
+@classmod std.container
 ]]
-
 
 local _DEBUG = require "atf.stdlib.std.debug_init"._DEBUG
 
-local base  = require "atf.stdlib.std.base"
+local base = require "atf.stdlib.std.base"
 local debug = require "atf.stdlib.std.debug"
 
 local ipairs, pairs, okeys = base.ipairs, base.pairs, base.okeys
@@ -41,18 +40,15 @@ local insert, len, maxn = base.insert, base.len, base.maxn
 local okeys, prototype, tostring = base.okeys, base.prototype, base.tostring
 local argcheck = debug.argcheck
 
-
-
 --[[ ================= ]]--
 --[[ Helper Functions. ]]--
 --[[ ================= ]]--
-
 
 -- Instantiate a new object based on *proto*.
 --
 -- This is equivalent to:
 --
---     table.merge (table.clone (proto), t or {})
+-- table.merge (table.clone (proto), t or {})
 --
 -- But, not typechecking arguments or checking for metatables, is
 -- slightly faster.
@@ -76,17 +72,15 @@ local function instantiate (proto, t)
   return obj
 end
 
-
 local ModuleFunction = {
   __tostring = function (self) return tostring (self.call) end,
-  __call     = function (self, ...) return self.call (...) end,
+  __call = function (self, ...) return self.call (...) end,
 }
-
 
 --- Mark a function not to be copied into clones.
 --
 -- It responds to `type` with `table`, but otherwise behaves like a
--- regular function.  Marking uncopied module functions in-situ like this
+-- regular function. Marking uncopied module functions in-situ like this
 -- (as opposed to doing book keeping in the metatable) means that we
 -- don't have to create a new metatable with the book keeping removed for
 -- cloned objects, we can just share our existing metatable directly.
@@ -101,12 +95,9 @@ local function modulefunction (fn)
   end
 end
 
-
-
 --[[ ================= ]]--
 --[[ Container Object. ]]--
 --[[ ================= ]]--
-
 
 local function mapfields (obj, src, map)
   local mt = getmetatable (obj) or {}
@@ -152,14 +143,13 @@ local function mapfields (obj, src, map)
   return obj
 end
 
-
 local function __call (self, x, ...)
-  local mt     = getmetatable (self)
+  local mt = getmetatable (self)
   local obj_mt = mt
-  local obj    = {}
+  local obj = {}
 
   -- This is the slowest part of cloning for any objects that have
-  -- a lot of fields to test and copy.  If you need to clone a lot of
+  -- a lot of fields to test and copy. If you need to clone a lot of
   -- objects from a prototype with several module functions, it's much
   -- faster to clone objects from each other than the prototype!
   local k, v = next (self)
@@ -182,7 +172,7 @@ local function __call (self, x, ...)
 
     -- Merge object methods.
     if type (obj_mt.__index) == "table" and
-      type ((mt or {}).__index) == "table"
+    type ((mt or {}).__index) == "table"
     then
       obj_mt.__index = instantiate (mt.__index, obj_mt.__index)
     end
@@ -191,7 +181,6 @@ local function __call (self, x, ...)
   return setmetatable (obj, obj_mt)
 end
 
-
 local function X (decl, fn)
   return debug.argscheck ("std.container." .. decl, fn)
 end
@@ -199,7 +188,6 @@ end
 local M = {
   mapfields = X ("mapfields (table, table|object, ?table)", mapfields),
 }
-
 
 if _DEBUG.argcheck then
 
@@ -229,24 +217,23 @@ else
 
 end
 
-
 function M.__tostring (self)
   local n, k_ = 1, nil
-  local buf = { prototype (self), " {" }	-- pre-buffer object open
-  for _, k in ipairs (okeys (self)) do		-- for ordered public members
+  local buf = { prototype (self), " {" } -- pre-buffer object open
+  for _, k in ipairs (okeys (self)) do -- for ordered public members
     local v = self[k]
 
-    if k_ ~= nil then				-- | buffer separator
+    if k_ ~= nil then -- | buffer separator
       if k ~= n and type (k_) == "number" and k_ == n - 1 then
         -- `;` separates `v` elements from `k=v` elements
         buf[#buf + 1] = "; "
       elseif k ~= nil then
-	-- `,` separator everywhere else
+        -- `,` separator everywhere else
         buf[#buf + 1] = ", "
       end
     end
 
-    if type (k) == "number" and k == n then	-- | buffer key/value pair
+    if type (k) == "number" and k == n then -- | buffer key/value pair
       -- render initial array-like elements as just `v`
       buf[#buf + 1] = tostring (v)
       n = n + 1
@@ -257,11 +244,10 @@ function M.__tostring (self)
 
     k_ = k -- maintain loop invariant: k_ is previous key
   end
-  buf[#buf + 1] = "}"				-- buffer object close
+  buf[#buf + 1] = "}" -- buffer object close
 
-  return table.concat (buf)			-- stringify buffer
+  return table.concat (buf) -- stringify buffer
 end
-
 
 --- Container prototype.
 --
@@ -276,14 +262,14 @@ end
 -- local Container = std.container {}
 --
 -- local Graph = Container {
---   _type = "Graph",
---   _functions = {
---     nodes = function (graph)
---       local n = 0
---       for _ in std.pairs (graph) do n = n + 1 end
---       return n
---     end,
---   },
+-- _type = "Graph",
+-- _functions = {
+-- nodes = function (graph)
+-- local n = 0
+-- for _ in std.pairs (graph) do n = n + 1 end
+-- return n
+-- end,
+-- },
 -- }
 -- local g = Graph { "node1", "node2" }
 -- --> 2
@@ -291,16 +277,16 @@ end
 
 return setmetatable ({
 
-  -- Normally, these are set and wrapped automatically during cloning.
-  -- But, we have to bootstrap the first object, so in this one instance
-  -- it has to be done manually.
+    -- Normally, these are set and wrapped automatically during cloning.
+    -- But, we have to bootstrap the first object, so in this one instance
+    -- it has to be done manually.
 
-  mapfields = modulefunction (M.mapfields),
-  prototype = modulefunction (prototype),
-}, {
-  _type = "Container",
+    mapfields = modulefunction (M.mapfields),
+    prototype = modulefunction (prototype),
+    }, {
+    _type = "Container",
 
-  __call     = M.__call,
-  __tostring = M.__tostring,
-  __pairs    = M.__pairs,
-})
+    __call = M.__call,
+    __tostring = M.__tostring,
+    __pairs = M.__pairs,
+  })

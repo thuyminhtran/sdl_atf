@@ -1,4 +1,4 @@
-local ph     = require('protocol_handler/protocol_handler')
+local ph = require('protocol_handler/protocol_handler')
 local config = require('config')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
@@ -37,9 +37,9 @@ function fstream_mt.__index:KeepMessage(msg)
 end
 function fbuffer_mt.__index:WriteMessage(msg)
   self.wfd:write(string.char(bit32.band(#msg, 0xff),
-                            bit32.band(bit32.rshift(#msg, 8), 0xff),
-                            bit32.band(bit32.rshift(#msg, 16), 0xff),
-                            bit32.band(bit32.rshift(#msg, 24), 0xff)))
+      bit32.band(bit32.rshift(#msg, 8), 0xff),
+      bit32.band(bit32.rshift(#msg, 16), 0xff),
+      bit32.band(bit32.rshift(#msg, 24), 0xff)))
   self.wfd:write(msg)
 end
 function fbuffer_mt.__index:Flush()
@@ -67,42 +67,42 @@ function fstream_mt.__index:GetMessage()
   if data then
     self.bytesSent = self.bytesSent + #data
     self.messageId = self.messageId + 1
-    
-    header = 
-     {
-       version = config.defaultProtocolVersion or 2,
-       encryption = false,
-       sessionId = self.sessionId,
-       frameInfo = 0,
-       frameType = 1,
-       serviceType = self.service,
-       binaryData = data,
-       messageId = self.messageId
-     }    
-     
+
+    header =
+    {
+      version = config.defaultProtocolVersion or 2,
+      encryption = false,
+      sessionId = self.sessionId,
+      frameInfo = 0,
+      frameType = 1,
+      serviceType = self.service,
+      binaryData = data,
+      messageId = self.messageId
+    }
+
     res = table.concat(self.protocol_handler:Compose(header))
   end
   return header, res
 end
-function fbuffer_mt.__index:GetMessage()  
+function fbuffer_mt.__index:GetMessage()
   local header = {}
   if self.keep then
     local res = self.keep
     self.keep = nil
-    header = self.protocol_handler:Parse(self.keep)    
+    header = self.protocol_handler:Parse(self.keep)
     return header, res
   end
   local len = self.rfd:read(4)
-  if len then      
+  if len then
     len = bit32.lshift(string.byte(string.sub(len, 4, 4)), 24) +
-          bit32.lshift(string.byte(string.sub(len, 3, 3)), 16) +
-          bit32.lshift(string.byte(string.sub(len, 2, 2)), 8) +
-          string.byte(string.sub(len, 1, 1))
+    bit32.lshift(string.byte(string.sub(len, 3, 3)), 16) +
+    bit32.lshift(string.byte(string.sub(len, 2, 2)), 8) +
+    string.byte(string.sub(len, 1, 1))
     local frame = self.rfd:read(len)
     local doNotValidateJson = true
-    header = self.protocol_handler:Parse(frame, doNotValidateJson)    
+    header = self.protocol_handler:Parse(frame, doNotValidateJson)
     return header, frame
-  end  
+  end
   return header, nil
 end
 function module.MessageDispatcher(connection)
@@ -120,7 +120,7 @@ function module.MessageDispatcher(connection)
   end
   res.sender = qt.dynamic()
   function res.sender:SignalMessageSent() end
-  
+
   function res._d:bytesWritten(c)
     if #res.generators == 0 then return end
     res.bufferSize = res.bufferSize + c
@@ -168,7 +168,7 @@ end
 function module.mt.__index:UnmapFile(filebuffer)
   if not filebuffer then
     error("File was not mapped")
-  end  
+  end
   self.mapped[filebuffer.filename] = nil
   for i, g in ipairs(self.generators) do
     if g == filebuffer then

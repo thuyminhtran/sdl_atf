@@ -16,9 +16,9 @@ declare_long_opt("--heartbeat", RequiredArgument, "Hearbeat timeout value")
 
 local script_files = parse_cmdl()
 
-if (#script_files > 0) then 
-    for _,scpt in ipairs(script_files) do
-        print_startscript(scpt)
-	    script_execute(scpt)
-    end
+if (#script_files > 0) then
+  for _,scpt in ipairs(script_files) do
+    print_startscript(scpt)
+    script_execute(scpt)
+  end
 end

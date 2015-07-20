@@ -1,36 +1,33 @@
 --[[--
- Additions to the core string module.
+Additions to the core string module.
 
- The module table returned by `std.string` also contains all of the entries
- from the core string table.  An hygienic way to import this module, then, is
- simply to override the core `string` locally:
+The module table returned by `std.string` also contains all of the entries
+from the core string table. An hygienic way to import this module, then, is
+simply to override the core `string` locally:
 
-    local string = require "std.string"
+local string = require "std.string"
 
- @module std.string
+@module std.string
 ]]
 
-local base   = require "atf.stdlib.std.base"
-local debug  = require "atf.stdlib.std.debug"
+local base = require "atf.stdlib.std.base"
+local debug = require "atf.stdlib.std.debug"
 
 local StrBuf = require "atf.stdlib.std.strbuf" {}
 
-local copy          = base.copy
+local copy = base.copy
 local getmetamethod = base.getmetamethod
-local insert, len   = base.insert, base.len
-local pairs         = base.pairs
-local render        = base.render
+local insert, len = base.insert, base.len
+local pairs = base.pairs
+local render = base.render
 
 local M
-
-
 
 local _tostring = base.tostring
 
 local function __concat (s, o)
   return _tostring (s) .. _tostring (o)
 end
-
 
 local function __index (s, i)
   if type (i) == "number" then
@@ -41,13 +38,11 @@ local function __index (s, i)
   end
 end
 
-
-local _format   = string.format
+local _format = string.format
 
 local function format (f, arg1, ...)
   return (arg1 ~= nil) and _format (f, arg1, ...) or f
 end
-
 
 local function tpack (from, to, ...)
   return from, to, {...}
@@ -56,7 +51,6 @@ end
 local function tfind (s, ...)
   return tpack (s:find (...))
 end
-
 
 local function finds (s, p, i, ...)
   i = i or 1
@@ -72,7 +66,6 @@ local function finds (s, p, i, ...)
   return l
 end
 
-
 local function monkey_patch (namespace)
   namespace = namespace or _G
   namespace.string = base.copy (namespace.string or {}, M)
@@ -84,153 +77,144 @@ local function monkey_patch (namespace)
   return M
 end
 
-
 local function caps (s)
   return (s:gsub ("(%w)([%w]*)", function (l, ls) return l:upper () .. ls end))
 end
-
 
 local function escape_shell (s)
   return (s:gsub ("([ %(%)%\\%[%]\"'])", "\\%1"))
 end
 
-
 local function ordinal_suffix (n)
-  n = math.abs (n) % 100
-  local d = n % 10
-  if d == 1 and n ~= 11 then
-    return "st"
-  elseif d == 2 and n ~= 12 then
-    return "nd"
-  elseif d == 3 and n ~= 13 then
-    return "rd"
-  else
-    return "th"
-  end
+n = math.abs (n) % 100
+local d = n % 10
+if d == 1 and n ~= 11 then
+  return "st"
+elseif d == 2 and n ~= 12 then
+  return "nd"
+elseif d == 3 and n ~= 13 then
+  return "rd"
+else
+  return "th"
 end
-
+end
 
 local function pad (s, w, p)
-  p = string.rep (p or " ", math.abs (w))
-  if w < 0 then
-    return string.sub (p .. s, w)
-  end
-  return string.sub (s .. p, 1, w)
+p = string.rep (p or " ", math.abs (w))
+if w < 0 then
+  return string.sub (p .. s, w)
 end
-
+return string.sub (s .. p, 1, w)
+end
 
 local function wrap (s, w, ind, ind1)
-  w = w or 78
-  ind = ind or 0
-  ind1 = ind1 or ind
-  assert (ind1 < w and ind < w,
-          "the indents must be less than the line width")
-  local r = StrBuf { string.rep (" ", ind1) }
-  local i, lstart, lens = 1, ind1, len (s)
-  while i <= lens do
-    local j = i + w - lstart
-    while len (s[j]) > 0 and s[j] ~= " " and j > i do
-      j = j - 1
-    end
-    local ni = j + 1
-    while s[j] == " " do
-      j = j - 1
-    end
-    r:concat (s:sub (i, j))
-    i = ni
-    if i < lens then
-      r:concat ("\n" .. string.rep (" ", ind))
-      lstart = ind
-    end
+w = w or 78
+ind = ind or 0
+ind1 = ind1 or ind
+assert (ind1 < w and ind < w,
+"the indents must be less than the line width")
+local r = StrBuf { string.rep (" ", ind1) }
+local i, lstart, lens = 1, ind1, len (s)
+while i <= lens do
+  local j = i + w - lstart
+  while len (s[j]) > 0 and s[j] ~= " " and j > i do
+    j = j - 1
   end
-  return r:tostring ()
+  local ni = j + 1
+  while s[j] == " " do
+    j = j - 1
+  end
+  r:concat (s:sub (i, j))
+  i = ni
+  if i < lens then
+    r:concat ("\n" .. string.rep (" ", ind))
+    lstart = ind
+  end
 end
-
+return r:tostring ()
+end
 
 local function numbertosi (n)
-  local SIprefix = {
-    [-8] = "y", [-7] = "z", [-6] = "a", [-5] = "f",
-    [-4] = "p", [-3] = "n", [-2] = "mu", [-1] = "m",
-    [0] = "", [1] = "k", [2] = "M", [3] = "G",
-    [4] = "T", [5] = "P", [6] = "E", [7] = "Z",
-    [8] = "Y"
-  }
-  local t = format("% #.2e", n)
-  local _, _, m, e = t:find(".(.%...)e(.+)")
-  local man, exp = tonumber (m), tonumber (e)
-  local siexp = math.floor (exp / 3)
-  local shift = exp - siexp * 3
-  local s = SIprefix[siexp] or "e" .. tostring (siexp)
-  man = man * (10 ^ shift)
-  return format ("%0.f", man) .. s
+local SIprefix = {
+  [-8] = "y", [-7] = "z", [-6] = "a", [-5] = "f",
+  [-4] = "p", [-3] = "n", [-2] = "mu", [-1] = "m",
+  [0] = "", [1] = "k", [2] = "M", [3] = "G",
+  [4] = "T", [5] = "P", [6] = "E", [7] = "Z",
+  [8] = "Y"
+}
+local t = format("% #.2e", n)
+local _, _, m, e = t:find(".(.%...)e(.+)")
+local man, exp = tonumber (m), tonumber (e)
+local siexp = math.floor (exp / 3)
+local shift = exp - siexp * 3
+local s = SIprefix[siexp] or "e" .. tostring (siexp)
+man = man * (10 ^ shift)
+return format ("%0.f", man) .. s
 end
-
 
 local function trim (s, r)
-  r = r or "%s+"
-  return (s:gsub ("^" .. r, ""):gsub (r .. "$", ""))
+r = r or "%s+"
+return (s:gsub ("^" .. r, ""):gsub (r .. "$", ""))
 end
-
 
 local function prettytostring (x, indent, spacing)
-  indent = indent or "\t"
-  spacing = spacing or ""
-  return render (x,
-                 function ()
-                   local s = spacing .. "{"
-                   spacing = spacing .. indent
-                   return s
-                 end,
-                 function ()
-                   spacing = string.gsub (spacing, indent .. "$", "")
-                   return spacing .. "}"
-                 end,
-                 function (x)
-                   if type (x) == "string" then
-                     return format ("%q", x)
-                   else
-                     return tostring (x)
-                   end
-                 end,
-                 function (x, k, v, ks, vs)
-                   local s = spacing
-		   if type (k) ~= "string" or k:match "[^%w_]" then
-		     s = s .. "["
-                     if type (k) == "table" then
-                       s = s .. "\n"
-                     end
-                     s = s .. ks
-                     if type (k) == "table" then
-                       s = s .. "\n"
-                     end
-                     s = s .. "]"
-		   else
-		     s = s .. k
-		   end
-		   s = s .. " ="
-                   if type (v) == "table" then
-                     s = s .. "\n"
-                   else
-                     s = s .. " "
-                   end
-                   s = s .. vs
-                   return s
-                 end,
-                 function (_, k)
-                   local s = "\n"
-                   if k then
-                     s = "," .. s
-                   end
-                   return s
-                 end)
+indent = indent or "\t"
+spacing = spacing or ""
+return render (x,
+  function ()
+    local s = spacing .. "{"
+    spacing = spacing .. indent
+    return s
+  end,
+  function ()
+    spacing = string.gsub (spacing, indent .. "$", "")
+    return spacing .. "}"
+  end,
+  function (x)
+    if type (x) == "string" then
+      return format ("%q", x)
+    else
+      return tostring (x)
+    end
+  end,
+  function (x, k, v, ks, vs)
+    local s = spacing
+    if type (k) ~= "string" or k:match "[^%w_]" then
+      s = s .. "["
+      if type (k) == "table" then
+        s = s .. "\n"
+      end
+      s = s .. ks
+      if type (k) == "table" then
+        s = s .. "\n"
+      end
+      s = s .. "]"
+    else
+      s = s .. k
+    end
+    s = s .. " ="
+    if type (v) == "table" then
+      s = s .. "\n"
+    else
+      s = s .. " "
+    end
+    s = s .. vs
+    return s
+  end,
+  function (_, k)
+    local s = "\n"
+    if k then
+      s = "," .. s
+    end
+    return s
+  end)
 end
 
-
 local function pickle (x)
-  if type (x) == "string" then
-    return format ("%q", x)
-  elseif type (x) == "number" or type (x) == "boolean" or
-    type (x) == "nil" then
+if type (x) == "string" then
+  return format ("%q", x)
+elseif type (x) == "number" or type (x) == "boolean" or
+  type (x) == "nil" then
     return tostring (x)
   else
     x = copy (x) or x
@@ -248,12 +232,9 @@ local function pickle (x)
   end
 end
 
-
-
 --[[ ================= ]]--
 --[[ Public Interface. ]]--
 --[[ ================= ]]--
-
 
 local function X (decl, fn)
   return debug.argscheck ("std.string." .. decl, fn)
@@ -273,7 +254,7 @@ M = {
   -- @string s string
   -- @tparam int|string i index or method name
   -- @return `s:sub (i, i)` if i is a number, otherwise
-  --   fall back to a `std.string` metamethod (if any).
+  -- fall back to a `std.string` metamethod (if any).
   -- @usage
   -- getmetatable ("").__index = require "std.string".__index
   -- third = ("12345")[3]
@@ -319,7 +300,7 @@ M = {
   -- @see std.string.tfind
   -- @usage
   -- for t in std.elems (finds ("the target string", "%S+")) do
-  --   print (tostring (t.capt))
+  -- print (tostring (t.capt))
   -- end
   finds = X ("finds (string, string, ?int, ?boolean|:plain)", finds),
 
@@ -339,7 +320,7 @@ M = {
   -- @treturn string *s* with leading *r* stripped
   -- @usage print ("got: " .. ltrim (userinput))
   ltrim = X ("ltrim (string, ?string)",
-             function (s, r) return (s:gsub ("^" .. (r or "%s+"), "")) end),
+    function (s, r) return (s:gsub ("^" .. (r or "%s+"), "")) end),
 
   --- Overwrite core `string` methods with `std` enhanced versions.
   --
@@ -374,7 +355,7 @@ M = {
   -- @function pad
   -- @string s a string to justify
   -- @int w width to justify to (-ve means right-justify; +ve means
-  --   left-justify)
+  -- left-justify)
   -- @string[opt=" "] p string to pad with
   -- @treturn string *s* justified to *w* characters wide
   -- @usage print (pad (trim (outputstr, 78)) .. "\n")
@@ -396,7 +377,7 @@ M = {
   -- @string[opt="\t"] indent indent between levels
   -- @string[opt=""] spacing space before every line
   -- @treturn string pretty string rendering of *x*
-  -- @usage print (prettytostring (std, "  "))
+  -- @usage print (prettytostring (std, " "))
   prettytostring = X ("prettytostring (?any, ?string, ?string)", prettytostring),
 
   --- Turn tables into strings with recursion detection.
@@ -413,9 +394,9 @@ M = {
   -- @return string representation of *x*
   -- @usage
   -- function tostring (x)
-  --   return render (x, lambda '="{"', lambda '="}"', tostring,
-  --                  lambda '=_4.."=".._5', lambda '= _4 and "," or ""',
-  --                  lambda '=","')
+  -- return render (x, lambda '="{"', lambda '="}"', tostring,
+  -- lambda '=_4.."=".._5', lambda '= _4 and "," or ""',
+  -- lambda '=","')
   -- end
   render = X ("render (?any, func, func, func, func, func, ?table)", render),
 
@@ -426,7 +407,7 @@ M = {
   -- @treturn string *s* with trailing *r* stripped
   -- @usage print ("got: " .. rtrim (userinput))
   rtrim = X ("rtrim (string, ?string)",
-             function (s, r) return (s:gsub ((r or "%s+") .. "$", "")) end),
+    function (s, r) return (s:gsub ((r or "%s+") .. "$", "")) end),
 
   --- Split a string at a given separator.
   -- Separator is a Lua pattern, so you have to escape active characters,
@@ -471,32 +452,22 @@ M = {
   wrap = X ("wrap (string, ?int, ?int, ?int)", wrap),
 }
 
-
-
 --[[ ============= ]]--
 --[[ Deprecations. ]]--
 --[[ ============= ]]--
 
-
 local DEPRECATED = debug.DEPRECATED
-
 
 M.assert = DEPRECATED ("41", "'std.string.assert'",
   "use 'std.assert' instead", base.assert)
 
-
 M.require_version = DEPRECATED ("41", "'std.string.require_version'",
   "use 'std.require' instead", base.require)
-
 
 M.tostring = DEPRECATED ("41", "'std.string.tostring'",
   "use 'std.tostring' instead", base.tostring)
 
-
-
 return base.merge (M, string)
-
-
 
 --- Types
 -- @section Types
@@ -508,7 +479,6 @@ return base.merge (M, string)
 -- @see render
 -- @usage function open (t) return "{" end
 
-
 --- Signature of @{render} close table callback.
 -- @function closetablecb
 -- @tparam table t table just rendered
@@ -516,14 +486,12 @@ return base.merge (M, string)
 -- @see render
 -- @usage function close (t) return "}" end
 
-
 --- Signature of @{render} element callback.
 -- @function elementcb
 -- @param x element to render
 -- @treturn string element rendering
 -- @see render
 -- @usage function element (e) return require "std".tostring (e) end
-
 
 --- Signature of @{render} pair callback.
 -- Trying to re-render *key* or *value* here will break recursion
@@ -538,7 +506,6 @@ return base.merge (M, string)
 -- @see render
 -- @usage
 -- function pair (_, _, _, key, value) return key .. "=" .. value end
-
 
 --- Signature of @{render} separator callback.
 -- @function separatorcb

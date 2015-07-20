@@ -1,5 +1,6 @@
 local ph = require('protocol_handler/protocol_handler')
 local file_connection = require("file_connection")
+local reporter = require("reporter")
 local module = { mt = { __index = {} } }
 
 function module.MobileConnection(connection)
@@ -15,35 +16,37 @@ function module.mt.__index:Send(data)
   local messages = { }
   local protocol_handler = ph.ProtocolHandler()
   for _, msg in ipairs(data) do
+    reporter:LOG("MOBtoSDL", msg)
     local msgs = protocol_handler:Compose(msg)
     for _, m in ipairs(msgs) do
       table.insert(messages, m)
     end
   end
- self.connection:Send(messages)
+  self.connection:Send(messages)
 end
 function module.mt.__index:StartStreaming(session, service, filename, bandwidth)
   if getmetatable(self.connection) ~= file_connection.mt then
     error("Data streaming is impossible unless underlying connection is FileConnection")
   end
-  xmlLogger.AddMessage("mobile_connection","StartStreaming", {["Session"]=session,
-  ["Service"]=service,["FileName"]=filename,["Bandwidth"]=bandwidth })
+  xmlReporter.AddMessage("mobile_connection","StartStreaming", {["Session"]=session,
+      ["Service"]=service,["FileName"]=filename,["Bandwidth"]=bandwidth })
   self.connection:StartStreaming(session, service, filename, bandwidth)
 end
 function module.mt.__index:StopStreaming(filename)
-  xmlLogger.AddMessage("mobile_connection","StopStreaming", {["FileName"]=filename})
+  xmlReporter.AddMessage("mobile_connection","StopStreaming", {["FileName"]=filename})
   self.connection:StopStreaming(filename)
 end
 function module.mt.__index:OnInputData(func)
   local this = self
   local protocol_handler = ph.ProtocolHandler()
   local f =
-    function(self, binary)
-      local msg = protocol_handler:Parse(binary)
-      for _, v in ipairs(msg) do
-        func(this, v)
-      end
+  function(self, binary)
+    local msg = protocol_handler:Parse(binary)
+    for _, v in ipairs(msg) do
+      reporter:LOG("SDLtoMOB", v)
+      func(this, v)
     end
+  end
   self.connection:OnInputData(f)
 end
 function module.mt.__index:OnDataSent(func)
