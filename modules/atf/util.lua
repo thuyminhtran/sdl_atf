@@ -118,6 +118,17 @@ end
 function module.heartbeat(str)
   config.heartbeatTimeout=str
 end
+
+function module.sdl_core(str)
+  if (is_file_exists(str)) then
+    config.pathToSDL = str
+  else
+    print("Incorrect path to sdl binary dir")
+    print("Use default from config")
+    print("=======================")
+  end
+end
+
 function parse_cmdl()
   arguments = utils.getopt(argv, opts)
   if (arguments) then
