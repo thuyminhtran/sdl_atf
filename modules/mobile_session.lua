@@ -134,7 +134,8 @@ function mt.__index:Send(message)
       messageId = self.messageId,
       rpcType = message.rpcType,
       rpcFunctionId = message.rpcFunctionId,
-      rpcCorrelationId = message.rpcCorrelationId
+      rpcCorrelationId = message.rpcCorrelationId,
+      payload = message.payload
     }
   )
 end
