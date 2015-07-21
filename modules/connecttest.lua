@@ -579,6 +579,7 @@ function module:runSDL()
   end
 
   function module:startSession()
+    critical(true)
     self.mobileSession = mobile_session.MobileSession(
       self,
       self.mobileConnection,
