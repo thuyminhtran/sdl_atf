@@ -1,6 +1,15 @@
 #!/bin/bash
+echo "Stop SDL"
+shutdown_time=10
 read pid < sdl.pid
-kill -TERM $pid
+kill -SIGINT $pid
 rm sdl.pid
-sleep 1
-exit 0
+for x in `seq $shutdown_time`
+do
+    sleep 1
+    test -e  /proc/$pid || exit 0
+done
+echo "Unable to stop SDL correctly during "$shutdown_time" seconds"
+echo "Kill SDL process : "$pid
+kill -SIGTERM $pid
+exit 1
