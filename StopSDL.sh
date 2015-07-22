@@ -1,5 +1,4 @@
 #!/bin/bash
-echo "Stop SDL"
 shutdown_time=10
 read pid < sdl.pid
 kill -SIGINT $pid
