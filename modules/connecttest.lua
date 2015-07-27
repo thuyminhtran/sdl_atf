@@ -202,7 +202,7 @@ end
 
 function RAISE_EVENT(event, data)
   xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(event))
-  event_dispatcher:RaiseEvent(module.mobileConnection, event, data)
+  event_dispatcher:RaiseEvent(module.mobileConnection, data)
 end
 
 function EXPECT_HMIEVENT(event, name)
