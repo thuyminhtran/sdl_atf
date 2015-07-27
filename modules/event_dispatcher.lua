@@ -94,7 +94,6 @@ function mt.__index:RaiseEvent(connection, data)
     if data then
       if exp.verifyData then
         for k, v in pairs(exp.verifyData) do
-            print(k, v)
             v(exp, data)
             if (exp.status == expectations.FAILED) then
                 break
