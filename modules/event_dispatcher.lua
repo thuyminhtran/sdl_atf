@@ -93,7 +93,13 @@ function mt.__index:RaiseEvent(connection, data)
     exp.occurences = exp.occurences + 1
     if data then
       if exp.verifyData then
-        exp:verifyData(data)
+        for k, v in pairs(exp.verifyData) do
+            print(k, v)
+            v(exp, data)
+            if (exp.status == expectations.FAILED) then
+                break
+            end
+        end
       end
       exp:Action(data)
     end

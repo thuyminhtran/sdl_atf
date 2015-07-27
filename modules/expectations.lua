@@ -78,7 +78,8 @@ function module.Expectation(name, connection)
     end
   end
   function mt.__index:ValidIf(func)
-    self.verifyData = function(self, data)
+    if not self.verifyData then self.verifyData = {} end
+    self.verifyData[#self.verifyData + 1] = function(self, data)
       local valid, msg = func(self, data)
       if not valid then
         self.status = module.FAILED
