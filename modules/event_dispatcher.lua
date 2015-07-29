@@ -81,24 +81,10 @@ function mt.__index:AddConnection(connection)
       end
     end)
   connection:OnInputData(function (self, data)
-      if this.preEventHandler then
-        this.preEventHandler(data)
-      end
-      exp = this:FindHandler(self, data)
-      if exp then
-        exp.occurences = exp.occurences + 1
-        if exp.verifyData then
-          exp:verifyData(data)
-        end
-        exp:Action(data)
-        this:validateAll()
-      end
-      if this.postEventHandler then
-        this.postEventHandler(data)
-      end
+      this:RaiseEvent(self, data)
     end)
 end
-function mt.__index:RaiseEvent(connection, event, data)
+function mt.__index:RaiseEvent(connection, data)
   if self.preEventHandler and data then
     self.preEventHandler(data)
   end
@@ -107,7 +93,12 @@ function mt.__index:RaiseEvent(connection, event, data)
     exp.occurences = exp.occurences + 1
     if data then
       if exp.verifyData then
-        exp:verifyData(data)
+        for k, v in pairs(exp.verifyData) do
+            v(exp, data)
+            if (exp.status == expectations.FAILED) then
+                break
+            end
+        end
       end
       exp:Action(data)
     end
