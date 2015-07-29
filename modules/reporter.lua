@@ -137,7 +137,7 @@ function module.init(_name)
   module.root = module.ndoc:createRootNode(alias)
   if (config.storeFullSDLLogs) then
     os.execute('mkdir -p "'.. curr_log_path .. '"')
-    sdl_log.Connect(sdl_log.init('localhost',4555,module.full_sdlLog_name))
+    sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
   end
   if config.storeFullATFLogs then
     module.full_atf_log = atf_log:New(module.full_atf_log_name)
