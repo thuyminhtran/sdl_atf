@@ -4,7 +4,7 @@ Logger.mobile_log_format = "%s(%s) [version: %s, frameType: %s, encryption: %s, 
 Logger.hmi_log_format = "%s(%s) : %s \n"
 
 function formated_time()
-  return os.time()
+  return os.date("%X")
 end
 
 function Logger:MOBtoSDL(message)
@@ -13,7 +13,7 @@ function Logger:MOBtoSDL(message)
 end
 
 function Logger:StartTestCase(test_case_name)
-    self.atf_log_file:write(string.format("%s : \n", test_case_name))
+    self.atf_log_file:write(string.format("\n\n===== %s : \n", test_case_name))
 end
 
 function Logger:SDLtoMOB(message)
