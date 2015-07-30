@@ -16,8 +16,7 @@ config.sdl_logs_port = 6676
 config.ExitOnCrash = true
 config.autorunSDL = true
 
-config.excludeReport=false
-config.storeFullSDLLogs = false
+config.excludeReport = false
 config.storeFullATFLogs = false
 config.reportPath = "./TestingReports"
 --for store sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).

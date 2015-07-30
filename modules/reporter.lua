@@ -148,6 +148,7 @@ function module.init(_name)
 end
 
 function module:LOGTestCaseStart(test_case)
+  if config.excludeReport then return end
   if config.storeFullATFLogs then
     module.full_atf_log:StartTestCase(test_case)
   end
@@ -155,6 +156,7 @@ function module:LOGTestCaseStart(test_case)
 end
 
 function module:LOG(tract, message)
+  if config.excludeReport then return end
   if config.storeFullATFLogs then
     module.full_atf_log[tract](module.full_atf_log, message)
   end
