@@ -47,6 +47,7 @@ function module.AddCase(name)
     module.curr_node = module.root:addChild(name)
     module.ndoc:write(module.curr_report_name)
   end
+  module:LOGTestCaseStart(name)
 end
 function module.AddMessage(name,funcName,...)
   if(not config.excludeReport) then
@@ -144,6 +145,13 @@ function module.init(_name)
   end
   module.atf_log = atf_log:New(module.atf_log_name)
   return module
+end
+
+function module:LOGTestCaseStart(test_case)
+  if config.storeFullATFLogs then
+    module.full_atf_log:StartTestCase(test_case)
+  end
+    module.atf_log:StartTestCase(test_case)
 end
 
 function module:LOG(tract, message)

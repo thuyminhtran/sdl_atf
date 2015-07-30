@@ -12,6 +12,10 @@ function Logger:MOBtoSDL(message)
   self.atf_log_file:write(log_str)
 end
 
+function Logger:StartTestCase(test_case_name)
+    self.atf_log_file:write(string.format("%s : \n", test_case_name))
+end
+
 function Logger:SDLtoMOB(message)
   local payload = message.payload
   if type(payload) == "table" then
