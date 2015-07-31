@@ -48,7 +48,7 @@ end
 function fstream_mt.__index:GetMessage()
   local timespan = timestamp() - self.ts
   local header = {}
-  if timespan == 0 then return nil, 20 end
+  if timespan == 0 then return end
   if timespan > 5000 then
     self.ts = self.ts + timespan - 1000
     self.bytesSent = self.bytesSent / (timespan / 1000)
@@ -135,9 +135,6 @@ function module.MessageDispatcher(connection)
         if res.bufferSize > #msg then
           res.bufferSize = res.bufferSize - #msg
           res.connection:Send({ msg })
-          for index, table in pairs (header) do
-            res.sender:SignalMessageSent(table.sessionId)
-          end
           break
         else
           res.generators[res.idx]:KeepMessage(msg)
