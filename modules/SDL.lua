@@ -10,6 +10,7 @@ SDL.RUNNING = 1
 SDL.CRASH = -1
 
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
+  xmlReporter:initSDLLOG()
   if ExitOnCrash then
     self.exitOnCrash = ExitOnCrash
   end

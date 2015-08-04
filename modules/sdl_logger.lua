@@ -29,7 +29,7 @@ function module.Connect(self)
 end
 
 function module.close()
-  module.socket:close()
+  if(module.socket) then module.socket:close() end
   -- io.close(module.sdl_log_file) -- fix me necessarty disconnect sygnal after file close
 end
 
