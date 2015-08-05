@@ -104,7 +104,6 @@ function module.init(script_name)
   module.script_name = script_name
   if(config.excludeReport) then return module end
   if (module.timestamp == '') then module.timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
---  module:initSDLLOG(module.timestamp)
   local dir_name = './' .. script_name
   local curr_report_dir = ''
   local curr_atf_log_dir = ''
@@ -140,7 +139,6 @@ function module.init(script_name)
 end
 
 function module:initSDLLOG(timestamp)
-    if (config.storeFullSDLLogs) then sdl_log.close() end
     local dir_name = './' .. module.script_name
     if not timestamp then timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
     if (config.reportPath == nil or config.reportPath == '') then
@@ -153,9 +151,15 @@ function module:initSDLLOG(timestamp)
     local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..timestamp, io.catdir(io.dirname(dir_name)))
     module.full_sdlLog_name = io.catfile(curr_log_path, self.script_name ..'_'..module.timestamp .. reportMark .. '.log')
     if (config.storeFullSDLLogs) then
+      sdl_log.close()
       os.execute('mkdir -p "'.. curr_log_path .. '"')
       sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
     end
+end
+
+function module:closeSDLlogSocket()
+    if (config.storeFullSDLLogs) then sdl_log.close() end
+    os.execute('bash ./WaitClosingSocket.sh '..config.sdl_logs_port)
 end
 
 function module:LOGTestCaseStart(test_case)
