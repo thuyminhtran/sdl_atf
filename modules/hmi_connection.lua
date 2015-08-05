@@ -75,7 +75,7 @@ function module.mt.__index:SendNotification(methodName, params)
 end
 
 function module.mt.__index:SendResponse(id, methodName, code, params)
-  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= parms} )
+  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= params} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
