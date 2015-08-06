@@ -39,7 +39,6 @@ function module.mt.__index:Send(text)
 end
 
 function module.mt.__index:SendRequest(methodName, params)
-  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
   data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -48,19 +47,7 @@ function module.mt.__index:SendRequest(methodName, params)
   data.params = params
   local text = json.encode(data)
   self:Send(text)
-  return self.requestId
-end
-
-function module.mt.__index:SendRequest(methodName, params)
-  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName, ["params"]= params} )
-  local data = {}
-  self.requestId = self.requestId + 1
-  data.jsonrpc = "2.0"
-  data.id = self.requestId
-  data.method = methodName
-  data.params = params
-  local text = json.encode(data)
-  self:Send(text)
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
   return self.requestId
 end
 
