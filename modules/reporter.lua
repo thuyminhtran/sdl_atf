@@ -7,7 +7,7 @@ local ford_constants = require("protocol_handler/ford_protocol_constants")
 local module = {
   -- logLevel = 1, --see log level comment
   timestamp='',
-  script_name = '',
+  script_file_name = '',
   ndoc = {},
   curr_node={},
   root = {},
@@ -70,6 +70,7 @@ function module.AddMessage(name,funcName,...)
     module.ndoc:write(module.curr_report_name)
   end
 end
+
 function module.CaseMessageTotal(name, ... )
   if(not config.excludeReport) then
     local attrib = table.pack(...)[1]
@@ -81,80 +82,86 @@ function module.CaseMessageTotal(name, ... )
     end
   end
 end
---[[ change log level not implemented now. absent in requirements
-function module.setLevel(level)
-  module.logLevel = level
-end
-function module.getLevel()
-  return module.logLevel
-end
-]]--
+
 function module.finalize()
   if(not config.excludeReport) then
     module.ndoc:write(module.curr_report_name)
     if (config.storeFullSDLLogs) then sdl_log.close() end
   end
 end
+
 local function get_script_name(str)
   local tbl = table.pack(string.match(str, '(.-)([^/]-([^%.]+))$'))
   local name = tbl[#tbl-1]:gsub('%.'..tbl[#tbl]..'$', '')
   return name
 end
-function module.init(script_name)
-  module.script_name = script_name
+
+function module.init(script_file_name)
+  module.script_file_name = script_file_name
   if(config.excludeReport) then return module end
   if (module.timestamp == '') then module.timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
-  local dir_name = './' .. script_name
+  local dir_name = './' .. script_file_name
   local curr_report_dir = ''
-  local curr_atf_log_dir = ''
   if (config.reportPath ~= nil and config.reportPath ~= '') then
     curr_report_dir = config.reportPath .. '/TestingReports'
-    curr_atf_log_dir = config.reportPath .. '/ATFLogs'
   else
     curr_report_dir = 'TestingReports'
-    curr_atf_log_dir = 'ATFLogs'
   end
   local curr_report_path = io.catdir(curr_report_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
-  local curr_atf_log_path = io.catdir(curr_atf_log_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
   if (config.reportMark ~= nil and config.reportMark ~= '' ) then
-    module.full_atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '_full.txt')
-    module.atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.txt')
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
   else
-    module.full_atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..'full.txt')
-    module.atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'.txt')
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
   end
   os.execute('mkdir -p "'.. curr_report_path .. '"')
-  os.execute('mkdir -p "'.. curr_atf_log_path .. '"')
-
   module.ndoc = xml.new()
-  local alias = script_name:gsub('%.', '_'):gsub('/','_')
+  local alias = script_file_name:gsub('%.', '_'):gsub('/','_')
   module.root = module.ndoc:createRootNode(alias)
-  if config.storeFullATFLogs then
-    module.full_atf_log = atf_log:New(module.full_atf_log_name)
-  end
-  module.atf_log = atf_log:New(module.atf_log_name)
+  module:initATFLOG(module.timestamp)
+  module:initFullATFLOG(module.timestamp)
   return module
 end
 
 function module:initSDLLOG(timestamp)
-    local dir_name = './' .. module.script_name
+    if (config.storeFullSDLLogs) then
+      local full_sdlLog_name = module:getLogFileName(timestamp, "SDLLogs")
+      module.full_sdlLog_name = full_sdlLog_name .. ".log"
+      sdl_log.close()
+      sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
+    end
+end
+
+function module:getLogFileName(timestamp, log_file_type)
+    local dir_name = './' .. module.script_file_name
+    local script_name = get_script_name(dir_name)
     if not timestamp then timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
     if (config.reportPath == nil or config.reportPath == '') then
         config.reportPath = "."
     end
-    if (config.reportMark == nil) then config.reportMark = '' end
-    local reportMark = "_" .. config.reportMark
+    local reportMark = config.reportMark
+    if (reportMark == nil) then reportMark = ''
+    else reportMark = "_" .. reportMark end
+    local curr_log_dir = config.reportPath .. '/' .. log_file_type
+    local curr_log_path = io.catdir(curr_log_dir ..'_'.. timestamp, io.catdir(io.dirname(dir_name)))
+    local full_log_name = io.catfile(curr_log_path, script_name ..'_'..module.timestamp .. reportMark)
+    os.execute('mkdir -p "'.. curr_log_path .. '"')
+    return full_log_name
+end
 
-    local curr_sdl_log_dir = config.reportPath .. '/SDLLogs'
-    local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..timestamp, io.catdir(io.dirname(dir_name)))
-    module.full_sdlLog_name = io.catfile(curr_log_path, self.script_name ..'_'..module.timestamp .. reportMark .. '.log')
-    if (config.storeFullSDLLogs) then
-      sdl_log.close()
-      os.execute('mkdir -p "'.. curr_log_path .. '"')
-      sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
+function module:initATFLOG(timestamp)
+    if not self.atf_log then
+    local atf_log_name = self:getLogFileName(timestamp, "ATFLogs")
+    atf_log_name = atf_log_name .. ".log"
+    module.atf_log = atf_log:New(atf_log_name)
     end
+end
+
+function module:initFullATFLOG(timestamp)
+   if config.storeFullATFLogs and not self.full_atf_log then
+    local full_atf_log_name = self:getLogFileName(timestamp, "ATFLogs")
+    full_atf_log_name = full_atf_log_name .. "_full.log"
+    module.full_atf_log = atf_log:New(full_atf_log_name)
+  end
 end
 
 function module:closeSDLlogSocket()
@@ -165,14 +172,16 @@ end
 function module:LOGTestCaseStart(test_case)
   if config.excludeReport then return end
   if config.storeFullATFLogs then
+    module:initFullATFLOG(module.timestamp)
     module.full_atf_log:StartTestCase(test_case)
   end
-    module.atf_log:StartTestCase(test_case)
+  module.atf_log:StartTestCase(test_case)
 end
 
 function module:LOG(tract, message)
   if config.excludeReport then return end
-  if config.storeFullATFLogs then
+  if (config.storeFullATFLogs) then
+    module:initFullATFLOG(module.timestamp)
     module.full_atf_log[tract](module.full_atf_log, message)
   end
   if string.find(tract, "HMI") or message.frameType ~= ford_constants.FRAME_TYPE.CONTROL_FRAME then

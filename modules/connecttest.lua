@@ -595,4 +595,28 @@ function module:runSDL()
       end)
   end
 
+  function enableFullATFLogs()
+    function enableFullLoggintTestCase()
+        if (config.storeFullATFLogs) then
+            module:FailTestCase("full ATF logs already enabled")
+        else
+            config.storeFullATFLogs = true
+        end
+    end
+    module["EnableFullATFLogs"] = nil
+    module["EnableFullATFLogs"] = enableFullLoggintTestCase
+  end
+
+  function disableFullATFLogs()
+    function disableFullLoggintTestCase()
+       if (not config.storeFullATFLogs) then
+            module:FailTestCase("full ATF logs already disabled")
+       else
+        config.storeFullATFLogs = false
+       end
+    end
+    module["DisableFullATFLogs"] = nil
+    module["DisableFullATFLogs"] = disableFullLoggintTestCase
+  end
+
   return module

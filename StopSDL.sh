@@ -18,11 +18,5 @@ function kill_sdl {
     kill -SIGTERM $pid
 }
 
-function is_telnet_socket_closed {
-    #TODO(AKutsan) APPLINK-15273 Remove waiting for closing telnet port
-    res=$(netstat -pna 2>/dev/null | grep 6676 | wc -l);
-    [ $res -gt 1 ] && return 1 || return 0;
-}
-
 shutdown_sdl || kill_sdl
 rm sdl.pid
