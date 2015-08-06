@@ -10,6 +10,7 @@ SDL.RUNNING = 1
 SDL.CRASH = -1
 
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
+  xmlReporter:initSDLLOG()
   if ExitOnCrash then
     self.exitOnCrash = ExitOnCrash
   end
@@ -34,6 +35,7 @@ function SDL:StopSDL()
   local status = self:CheckStatusSDL()
   if status == self.RUNNING then
     local result = os.execute ('./StopSDL.sh')
+    xmlReporter:closeSDLlogSocket()
     if result then
       return true
     end

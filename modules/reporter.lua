@@ -7,6 +7,7 @@ local ford_constants = require("protocol_handler/ford_protocol_constants")
 local module = {
   -- logLevel = 1, --see log level comment
   timestamp='',
+  script_name = '',
   ndoc = {},
   curr_node={},
   root = {},
@@ -99,52 +100,66 @@ local function get_script_name(str)
   local name = tbl[#tbl-1]:gsub('%.'..tbl[#tbl]..'$', '')
   return name
 end
-function module.init(_name)
+function module.init(script_name)
+  module.script_name = script_name
   if(config.excludeReport) then return module end
-  local dir_name = './' .. _name
-  local curr_report_dir = ''
-  local curr_sdl_log_dir = ''
-  local curr_atf_log_dir = ''
   if (module.timestamp == '') then module.timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
+  local dir_name = './' .. script_name
+  local curr_report_dir = ''
+  local curr_atf_log_dir = ''
   if (config.reportPath ~= nil and config.reportPath ~= '') then
     curr_report_dir = config.reportPath .. '/TestingReports'
-    curr_sdl_log_dir = config.reportPath .. '/SDLLogs'
     curr_atf_log_dir = config.reportPath .. '/ATFLogs'
   else
     curr_report_dir = 'TestingReports'
-    curr_sdl_log_dir = 'SDLLogs'
     curr_atf_log_dir = 'ATFLogs'
   end
   local curr_report_path = io.catdir(curr_report_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
-  local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
   local curr_atf_log_path = io.catdir(curr_atf_log_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
   if (config.reportMark ~= nil and config.reportMark ~= '' ) then
-    module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.log')
     module.full_atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '_full.txt')
     module.atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.txt')
-
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
   else
     module.full_atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..'full.txt')
     module.atf_log_name = io.catfile(curr_atf_log_path,get_script_name(dir_name) ..'_'..module.timestamp ..'.txt')
-    module.full_sdlLog_name = io.catfile(curr_log_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.log')
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
   end
   os.execute('mkdir -p "'.. curr_report_path .. '"')
   os.execute('mkdir -p "'.. curr_atf_log_path .. '"')
 
   module.ndoc = xml.new()
-  local alias = _name:gsub('%.', '_'):gsub('/','_')
+  local alias = script_name:gsub('%.', '_'):gsub('/','_')
   module.root = module.ndoc:createRootNode(alias)
-  if (config.storeFullSDLLogs) then
-    os.execute('mkdir -p "'.. curr_log_path .. '"')
-    sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
-  end
   if config.storeFullATFLogs then
     module.full_atf_log = atf_log:New(module.full_atf_log_name)
   end
   module.atf_log = atf_log:New(module.atf_log_name)
   return module
+end
+
+function module:initSDLLOG(timestamp)
+    local dir_name = './' .. module.script_name
+    if not timestamp then timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time())) end
+    if (config.reportPath == nil or config.reportPath == '') then
+        config.reportPath = "."
+    end
+    if (config.reportMark == nil) then config.reportMark = '' end
+    local reportMark = "_" .. config.reportMark
+
+    local curr_sdl_log_dir = config.reportPath .. '/SDLLogs'
+    local curr_log_path = io.catdir(curr_sdl_log_dir ..'_'..timestamp, io.catdir(io.dirname(dir_name)))
+    module.full_sdlLog_name = io.catfile(curr_log_path, self.script_name ..'_'..module.timestamp .. reportMark .. '.log')
+    if (config.storeFullSDLLogs) then
+      sdl_log.close()
+      os.execute('mkdir -p "'.. curr_log_path .. '"')
+      sdl_log.Connect(sdl_log.init(config.sdl_logs_host, config.sdl_logs_port, module.full_sdlLog_name))
+    end
+end
+
+function module:closeSDLlogSocket()
+    if (config.storeFullSDLLogs) then sdl_log.close() end
+    os.execute('bash ./WaitClosingSocket.sh '..config.sdl_logs_port)
 end
 
 function module:LOGTestCaseStart(test_case)
