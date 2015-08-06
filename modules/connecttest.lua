@@ -95,7 +95,7 @@ function EXPECT_HMICALL(methodName, ...)
         end
         local _res, _err = validator.validate_hmi_request(methodName, arguments)
         xmlReporter.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments)
-        xmlReporter.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
+        xmlReporter.AddMessage("EXPECT_HMICALL", {id = data.id, ["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.params, "params")
       end)
