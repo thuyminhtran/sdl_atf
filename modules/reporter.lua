@@ -151,7 +151,7 @@ end
 function module:initATFLOG(timestamp)
     if not self.atf_log then
     local atf_log_name = self:getLogFileName(timestamp, "ATFLogs")
-    atf_log_name = atf_log_name .. ".log"
+    atf_log_name = atf_log_name .. ".txt"
     module.atf_log = atf_log:New(atf_log_name)
     end
 end
@@ -159,7 +159,7 @@ end
 function module:initFullATFLOG(timestamp)
    if config.storeFullATFLogs and not self.full_atf_log then
     local full_atf_log_name = self:getLogFileName(timestamp, "ATFLogs")
-    full_atf_log_name = full_atf_log_name .. "_full.log"
+    full_atf_log_name = full_atf_log_name .. "_full.txt"
     module.full_atf_log = atf_log:New(full_atf_log_name)
   end
 end
