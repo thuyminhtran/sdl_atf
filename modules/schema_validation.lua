@@ -150,7 +150,8 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     return tostring(tbl)
   end
 
-  local function compare_table_key(t1,t2)
+  local function compare_table_key(t1,t2,use_value)
+    if (use_value=='nil') then use_value = false end
     if (type(t1) ~= type(t2)) then return false end
     if (type(t1) ~= "table") then return t1 == t2 end
     local t1keys = {}
@@ -158,13 +159,19 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     local retval = false
 
     if (not table.unpack(t2)) then t2=table.pack(t2) end
-    if (type(table.unpack(t2)) ~= 'table') then return false,string.format("Incorrect user data") end
-    for k, _ in pairs(table.unpack(t2)) do
-      retval = false
-      for k1, _ in pairs(t1) do
-        if (k == k1) then retval=true end
-      end
-      if(not retval) then return false,string.format('expected: [%s]',k)end
+    if (type(table.unpack(t2)) ~= 'table') then t2 = table.pack(t2) end
+    for k, val in pairs(table.unpack(t2)) do
+       retval = false
+       local check_key = use_value and val or k
+       for k1, _ in pairs(t1) do
+            if (check_key == k1) then 
+                retval=true
+                break  
+            end
+       end
+       if(not retval) then 
+            return false,string.format('expected: [%s]',k)
+       end
     end
     return retval
   end
@@ -180,10 +187,12 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local function nodeVerify(xmlNode,dataNode, key)
     if (xmlNode.class == 'enum') then
-      if (not types.enum[xmlNode['type'] ][dataNode]) then
-        bool_result = false
-        errorMessage[ key ] = "expected: '" .. key .."' with type [ Enum ]"
-      end
+        if type(dataNode) == "table" then 
+            bool_result,errorMessage[ key ] = compare_table_key(types.enum[xmlNode['type'] ], dataNode, true)
+        elseif (not types.enum[xmlNode['type'] ][dataNode]) then
+            bool_result = false
+            errorMessage[ key ] = "expected: '" .. key .."' with type [ Enum ]"
+        end
     elseif (xmlNode.class == 'struct') then
       if (type(dataNode) == 'table') then
         bool_result,errorMessage[ key ] = compare_table_key(types.struct[xmlNode['type'] ], dataNode)
@@ -195,8 +204,8 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
       if (type(dataNode) == 'table' ) then
         for _,arrElement in ipairs(dataNode) do
           while true do
-            if (xmlNode.class == 'Enum' and types.enum[xmlNode['type'] ][dataNode] ) then break
-            elseif (xmlNode.class == 'Struct' and types.struct[xmlNode['type'] ][dataNode] ) then break
+            if (xmlNode.class == 'Enum' and types.enum[xmlNode['type'] ][arrElement] ) then break
+            elseif (xmlNode.class == 'Struct' and types.struct[xmlNode['type'] ][arrElement] ) then break
             elseif(compare_type(string.lower(type(arrElement)), xmlNode.class)) then break
             else
               bool_result = false
