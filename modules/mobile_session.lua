@@ -203,6 +203,10 @@ function mt.__index:StartService(service)
   return ret
 end
 function mt.__index:StopService(service)
+  if self.hashCode == 0 then
+    -- StartServiceAck was not received. Unable to stop not started service
+    return nil
+  end
   xmlReporter.AddMessage("StopService", service)
   local stopService =
   self:Send(
@@ -301,9 +305,15 @@ function mt.__index:Start()
         end
 
         self.connection:OnInputData(function(_, msg)
-            if self.heartbeatEnabled and self.sessionId == msg.sessionId
-            and not (self.ignoreHeartBeatAck and msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK) then
-              self.heartbeatFromSDLTimer:reset()
+            if self.sessionId ~= msg.sessionId then return end
+            xmlReporter:LOG("SDLtoMOB", msg)
+            if self.heartbeatEnabled then
+                if msg.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
+                   msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK and
+                   self.ignoreHeartBeatAck then
+                    return
+                end
+                self.heartbeatFromSDLTimer:reset()
             end
           end)
         self.connection:OnMessageSent(function(sessionId)

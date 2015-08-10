@@ -43,7 +43,6 @@ function module.mt.__index:OnInputData(func)
   function(self, binary)
     local msg = protocol_handler:Parse(binary)
     for _, v in ipairs(msg) do
-      reporter:LOG("SDLtoMOB", v)
       func(this, v)
     end
   end
