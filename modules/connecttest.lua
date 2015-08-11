@@ -39,10 +39,16 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
       local func_name = data.method
       local results_args = arguments
-      if(table2str(arguments):match('result')) then results_args = arguments.result end
-      if func_name == nil and type(data.result) == 'table' then func_name = data.result.method end
+      if(table2str(arguments):match('result')) then 
+            results_args = arguments.result 
+      end
+      if func_name == nil and type(data.result) == 'table' then 
+            func_name = data.result.method 
+      end
       local _res, _err = validator.validate_hmi_response(func_name, results_args)
-      if (not _res) then return _res,_err end
+      if (not _res) then 
+            return _res,_err 
+      end
       if func_name and results_args and data.result then 
           return compareValues(results_args, data.result, "result")
       else
