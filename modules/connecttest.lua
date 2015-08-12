@@ -79,8 +79,8 @@ function EXPECT_HMINOTIFICATION(name,...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
-        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
+        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = data.id, ["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
+        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = data.id, ["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
         local _res, _err = validator.validate_hmi_notification(name, arguments)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.params, "params")
@@ -108,8 +108,8 @@ function EXPECT_HMICALL(methodName, ...)
           arguments = args[self.occurences]
         end
         local _res, _err = validator.validate_hmi_request(methodName, arguments)
-        xmlReporter.AddMessage("EXPECT_HMICALL", {["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments)
-        xmlReporter.AddMessage("EXPECT_HMICALL", {id = data.id, ["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
+        xmlReporter.AddMessage("EXPECT_HMICALL", {["Id"] = data.id, ["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments)
+        xmlReporter.AddMessage("EXPECT_HMICALL", {["Id"] = data.id, ["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.params, "params")
       end)
