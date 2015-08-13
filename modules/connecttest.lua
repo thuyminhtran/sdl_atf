@@ -39,20 +39,20 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
       local func_name = data.method
       local results_args = arguments
-      if(table2str(arguments):match('result')) then 
-            results_args = arguments.result 
+      if(table2str(arguments):match('result')) then
+        results_args = arguments.result
       end
-      if func_name == nil and type(data.result) == 'table' then 
-            func_name = data.result.method 
+      if func_name == nil and type(data.result) == 'table' then
+        func_name = data.result.method
       end
       local _res, _err = validator.validate_hmi_response(func_name, results_args)
-      if (not _res) then 
-            return _res,_err 
+      if (not _res) then
+        return _res,_err
       end
-      if func_name and results_args and data.result then 
-          return compareValues(results_args, data.result, "result")
+      if func_name and results_args and data.result then
+        return compareValues(results_args, data.result, "result")
       else
-          return compareValues(results_args, data.params, "params")
+        return compareValues(results_args, data.params, "params")
       end
     end)
   ret.event = event
@@ -611,11 +611,11 @@ function module:runSDL()
 
   function enableFullATFLogs()
     function enableFullLoggintTestCase()
-        if (config.storeFullATFLogs) then
-            module:FailTestCase("full ATF logs already enabled")
-        else
-            config.storeFullATFLogs = true
-        end
+      if (config.storeFullATFLogs) then
+        module:FailTestCase("full ATF logs already enabled")
+      else
+        config.storeFullATFLogs = true
+      end
     end
     module["EnableFullATFLogs"] = nil
     module["EnableFullATFLogs"] = enableFullLoggintTestCase
@@ -623,11 +623,11 @@ function module:runSDL()
 
   function disableFullATFLogs()
     function disableFullLoggintTestCase()
-       if (not config.storeFullATFLogs) then
-            module:FailTestCase("full ATF logs already disabled")
-       else
+      if (not config.storeFullATFLogs) then
+        module:FailTestCase("full ATF logs already disabled")
+      else
         config.storeFullATFLogs = false
-       end
+      end
     end
     module["DisableFullATFLogs"] = nil
     module["DisableFullATFLogs"] = disableFullLoggintTestCase
