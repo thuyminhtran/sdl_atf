@@ -187,18 +187,28 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local function nodeVerify(xmlNode,dataNode, key)
     if (xmlNode.class == 'enum') then
-        if type(dataNode) == "table" then 
-            bool_result,errorMessage[ key ] = compare_table_key(types.enum[xmlNode['type'] ], dataNode, true)
-        elseif (not types.enum[xmlNode['type'] ][dataNode]) then
-            bool_result = false
-            errorMessage[ key ] = "expected: '" .. key .."' with type [ Enum ]"
-        end
+      if type(dataNode) == "table" then 
+        local result
+        result,errorMessage[ key ] = compare_table_key(types.enum[xmlNode['type'] ], dataNode, true)
+        bool_result = result and bool_result
+      elseif (types.enum[xmlNode['type'] ][dataNode] and xmlNode.array == 'true') then
+        bool_result = false
+        errorMessage[ key ] = "expected ENum : '" .. key .."' with type [ array ]"
+      elseif (not types.enum[xmlNode['type'] ][dataNode]) then
+        bool_result = false
+        errorMessage[ key ] = "expected: '" .. key .."' with type [ Enum ]"
+      end
     elseif (xmlNode.class == 'struct') then
       if (type(dataNode) == 'table') then
-        bool_result,errorMessage[ key ] = compare_table_key(types.struct[xmlNode['type'] ], dataNode)
-      elseif(not types.struct[xmlNode['type'] ][dataNode]) then
+        local result
+        result,errorMessage[ key ] = compare_table_key(types.struct[xmlNode['type'] ], dataNode)
+        bool_result = bool_result and result
+      elseif(types.struct[xmlNode['type'] ][dataNode] and xmlNode.array == 'true') then
         bool_result = false
         errorMessage[ key ] = "expected: '" .. key .."' with type [ Struct ]"
+      elseif(not types.struct[xmlNode['type'] ][dataNode]) then
+         bool_result = false
+         errorMessage[ key ] = "expected struct: '" .. key .."' with type [ array ]"
       end
     elseif xmlNode.array == 'true' then
       if (type(dataNode) == 'table' ) then
@@ -262,11 +272,11 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   if (schema == module.HMI) then
     doc = hmi_api
-    if not doc then return nil,"Cannot open data/MOBILE_API.xml" end
+    if not doc then return nil,"Cannot open data/HMI_API.xml" end
     types = hmi_types
   elseif (schema == module.MOBILE) then
     doc = mobile_api
-    if not doc then return nil,"Cannot open data/HMI_API.xml" end
+    if not doc then return nil,"Cannot open data/MOBILE_API.xml" end
     types = mob_types
   else
     return nil,"Unknown schema type"
