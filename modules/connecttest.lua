@@ -39,19 +39,28 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
       local func_name = data.method
-      local results_args = arguments
+      local results_args   = arguments
+      local results_args2  = arguments
       if(table2str(arguments):match('result')) then
         results_args = arguments.result
+        results_args2 = arguments.result
       end
+      if results_args2 and results_args2.code then 
+          results_args2 = table.removeKey(results_args2, 'code')
+      end
+      if results_args2 and results_args2.method then 
+          results_args2 = table.removeKey(results_args2, 'method')
+      end
+
       if func_name == nil and type(data.result) == 'table' then
         func_name = data.result.method
       end
-      local _res, _err = validator.validate_hmi_response(func_name, results_args)
+      local _res, _err = validator.validate_hmi_response(func_name, results_args2)
       if (not _res) then
         return _res,_err
       end
       if func_name and results_args and data.result then
-        return compareValues(results_args, data.result, "result")
+        return compareValues( data.result, results_args, "result")                              
       else
         return compareValues(results_args, data.params, "params")
       end
