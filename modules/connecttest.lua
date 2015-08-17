@@ -23,6 +23,7 @@ local fileConnection = file_connection.FileConnection("mobile.out", tcpConnectio
 module.mobileConnection = mobile.MobileConnection(fileConnection)
 event_dispatcher:AddConnection(module.hmiConnection)
 event_dispatcher:AddConnection(module.mobileConnection)
+module.notification_counter=1
 
 function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
   local event = events.Event()
@@ -79,8 +80,10 @@ function EXPECT_HMINOTIFICATION(name,...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = data.id, ["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
-        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = data.id, ["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
+        local correlation_id = module.notification_counter
+        module.notification_counter = module.notification_counter + 1
+        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = correlation_id, ["name"] = tostring(name),["Type"] = "EXPECTED_RESULT"},arguments)
+        xmlReporter.AddMessage("EXPECT_HMINOTIFICATION", {["Id"] = correlation_id, ["name"] = tostring(name),["Type"] = "AVALIABLE_RESULT"},data)
         local _res, _err = validator.validate_hmi_notification(name, arguments)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.params, "params")
@@ -120,9 +123,17 @@ function EXPECT_HMICALL(methodName, ...)
   return ret
 end
 
-function EXPECT_NOTIFICATION(func, ...)
-  xmlReporter.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
-  return module.mobileSession:ExpectNotification(func, ...)
+function EXPECT_NOTIFICATION(func,...)
+--  xmlReporter.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
+   local args = table.pack(...)
+    if #args>0 then 
+        local arguments = {}
+        arguments = args[#args]
+        arguments["notifyId"] = module.notification_counter
+        module.notification_counter = module.notification_counter + 1
+        return module.mobileSession:ExpectNotification(func,arguments)
+    end    
+    return module.mobileSession:ExpectNotification(func,...)
 end
 
 function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)

@@ -86,8 +86,10 @@ function mt.__index:ExpectNotification(funcName, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = data.id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = data.id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        local notify_id = arguments.notifyId 
+        arguments = table.removeKey(arguments,'notifyId')
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_notification(funcName, arguments)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.payload, "payload")
