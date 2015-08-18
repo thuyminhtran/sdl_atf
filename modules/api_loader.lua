@@ -28,7 +28,7 @@ local function loadStructs(api, dest)
     for _, p in pairs(s) do
       if type(p.type) == 'string' then
         if p.type == "Integer" then
-          p.class =dest.classes.Integer
+          p.class = dest.classes.Integer
         elseif p.type == "String" then
           p.class = dest.classes.String
         elseif p.type == "Float" then
@@ -48,15 +48,14 @@ local function loadStructs(api, dest)
 end
 
 function module.init(path)
-  local result={}
-  result.classes =
-  {
-     String = { },
-     Integer = { },
-     Float = { },
-     Boolean = { },
-     Struct = { },
-     Enum = { }
+  local result = {}
+  result.classes = {
+    String = { },
+    Integer = { },
+    Float = { },
+    Boolean = { },
+    Struct = { },
+    Enum = { }
   }
   result.enum = { }
   result.struct = { }
