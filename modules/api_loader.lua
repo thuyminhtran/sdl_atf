@@ -1,6 +1,15 @@
 local xml = require('xml')
 local module = { }
 
+local function get_name(xml_element)
+    local parent_name = xml_element:parent():attr("name")
+    local name = xml_element:attr("name")
+    if(module.include_parent_name) then
+        name = parent_name .. "." .. name
+    end
+    return name
+end
+
 local function loadEnums(api, dest)
   local enums = api:xpath("//interface/enum")
   for _, e in ipairs(enums) do
@@ -10,7 +19,7 @@ local function loadEnums(api, dest)
       enum[item:attr("name")] = i
       i = i + 1
     end
-    dest.enum[e:attr("name")] = enum
+    dest.enum[get_name(e)] = enum
   end
 end
 
@@ -21,7 +30,7 @@ local function loadStructs(api, dest)
     for _, item in ipairs(s:children("param")) do
       struct[item:attr("name")] = item:attributes()
     end
-    dest.struct[s:attr("name")] = struct
+    dest.struct[get_name(s)] = struct
   end
 
   for n, s in pairs(dest.struct) do
@@ -47,7 +56,8 @@ local function loadStructs(api, dest)
   end
 end
 
-function module.init(path)
+function module.init(path, include_parent_name)
+  module.include_parent_name = include_parent_name
   local result = {}
   result.classes = {
     String = { },

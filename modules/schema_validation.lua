@@ -1,8 +1,7 @@
 local xml = require("xml")
 local api = require("api_loader")
-local hmi_types = api.init("data/HMI_API.xml")
+local hmi_types = api.init("data/HMI_API.xml", true)
 local mob_types = api.init("data/MOBILE_API.xml")
-
 if (not hmi_api) then hmi_api = xml.open("data/HMI_API.xml") end
 if (not mobile_api) then mobile_api = xml.open("data/MOBILE_API.xml") end
 
@@ -98,7 +97,6 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
           for _, v2 in ipairs(v1:children()) do
             local class_type = v2:attr('type')
             if(type(v2:attr('name')) ~= 'nil') then
-              if (string.find(class_type, "%.")) then _,class_type = class_type:match("([^.]+).([^.]+)") end
               local tmp = {}
               if ( types.classes[class_type]) then
                 tmp['class'] = string.format("%s",class_type)
@@ -164,12 +162,12 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
        retval = false
        local check_key = use_value and val or k
        for k1, _ in pairs(t1) do
-            if (check_key == k1) then 
+            if (check_key == k1) then
                 retval=true
-                break  
+                break
             end
        end
-       if(not retval) then 
+       if(not retval) then
             return false,string.format('expected: [%s]',k)
        end
     end
@@ -187,7 +185,7 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local function nodeVerify(xmlNode,dataNode, key)
     if (xmlNode.class == 'enum') then
-      if type(dataNode) == "table" then 
+      if type(dataNode) == "table" then
         local result
         result,errorMessage[ key ] = compare_table_key(types.enum[xmlNode['type'] ], dataNode, true)
         bool_result = result and bool_result
@@ -284,7 +282,6 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
 
   local xml_schema = get_xml_shema_validation(doc,types,function_id,msgType)
   return schemaCompare(xml_schema,user_data)
-
 end
 
 function module.validate_hmi_request(function_id,user_data, mandatory_check)
