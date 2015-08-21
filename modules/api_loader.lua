@@ -1,20 +1,7 @@
 local xml = require('xml')
 local module = { }
 
-module.classes =
-{
-  String = { },
-  Integer = { },
-  Float = { },
-  Boolean = { },
-  Struct = { },
-  Enum = { }
-}
-
-module.enum = { }
-module.struct = { }
-
-local function loadEnums(api)
+local function loadEnums(api, dest)
   local enums = api:xpath("//interface/enum")
   for _, e in ipairs(enums) do
     local enum = { }
@@ -23,37 +10,37 @@ local function loadEnums(api)
       enum[item:attr("name")] = i
       i = i + 1
     end
-    module.enum[e:attr("name")] = enum
+    dest.enum[e:attr("name")] = enum
   end
 end
 
-local function loadStructs(api)
+local function loadStructs(api, dest)
   local structs = api:xpath("//interface/struct")
   for _, s in ipairs(structs) do
     local struct = { }
     for _, item in ipairs(s:children("param")) do
       struct[item:attr("name")] = item:attributes()
     end
-    module.struct[s:attr("name")] = struct
+    dest.struct[s:attr("name")] = struct
   end
 
-  for n, s in pairs(module.struct) do
+  for n, s in pairs(dest.struct) do
     for _, p in pairs(s) do
       if type(p.type) == 'string' then
         if p.type == "Integer" then
-          p.class = module.classes.Integer
+          p.class =dest.classes.Integer
         elseif p.type == "String" then
-          p.class = module.classes.String
+          p.class = dest.classes.String
         elseif p.type == "Float" then
-          p.class = module.classes.Float
+          p.class = dest.classes.Float
         elseif p.type == "Boolean" then
-          p.class = module.classes.Boolean
-        elseif module.enum[p.type] then
-          p.class = module.classes.Enum
-          p.type = module.enum[p.type]
-        elseif module.struct[p.type] then
-          p.class = module.classes.Struct
-          p.type = module.struct[p.type]
+          p.class = dest.classes.Boolean
+        elseif dest.enum[p.type] then
+          p.class = dest.classes.Enum
+          p.type = dest.enum[p.type]
+        elseif dest.struct[p.type] then
+          p.class = dest.classes.Struct
+          p.type = dest.struct[p.type]
         end
       end
     end
@@ -61,12 +48,25 @@ local function loadStructs(api)
 end
 
 function module.init(path)
+  local result={}
+  result.classes =
+  {
+     String = { },
+     Integer = { },
+     Float = { },
+     Boolean = { },
+     Struct = { },
+     Enum = { }
+  }
+  result.enum = { }
+  result.struct = { }
+
   local _api = xml.open(path)
   if not _api then error(path .. " not found") end
 
-  loadEnums(_api)
-  loadStructs(_api)
-  return module
+  loadEnums(_api, result)
+  loadStructs(_api, result)
+  return result
 end
 
 return module
