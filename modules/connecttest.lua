@@ -160,7 +160,7 @@ function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
         else
           arguments = args[self.occurences]
         end
-        local _res, _err = validator.validate_hmi_request(funcName, arguments)
+        local _res, _err = validator.validate_mobile_notification(funcName, arguments)
         xmlReporter.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
         xmlReporter.AddMessage("EXPECT_ANY_SESSION_NOTIFICATION", {["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         if (not _res) then return _res,_err end
