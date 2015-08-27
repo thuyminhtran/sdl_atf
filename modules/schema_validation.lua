@@ -1,7 +1,7 @@
 local xml = require("xml")
 local api = require("api_loader")
-local mob_types = api.init("data/HMI_API.xml")
-local hmi_types = api.init("data/MOBILE_API.xml")
+local hmi_types = api.init("data/HMI_API.xml")
+local mob_types = api.init("data/MOBILE_API.xml")
 
 if (not hmi_api) then hmi_api = xml.open("data/HMI_API.xml") end
 if (not mobile_api) then mobile_api = xml.open("data/MOBILE_API.xml") end
@@ -283,7 +283,6 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
   end
 
   local xml_schema = get_xml_shema_validation(doc,types,function_id,msgType)
-  -- print("function_id: " .. function_id .." Type :".. msgType .. " Schema '".. schema .. "' \t".. dump(xml_schema))
   return schemaCompare(xml_schema,user_data)
 
 end
