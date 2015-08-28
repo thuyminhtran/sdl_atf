@@ -21,7 +21,7 @@ function mt.__index:ExpectEvent(event, name)
   return ret
 end
 function mt.__index:ExpectResponse(cor_id, ...)
-  func_name = self.cor_id_func_map[cor_id]
+  local func_name = self.cor_id_func_map[cor_id]
   if func_name then
     self.cor_id_func_map[cor_id] = nil
   else
@@ -125,6 +125,15 @@ function mt.__index:Send(message)
         binaryData = message.binaryData
       }
     })
+  if not self.cor_id_func_map[self.correlationId] then
+    for fname, fid in pairs(functionId) do
+      if fid == message.rpcFunctionId then
+        self.cor_id_func_map[self.correlationId] = fname
+        break
+      end
+    end
+  end
+
   xmlReporter.AddMessage("mobile_connection","Send",
     {
       version = message.version or self.version,
