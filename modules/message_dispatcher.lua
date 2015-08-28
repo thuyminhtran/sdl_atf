@@ -1,5 +1,4 @@
 local ph = require('protocol_handler/protocol_handler')
-local config = require('config')
 local module = { mt = { __index = { } } }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
@@ -88,8 +87,8 @@ function fbuffer_mt.__index:GetMessage()
   local header = {}
   if self.keep then
     local res = self.keep
-    self.keep = nil
     header = self.protocol_handler:Parse(self.keep)
+    self.keep = nil
     return header, res
   end
   local len = self.rfd:read(4)
