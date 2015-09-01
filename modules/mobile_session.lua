@@ -25,7 +25,18 @@ function mt.__index:ExpectResponse(cor_id, ...)
   if func_name then
     self.cor_id_func_map[cor_id] = nil
   else
-    error("Function with cor_id : "..cor_id.." was not sent by ATF")
+    if type(cor_id) == 'string' then 
+        for fid, fname in pairs(self.cor_id_func_map) do
+            if fname == cor_id then 
+                func_name = fname
+                cor_id = fid
+                self.cor_id_func_map[cor_id] = nil
+            end
+        end
+    end
+    if not func_name then 
+         error("Function with cor_id : "..cor_id.." was not sent by ATF")
+    end
   end
   local args = table.pack(...)
   local event = events.Event()
