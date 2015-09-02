@@ -1,8 +1,7 @@
 local xml = require("xml")
 local api = require("api_loader")
-local hmi_types = api.init("data/HMI_API.xml")
+local hmi_types = api.init("data/HMI_API.xml", true)
 local mob_types = api.init("data/MOBILE_API.xml")
-
 if (not hmi_api) then hmi_api = xml.open("data/HMI_API.xml") end
 if (not mobile_api) then mobile_api = xml.open("data/MOBILE_API.xml") end
 
@@ -73,7 +72,7 @@ function module.json_validate(table1, table2)
   return recurse(table1, table2)
 end
 
-local function compare(schema,function_id, msgType,user_data, mandatory_check)
+local function compare(schema, function_id, msgType, user_data, mandatory_check)
 
   local doc = ''
   local bool_result = true
@@ -98,7 +97,6 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
           for _, v2 in ipairs(v1:children()) do
             local class_type = v2:attr('type')
             if(type(v2:attr('name')) ~= 'nil') then
-              if (string.find(class_type, "%.")) then _,class_type = class_type:match("([^.]+).([^.]+)") end
               local tmp = {}
               if ( types.classes[class_type]) then
                 tmp['class'] = string.format("%s",class_type)
@@ -150,32 +148,6 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     return tostring(tbl)
   end
 
-  local function compare_table_key(t1,t2,use_value)
-    if (use_value=='nil') then use_value = false end
-    if (type(t1) ~= type(t2)) then return false end
-    if (type(t1) ~= "table") then return t1 == t2 end
-    local t1keys = {}
-    local t2keys = {}
-    local retval = false
-
-    if (not table.unpack(t2)) then t2=table.pack(t2) end
-    if (type(table.unpack(t2)) ~= 'table') then t2 = table.pack(t2) end
-    for k, val in pairs(table.unpack(t2)) do
-       retval = false
-       local check_key = use_value and val or k
-       for k1, _ in pairs(t1) do
-            if (check_key == k1) then 
-                retval=true
-                break  
-            end
-       end
-       if(not retval) then 
-            return false,string.format('expected: [%s]',k)
-       end
-    end
-    return retval
-  end
-
   local function compare_type(elem1, elem2)
     if (elem1 == 'number' and elem2 == 'Integer') then return true
     elseif (elem1 == 'number' and elem2 == 'Float') then return true
@@ -185,9 +157,55 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     end
   end
 
-  local function nodeVerify(xmlNode,dataNode, key)
+  local function compare_table_key(t1, t2, use_value)
+    -- print("Enter")
+    -- t1 : api table
+    -- t2 : data data table
+    if (use_value=='nil') then use_value = false end
+    if (type(t1) ~= type(t2)) then return false end
+    if (type(t1) ~= "table") then return t1 == t2 end
+    local t1keys = {}
+    local t2keys = {}
+    local retval = false
+    local ret_error_mes = nil
+
+    if (not table.unpack(t2)) then t2 = table.pack(t2) end
+    if (type(table.unpack(t2)) ~= 'table') then t2 = table.pack(t2) end
+    for k, val in pairs(table.unpack(t2)) do
+       -- print(k, val)
+       retval = false
+       local check_key = use_value and val or k
+       for k1, xmlNode in pairs(t1) do
+            local api_type = xmlNode['type']
+            if (check_key == k1) then
+                -- print("   ","|", k1, "|",check_key, "|", api_type, "|");
+                -- print(xmlNode.class, types.classes.Enum)
+                if (xmlNode.class == types.classes.Struct) then
+                    retval, ret_error_mes = compare_table_key(types.struct[api_type], val)
+                elseif (xmlNode.class == types.classes.Enum) then
+                    retval = true
+                else
+                    if (compare_type(type(val), api_type)) then
+                        retval=true
+                    else
+                        ret_error_mes = "not valid type: into "..k .. " " .. string.lower(type(val)) .. " " .. tostring(api_type)
+                    end
+                end
+
+                break
+            end
+       end
+       if(not retval) then
+            return false, ret_error_mes or string.format('expected: [%s]', k)
+       end
+    end
+    return retval
+  end
+
+
+  local function nodeVerify(xmlNode, dataNode, key)
     if (xmlNode.class == 'enum') then
-      if type(dataNode) == "table" then 
+      if type(dataNode) == "table" then
         local result
         result,errorMessage[ key ] = compare_table_key(types.enum[xmlNode['type'] ], dataNode, true)
         bool_result = result and bool_result
@@ -201,7 +219,9 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
     elseif (xmlNode.class == 'struct') then
       if (type(dataNode) == 'table') then
         local result
-        result,errorMessage[ key ] = compare_table_key(types.struct[xmlNode['type'] ], dataNode)
+        -- print("Parse : " .. dump(dataNode))
+        -- print(dump(types.struct[xmlNode['type'] ]))
+        result, errorMessage[ key ] = compare_table_key(types.struct[xmlNode['type'] ], dataNode)
         bool_result = bool_result and result
       elseif(types.struct[xmlNode['type'] ][dataNode] and xmlNode.array == 'true') then
         bool_result = false
@@ -283,12 +303,12 @@ local function compare(schema,function_id, msgType,user_data, mandatory_check)
   end
 
   local xml_schema = get_xml_shema_validation(doc,types,function_id,msgType)
+--   print("function_id: " .. function_id .." Type :".. msgType .. " Schema '".. schema .. "' \t".. dump(xml_schema))
   return schemaCompare(xml_schema,user_data)
-
 end
 
 function module.validate_hmi_request(function_id,user_data, mandatory_check)
-  return compare(module.HMI,function_id, 'request',user_data, mandatory_check)
+  return compare(module.HMI, function_id, 'request', user_data, mandatory_check)
 end
 
 function module.validate_mobile_request(function_id,user_data, mandatory_check)
