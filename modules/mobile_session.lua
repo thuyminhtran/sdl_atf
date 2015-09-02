@@ -97,7 +97,7 @@ function mt.__index:ExpectNotification(funcName, ...)
         else
           arguments = args[self.occurences]
         end
-        local notify_id = arguments.notifyId 
+        local notify_id = arguments.notifyId
         arguments = table.removeKey(arguments,'notifyId')
         xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
         xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
@@ -315,6 +315,7 @@ function mt.__index:Start()
             self:Send( { frameType = constants.FRAME_TYPE.CONTROL_FRAME,
                 serviceType = constants.SERVICE_TYPE.CONTROL,
                 frameInfo = constants.FRAME_INFO.HEARTBEAT } )
+            self.heartbeatFromSDLTimer:reset()
           end
         end
 
