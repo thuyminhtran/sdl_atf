@@ -51,11 +51,14 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       if results_args2 and results_args2.method then 
           results_args2 = table.removeKey(results_args2, 'method')
       end
-
       if func_name == nil and type(data.result) == 'table' then
         func_name = data.result.method
       end
-      local _res, _err = validator.validate_hmi_response(func_name, results_args2)
+      local _res, _err
+      _res = true
+      if not (table2str(arguments):match('error')) then
+        _res, _err = validator.validate_hmi_response(func_name, results_args2)
+      end
       if (not _res) then
         return _res,_err
       end
