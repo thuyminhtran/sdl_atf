@@ -176,10 +176,14 @@ local function compare(schema, function_id, msgType, user_data, mandatory_check)
        retval = false
        local check_key = use_value and val or k
        for k1, xmlNode in pairs(t1) do
-            local api_type = xmlNode['type']
             if (check_key == k1) then
                 -- print("   ","|", k1, "|",check_key, "|", api_type, "|");
                 -- print(xmlNode.class, types.classes.Enum)
+		if (type(xmlNode) ~= "table") then
+			retval = true
+			break
+		end
+            	local api_type = xmlNode['type']
                 if (xmlNode.class == types.classes.Struct) then
                     retval, ret_error_mes = compare_table_key(types.struct[api_type], val)
                 elseif (xmlNode.class == types.classes.Enum) then
@@ -188,7 +192,7 @@ local function compare(schema, function_id, msgType, user_data, mandatory_check)
                     if (compare_type(type(val), api_type)) then
                         retval=true
                     else
-                        ret_error_mes = "not valid type: into "..k .. " " .. string.lower(type(val)) .. " " .. tostring(api_type)
+                        ret_error_mes = "not valid type '"..k .."': current type - '".. type(val) .."' ; Avalible - '".. tostring(api_type) .."'"
                     end
                 end
 
