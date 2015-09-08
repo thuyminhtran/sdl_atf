@@ -22,17 +22,19 @@ function mt.__index:ExpectEvent(event, name)
 end
 function mt.__index:ExpectResponse(cor_id, ...)
   local func_name = self.cor_id_func_map[cor_id]
+  local tbl_corr_id = {}
   if func_name then
     self.cor_id_func_map[cor_id] = nil
   else
     if type(cor_id) == 'string' then 
         for fid, fname in pairs(self.cor_id_func_map) do
-            if fname == cor_id then 
+           if fname == cor_id then 
                 func_name = fname
-                cor_id = fid
-                self.cor_id_func_map[cor_id] = nil
+                table.insert(tbl_corr_id, fid)
+                table.removeKey(self.cor_id_func_map, fid)
             end
         end
+    cor_id = tbl_corr_id[1]
     end
     if not func_name then 
          error("Function with cor_id : "..cor_id.." was not sent by ATF")
@@ -44,9 +46,20 @@ function mt.__index:ExpectResponse(cor_id, ...)
     error("ExpectResponse: argument 1 (cor_id) must be number")
     return nil
   end
-  event.matches = function(_, data)
-    return data.rpcCorrelationId == cor_id and
-    data.sessionId == self.sessionId
+  if(#tbl_corr_id>0) then 
+       event.matches = function(_, data)
+               for k,v in pairs(tbl_corr_id) do
+                    if data.rpcCorrelationId  == v and  data.sessionId == self.sessionId then
+                        return true
+                    end
+                 end
+             return false
+      end
+  else
+    event.matches = function(_, data)
+        return data.rpcCorrelationId == cor_id and
+        data.sessionId == self.sessionId
+      end
   end
   local ret = Expectation("response to " .. cor_id, self.connection)
   if #args > 0 then
