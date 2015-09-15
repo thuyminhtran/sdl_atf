@@ -94,8 +94,7 @@ function mt.__index:ExpectAny()
   self.exp_list:Add(ret)
   return ret
 end
-function mt.__index:ExpectNotification(funcName, ...)
-  local args = table.pack(...)
+function mt.__index:ExpectNotification(funcName, args)
   local event = events.Event()
   event.matches = function(_, data)
     return data.rpcFunctionId == functionId[funcName] and
@@ -103,15 +102,15 @@ function mt.__index:ExpectNotification(funcName, ...)
   end
   local ret = Expectation(funcName .. " notification", self.connection)
   if #args > 0 then
-    ret:ValidIf(function(self, data)
+   local notify_id = args.notifyId
+   args= table.removeKey(args,'notifyId')
+   ret:ValidIf(function(self, data)
         local arguments
         if self.occurences > #args then
           arguments = args[#args]
         else
           arguments = args[self.occurences]
         end
-        local notify_id = arguments.notifyId
-        arguments = table.removeKey(arguments,'notifyId')
         xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
         xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_notification(funcName, arguments)
