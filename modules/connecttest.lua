@@ -1,4 +1,5 @@
 require('atf.util')
+local proto = require('atf.stdlib.std.set')
 local module = require('testbase')
 local mobile = require("mobile_connection")
 local tcp = require("tcp_connection")
@@ -124,10 +125,8 @@ function EXPECT_HMICALL(methodName, ...)
         end
         xmlReporter.AddMessage("EXPECT_HMICALL", {["Id"] = data.id, ["name"] = tostring(methodName),["Type"] = "EXPECTED_RESULT"},arguments)
         xmlReporter.AddMessage("EXPECT_HMICALL", {["Id"] = data.id, ["name"] = tostring(methodName),["Type"] = "AVALIABLE_RESULT"},data.params)
-        local _res, _err = validator.validate_hmi_request(methodName, data.params)
-		if (not _res) then return _res,_err end
         _res, _err = validator.validate_hmi_request(methodName, arguments)
-		if (not _res) then return _res,_err end
+        if (not _res) then return _res,_err end
         return compareValues(arguments, data.params, "params")
       end)
   end
@@ -140,14 +139,24 @@ end
 function EXPECT_NOTIFICATION(func,...)
 --  xmlReporter.AddMessage(debug.getinfo(1, "n").name, "EXPECTED_RESULT", ... )
    local args = table.pack(...)
-    if #args>0 then 
-        local arguments = {}
-        arguments = args[#args]
+   local args_count = 1
+   if #args > 0 then 
+       local arguments = {}
+       if #args > 1 then
+           for args_count = 1, #args do 
+              if(type( args[args_count])) == 'table' then 
+                    table.insert(arguments, args[args_count])
+              end
+           end
+        else
+            arguments = args[#args]
+        end
         arguments["notifyId"] = module.notification_counter
         module.notification_counter = module.notification_counter + 1
         return module.mobileSession:ExpectNotification(func,arguments)
     end    
-    return module.mobileSession:ExpectNotification(func,...)
+    return module.mobileSession:ExpectNotification(func,args)
+
 end
 
 function EXPECT_ANY_SESSION_NOTIFICATION(funcName, ...)
