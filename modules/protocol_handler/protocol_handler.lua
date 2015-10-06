@@ -164,8 +164,9 @@ function mt.__index:Compose(message)
       if frame_number == #multiframe_payloads then --last frame
         frame_info = 0
       else
-        frame_info = ((frame_number - 1) % 255) + 1
         -- frame info range should be [1 - 255].
+        -- frame info can't be 0, 0 mean last frame
+        frame_info = ((frame_number - 1) % 255) + 1
       end
       header = create_ford_header(message.version, message.encryption, kConsecutiveframe_frameType, message.serviceType,
         frame_info, message.sessionId, multiframe_payloads[frame_number], message.messageId)
