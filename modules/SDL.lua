@@ -3,8 +3,6 @@ require('os')
 local SDL = { }
 
 SDL.exitOnCrash = true
-SDL.autoRun = false
-
 SDL.STOPPED = 0
 SDL.RUNNING = 1
 SDL.CRASH = -1
