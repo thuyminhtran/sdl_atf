@@ -43,6 +43,7 @@ local function dump(o)
   end
   return tostring(o)
 end
+
 function module.AddCase(name)
   if(not config.excludeReport) then
     module.curr_node = module.root:addChild(name)
@@ -50,6 +51,7 @@ function module.AddCase(name)
   end
   module:LOGTestCaseStart(name)
 end
+
 function module.AddMessage(name,funcName,...)
   if(not config.excludeReport) then
     local attrib = table.pack(...)[1]
@@ -115,7 +117,12 @@ function module.init(script_file_name)
   end
   os.execute('mkdir -p "'.. curr_report_path .. '"')
   module.ndoc = xml.new()
-  local alias = script_file_name:gsub('%.', '_'):gsub('/','_')
+  if (config.reportMark ~= nil and config.reportMark ~= '' ) then
+    report_mark = config.reportMark
+  end
+  
+  local report_header_name = script_file_name:gsub('.lua', '') .. '_' .. module.timestamp .. '_' .. report_mark
+  local alias = report_header_name:gsub('%.', '_'):gsub('/','_')
   module.root = module.ndoc:createRootNode(alias)
   module:initATFLOG(module.timestamp)
   module:initFullATFLOG(module.timestamp)
