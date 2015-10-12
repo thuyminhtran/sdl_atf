@@ -43,6 +43,8 @@ function module.mt.__index:OnInputData(func)
   function(self, binary)
     local msg = protocol_handler:Parse(binary)
     for _, v in ipairs(msg) do
+      -- After refactoring should be moved in mobile session
+      xmlReporter:LOG("SDLtoMOB", v)
       func(this, v)
     end
   end

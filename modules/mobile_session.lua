@@ -341,7 +341,6 @@ function mt.__index:Start()
 
         self.connection:OnInputData(function(_, msg)
             if self.sessionId ~= msg.sessionId then return end
-            xmlReporter:LOG("SDLtoMOB", msg)
             if self.heartbeatEnabled then
                 if msg.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
                    msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK and
