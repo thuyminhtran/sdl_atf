@@ -112,16 +112,13 @@ function module.init(script_file_name)
   local curr_report_path = io.catdir(curr_report_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
   if (config.reportMark ~= nil and config.reportMark ~= '' ) then
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
+    report_header_name = script_file_name:gsub('.lua', '') .. '_' .. module.timestamp .. '_' .. config.reportMark
   else
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp .. '.xml')
+    report_header_name = script_file_name:gsub('.lua', '') .. '_' .. module.timestamp
   end
   os.execute('mkdir -p "'.. curr_report_path .. '"')
   module.ndoc = xml.new()
-  if (config.reportMark ~= nil and config.reportMark ~= '' ) then
-    report_mark = config.reportMark
-  end
-  
-  local report_header_name = script_file_name:gsub('.lua', '') .. '_' .. module.timestamp .. '_' .. report_mark
   local alias = report_header_name:gsub('%.', '_'):gsub('/','_')
   module.root = module.ndoc:createRootNode(alias)
   module:initATFLOG(module.timestamp)
