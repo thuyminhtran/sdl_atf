@@ -110,6 +110,7 @@ function module.init(script_file_name)
     curr_report_dir = 'TestingReports'
   end
   local curr_report_path = io.catdir(curr_report_dir ..'_'..module.timestamp, io.catdir(io.dirname(dir_name)))
+  local report_header_name = ''
   if (config.reportMark ~= nil and config.reportMark ~= '' ) then
     module.curr_report_name = io.catfile(curr_report_path,get_script_name(dir_name) ..'_'..module.timestamp ..'_'..config.reportMark .. '.xml')
     report_header_name = script_file_name:gsub('.lua', '') .. '_' .. module.timestamp .. '_' .. config.reportMark
