@@ -297,6 +297,10 @@ function module:runSDL()
   RUN_AFTER(function()
       RAISE_EVENT(event, event)
       end, 4000)
+    if config.autorunSDL ~= true then
+      SDL.autoStarted = false
+      return 
+    end
     local result, errmsg = SDL:StartSDL(config.pathToSDL, config.SDL, config.ExitOnCrash)
     if not result then
       SDL:DeleteFile()
