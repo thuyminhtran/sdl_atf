@@ -130,6 +130,9 @@ function module.MessageDispatcher(connection)
         res.idx = 1
       end
       local header, msg, timeout = res.generators[res.idx]:GetMessage()
+      if header and header.messageId then
+        xmlReporter:LOG("SDLtoMOB", header)         
+      end
       if msg and #msg > 0 then
         if res.bufferSize > #msg then
           res.bufferSize = res.bufferSize - #msg
