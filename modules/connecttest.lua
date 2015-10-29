@@ -275,18 +275,22 @@ function module:RunSDL()
 end
 
 function module:InitHMI()
+  critical(true)
   self:initHMI()
 end
 
 function module:InitHMI_onReady()
+  critical(true)
   self:initHMI_onReady()
 end
 
 function module:ConnectMobile()
+  critical(true)
   self:connectMobile()
 end
 
 function module:StartSession()
+  critical(true)
   self:startSession()
 end
 
@@ -310,7 +314,6 @@ function module:runSDL()
   end
 
   function module:initHMI()
-    critical(true)
     local function registerComponent(name, subscriptions)
       xmlReporter.AddMessage(debug.getinfo(1, "n").name, name);
       local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
@@ -355,7 +358,6 @@ function module:runSDL()
   end
 
   function module:initHMI_onReady()
-    critical(true)
     local function ExpectRequest(name, mandatory, params)
       xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
       local event = events.Event()
@@ -616,7 +618,6 @@ function module:runSDL()
   end
 
   function module:connectMobile()
-    critical(true)
     -- Disconnected expectation
     EXPECT_EVENT(events.disconnectedEvent, "Disconnected")
     :Pin()
@@ -630,7 +631,6 @@ function module:runSDL()
   end
 
   function module:startSession()
-    critical(true)
     self.mobileSession = mobile_session.MobileSession(
       self,
       self.mobileConnection,
