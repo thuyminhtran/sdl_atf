@@ -315,7 +315,6 @@ function module:runSDL()
 
   function module:initHMI()
     local function registerComponent(name, subscriptions)
-      xmlReporter.AddMessage(debug.getinfo(1, "n").name, name);
       local rid = module.hmiConnection:SendRequest("MB.registerComponent", { componentName = name })
       local exp = EXPECT_HMIRESPONSE(rid)
       if subscriptions then
@@ -359,7 +358,6 @@ function module:runSDL()
 
   function module:initHMI_onReady()
     local function ExpectRequest(name, mandatory, params)
-      xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
       local event = events.Event()
       event.level = 2
       event.matches = function(self, data) return data.method == name end
@@ -367,6 +365,12 @@ function module:runSDL()
       EXPECT_HMIEVENT(event, name)
       :Times(mandatory and 1 or AnyNumber())
       :Do(function(_, data)
+          xmlReporter.AddMessage("hmi_connection","SendResponse", 
+            { 
+              ["methodName"] = tostring(name),
+              ["mandatory"] = mandatory , 
+              ["params"]= params
+            })
           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
         end)
     end
@@ -434,7 +438,6 @@ function module:runSDL()
     ExpectRequest("VehicleInfo.GetVehicleData", true, { vin = "52-452-52-752" })
 
     local function button_capability(name, shortPressAvailable, longPressAvailable, upDownAvailable)
-      xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
       return
       {
         name = name,
@@ -443,6 +446,7 @@ function module:runSDL()
         upDownAvailable = upDownAvailable == nil and true or upDownAvailable
       }
     end
+
     local buttons_capabilities =
     {
       capabilities =
@@ -480,7 +484,6 @@ function module:runSDL()
       })
 
     local function text_field(name, characterSet, width, rows)
-      xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
       return
       {
         name = name,
@@ -490,7 +493,6 @@ function module:runSDL()
       }
     end
     local function image_field(name, width, heigth)
-      xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(name))
       return
       {
         name = name,
