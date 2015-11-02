@@ -303,7 +303,7 @@ function module:runSDL()
       end, 4000)
     if config.autorunSDL ~= true then
       SDL.autoStarted = false
-      return 
+      return
     end
     local result, errmsg = SDL:StartSDL(config.pathToSDL, config.SDL, config.ExitOnCrash)
     if not result then
@@ -329,7 +329,7 @@ function module:runSDL()
 
     EXPECT_HMIEVENT(events.connectedEvent, "Connected websocket")
     :Do(function()
-        registerComponent("Buttons")
+        registerComponent("Buttons", {"Buttons.OnButtonSubscription"})
         registerComponent("TTS")
         registerComponent("VR")
         registerComponent("BasicCommunication",
@@ -365,10 +365,10 @@ function module:runSDL()
       EXPECT_HMIEVENT(event, name)
       :Times(mandatory and 1 or AnyNumber())
       :Do(function(_, data)
-          xmlReporter.AddMessage("hmi_connection","SendResponse", 
-            { 
+          xmlReporter.AddMessage("hmi_connection","SendResponse",
+            {
               ["methodName"] = tostring(name),
-              ["mandatory"] = mandatory , 
+              ["mandatory"] = mandatory ,
               ["params"]= params
             })
           self.hmiConnection:SendResponse(data.id, data.method, "SUCCESS", params)
@@ -403,28 +403,25 @@ function module:runSDL()
     ExpectRequest("VR.ChangeRegistration", false, { }):Pin()
     ExpectRequest("TTS.ChangeRegistration", false, { }):Pin()
     ExpectRequest("VR.GetSupportedLanguages", true, {
-        languages =
-        {
-          "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
-          "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
-          "PT-BR","CS-CZ","DA-DK","NO-NO"
-        }
+        languages = {
+        "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU",
+        "TR-TR","PL-PL","FR-FR","IT-IT","SV-SE","PT-PT","NL-NL",
+        "ZH-TW","JA-JP","AR-SA","KO-KR","PT-BR","CS-CZ","DA-DK",
+        "NO-NO","NL-BE","EL-GR","HU-HU","FI-FI","SK-SK" }
       })
     ExpectRequest("TTS.GetSupportedLanguages", true, {
-        languages =
-        {
-          "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
-          "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
-          "PT-BR","CS-CZ","DA-DK","NO-NO"
-        }
+        languages = {
+        "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU",
+        "TR-TR","PL-PL","FR-FR","IT-IT","SV-SE","PT-PT","NL-NL",
+        "ZH-TW","JA-JP","AR-SA","KO-KR","PT-BR","CS-CZ","DA-DK",
+        "NO-NO","NL-BE","EL-GR","HU-HU","FI-FI","SK-SK" }
       })
     ExpectRequest("UI.GetSupportedLanguages", true, {
-        languages =
-        {
-          "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU","TR-TR","PL-PL",
-          "FR-FR","IT-IT","SV-SE","PT-PT","NL-NL","ZH-TW","JA-JP","AR-SA","KO-KR",
-          "PT-BR","CS-CZ","DA-DK","NO-NO"
-        }
+        languages = {
+        "EN-US","ES-MX","FR-CA","DE-DE","ES-ES","EN-GB","RU-RU",
+        "TR-TR","PL-PL","FR-FR","IT-IT","SV-SE","PT-PT","NL-NL",
+        "ZH-TW","JA-JP","AR-SA","KO-KR","PT-BR","CS-CZ","DA-DK",
+        "NO-NO","NL-BE","EL-GR","HU-HU","FI-FI","SK-SK" }
       })
     ExpectRequest("VehicleInfo.GetVehicleType", true, {
         vehicleType =
@@ -544,7 +541,11 @@ function module:runSDL()
             text_field("tertiaryText"),
             text_field("timeToDestination"),
             text_field("turnText"),
-            text_field("menuTitle")
+            text_field("menuTitle"),
+            text_field("locationName"),
+            text_field("locationDescription"),
+            text_field("addressLines"),
+            text_field("phoneNumber")
           },
           imageFields =
           {
@@ -556,7 +557,7 @@ function module:runSDL()
             image_field("menuIcon"),
             image_field("cmdIcon"),
             image_field("showConstantTBTIcon"),
-            image_field("showConstantTBTNextTurnIcon")
+            image_field("locationImage")
           },
           mediaClockFormats =
           {
