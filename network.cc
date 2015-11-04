@@ -37,6 +37,22 @@ QTcpSocket *tcpSocket =
   lua_pushlstring(L, result.data(), result.count()); 
   return 1;
 }/*}}}*/
+
+
+int tcp_socket_read_all(lua_State *L) {/*{{{*/
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 40 "network.nw"
+  QByteArray result;
+  while(tcpSocket->bytesAvailable()) {
+  result += tcpSocket->readAll();
+}
+  lua_pushlstring(L, result.data(), result.count()); 
+  return 1;
+}/*}}}*/
+
 int tcp_socket_write(lua_State *L) {/*{{{*/
   
 #line 65 "network.nw"
@@ -200,6 +216,7 @@ int luaopen_network(lua_State *L) {
   luaL_Reg tcp_socket_functions[] = {
     { "connect", &tcp_socket_connect },
     { "read", &tcp_socket_read },
+    { "read_all", &tcp_socket_read_all },
     { "write", &tcp_socket_write },
     { "close", &tcp_socket_close },
     { NULL, NULL }

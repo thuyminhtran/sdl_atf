@@ -18,10 +18,12 @@ function module.init(host,port,logname)
   setmetatable(res, module.mt)
   return res
 end
+
 function module.dataReady()
-  local data = module.socket:read(5000)
+  local data = module.socket:read_all()
   module.sdl_log_file:write(data)
 end
+
 function module.Connect(self)
   self.qtproxy.dataReady = function() module.dataReady() end
   qt.connect(module.socket, "readyRead()", self.qtproxy, "dataReady()")
