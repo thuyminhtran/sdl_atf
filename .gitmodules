@@ -1,0 +1,3 @@
+[submodule "modules/json4lua"]
+	path = modules/json4lua
+	url = https://github.com/craigmj/json4lua
