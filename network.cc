@@ -45,10 +45,7 @@ int tcp_socket_read_all(lua_State *L) {/*{{{*/
 QTcpSocket *tcpSocket =
   *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
 #line 40 "network.nw"
-  QByteArray result;
-  while (tcpSocket->bytesAvailable()) {
-    result += tcpSocket->readAll();
-  }
+  QByteArray result = tcpSocket->readAll();
   lua_pushlstring(L, result.data(), result.count()); 
   return 1;
 }/*}}}*/
