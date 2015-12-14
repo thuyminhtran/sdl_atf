@@ -44,6 +44,7 @@ $ where qmake
 
    Solution: sudo apt-get install libffcall1-dev
 
-```
+
 ## Run:
+**3**
 ``` ./start.sh [options] [script file name] ```
