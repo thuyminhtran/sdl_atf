@@ -16,7 +16,7 @@ $ git submodule update
 ## Compilation:
 **1**  Setup QMAKE enviroment vaeriable to path to qmake
 ```export QMAKE=${PATH_TO_QMAKE} ``` 
-*You can get path to qake this way:*
+*You can get path to qmake this way:*
 ```
 $ where qmake
 /usr/bin/qmake
