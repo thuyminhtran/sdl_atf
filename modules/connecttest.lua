@@ -295,12 +295,6 @@ function module:StartSession()
 end
 
 function module:runSDL()
-  local event = events.Event()
-  event.matches = function(self, e) return self == e end
-  EXPECT_EVENT(event, "Delayed event")
-  RUN_AFTER(function()
-      RAISE_EVENT(event, event)
-      end, 4000)
     if config.autorunSDL ~= true then
       SDL.autoStarted = false
       return
