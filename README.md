@@ -2,9 +2,10 @@
 Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/ATF2.2)
 
 ## Dependencies:
-lua5.2
-liblua5.2-dev
-Qt5
+- lua5.2
+- liblua5.2-dev
+- libffcall1-dev
+- [Qt5](http://www.qt.io/download-open-source/#section-2)
 
 ## Get source code:
 ```
@@ -39,12 +40,6 @@ $ where qmake
    Sometimes you will need reinstall QT Creator to get correct qmake executable
    Also you can open QT Creator. Then go to: Tool->Options->Build & Run. Find Qt Versions Tab.
    Here you can find qmake location.
-
- 2) If you have the followong problem:
-
-   libavcall.a is missing
-
-   Solution: sudo apt-get install libffcall1-dev
 
 
 ## Run:
