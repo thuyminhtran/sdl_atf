@@ -55,3 +55,8 @@ messageCode	String
   </hello>
 </test>
 
+Trying to parse broken xml to get an output error:
+Lua error:
+Error parsing xml file:
+broken.xml:1: expected '>'
+
