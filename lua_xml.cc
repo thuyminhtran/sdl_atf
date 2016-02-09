@@ -15,7 +15,6 @@ extern "C" {
 #include <iostream>
 #include <assert.h>
 #include <stdarg.h>
-#include <avcall.h>
 #include <string.h>
 
 namespace {
@@ -32,44 +31,49 @@ void genericErrorHandler(void *ctx, const char* message, ...){
 
 void structuredErrorHandler(void *userData, xmlErrorPtr err) {
   lua_State *L = static_cast<lua_State*>(userData);
-  char msg[1024];
-  char fmt[256] = { 0 };
+  const size_t msg_size = 1024;
+  char msg[msg_size];
+  int pos = 0;
+
   switch(err->domain) {
     case XML_FROM_XPATH:
-      strcpy(fmt, "Error evaluating xpath query:\n");
+      pos += snprintf(msg, msg_size, "Error evaluating xpath query:\n");
       break;
     case XML_FROM_PARSER:
-      strcpy(fmt, "Error parsing xml file:\n");
+      pos += snprintf(msg, msg_size, "Error parsing xml file:\n");
+      break;
+    // TODO(EZamakhov): add more domain errors from xmlErrorDomain enum
+    default:
+      pos += snprintf(msg, msg_size, "Other error:\n");
+      break;
   }
 
-  av_alist alist;
-  int retval;
-  av_start_int(alist, &snprintf, &retval);
-
-  av_ptr(alist, char*, msg);
-  av_int(alist, 1023);
-  av_ptr(alist, char*, fmt);
-
-  if (err->file) {
-    strcat(fmt, "%s:%d: ");
-    av_ptr(alist, const char*, err->file);
-    av_int(alist, err->line);
+  // append error information to out msg
+  if (err->file &&
+      pos < msg_size) {
+    pos += snprintf(msg + pos, msg_size - pos,
+                    "%s:%d: ", err->file, err->line);
   }
-  strcat(fmt, "%s");
-  av_ptr(alist, const char*, err->message);
-  if (err->str1) {
-    strcat(fmt, ": %s");
-    av_ptr(alist, const char*, err->str1);
+  if (err->message &&
+      pos < msg_size) {
+    pos += snprintf(msg + pos, msg_size - pos,
+                   "%s", err->message);
   }
-  if (err->str2) {
-    strcat(fmt, ": %s");
-    av_ptr(alist, const char*, err->str2);
+  if (err->str1 &&
+      pos < msg_size) {
+    pos += snprintf(msg + pos, msg_size - pos,
+                    ": %s", err->str1);
   }
-  if (err->str3) {
-    strcat(fmt, ": %s");
-    av_ptr(alist, const char*, err->str3);
+  if (err->str2 &&
+      pos < msg_size) {
+    pos += snprintf(msg + pos, msg_size - pos,
+                    ": %s", err->str2);
   }
-  av_call(alist);
+  if (err->str3 &&
+      pos < msg_size) {
+    pos += snprintf(msg + pos, msg_size - pos,
+                    ": %s", err->str3);
+  }
   lua_pushstring(L, msg);
   lua_error(L);
 }
