@@ -4,7 +4,6 @@ Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/
 ## Dependencies:
 - lua5.2
 - liblua5.2-dev
-- libffcall1-dev
 - [Qt5](http://www.qt.io/download-open-source/#section-2)
 
 ## Get source code:
