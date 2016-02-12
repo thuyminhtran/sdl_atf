@@ -2,10 +2,24 @@
 Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/ATF2.2)
 
 ## Dependencies:
-- lua5.2
-- liblua5.2-dev
-- libffcall1-dev
-- [Qt5](http://www.qt.io/download-open-source/#section-2)
+Library            | License
+------------------ | -------------
+**Lua libs**       | 
+liblua5.2-dev      | MIT
+json4lua           | MIT
+lua-stdlib         | MIT
+**Qt libs**        | 
+Qt5.3 WebSockets   | LGPL 2.1
+Qt5.3 Network      | LGPL 2.1
+Qt5.3 Core         | LGPL 2.1
+Qt5.3 Gui          | LGPL 2.1
+Qt5.3 Test         | LGPL 2.1
+**Other libs**     | 
+lGL                | Mesa(MIT)
+lpthread           | LGPL
+libxml2            | MIT
+
+[Qt5](https://download.qt.io/archive/qt/5.3/5.3.1/)
 
 ## Get source code:
 ```
@@ -19,9 +33,9 @@ $ git submodule update
 ```export QMAKE=${PATH_TO_QMAKE} ``` 
 *You can get path to qmake this way:*
 ```
-$ where qmake
+$ sudo find / -name qmake
 /usr/bin/qmake
-/opt/Qt5.4.1/5.4/gcc/bin/qmake
+/opt/Qt5.3.1/5.3/gcc/bin/qmake
 ```
 /usr/bin/qmake in most cases does not work as it is just soft link to qtchooser
 
@@ -40,7 +54,6 @@ $ where qmake
    Sometimes you will need reinstall QT Creator to get correct qmake executable
    Also you can open QT Creator. Then go to: Tool->Options->Build & Run. Find Qt Versions Tab.
    Here you can find qmake location.
-
 
 ## Run:
 **3**
