@@ -2,14 +2,15 @@
 This  documents provide short descriptions of main ATF components.
 Components diagram can be found on https://adc.luxoft.com/confluence/display/APPLINK/ATF+component+view 
 
-## Qt Core
-Qt Core runs lua core.
-Qt core contains common utils functions like:
+## C++ Core
+C++ Core runs lua core.
+C++ core contains common utils functions like:
 
 - timer
-- signal/slot system 
+- Qt signal/slot system 
 - XML parsing
 - Web-Sockets
+- Tcp-Sockets
 
 ## Lua core
 
@@ -30,26 +31,17 @@ Contains components for ATF output reports. There 3 main ATF outputs
 #### SDL logger
 
 Grabs SDL log via telnet and save it to corresponding directory. 
-*Plain text format*
+*Logs provided in plain text format*
 
 #### ATF logger 
 
 Grabs all transport data, parse according ford protocol and save to simplify analyzing transferred data.
-*Plain text format*
+*Logs provided in plain text format*
 
 #### XML reporter
 
 Provide reports of ATF scripts execution contains all received and expected requests, information about fails to analyze it. 
-*XML format*
-
-### Config
-
-Contains configurable data for ATF run.
-*Lua script format" 
-
-### Launcher
-
-Contains logic run and stop SDL it use lua script to handle SDL state during scripts execution and bash scripts to run and stop SDL.
+*Logs provided in XML format*
 
 ### Transport
 
@@ -85,20 +77,25 @@ Implements all session logic:
 - Session multiplexing
 - Open/close session
 
+
 ### Validation
 
 This components use HMI and mobile API to validate input and output data.
 
-### Event engine
-
-Provide functionality for basic event engine and common expectation
 
 ### Protocol handler 
 
 Used to validate and parse mobile data on protocol layer. Used by mobile connection. 
 
+### Launcher
 
+Contains logic run and stop SDL it use lua script to handle SDL state during scripts execution and bash scripts to run and stop SDL.
 
+### Event engine
 
+Provide functionality for basic event engine and common expectation
 
+### Config
 
+Contains configurable data for ATF run.
+*Config is lua script with name = value paramaters*
