@@ -43,6 +43,19 @@ Grabs all transport data, parse according ford protocol and save to simplify ana
 Provide reports of ATF scripts execution contains all received and expected requests, information about fails to analyze it. 
 *Logs provided in XML format*
 
+### Launcher
+
+Contains logic run and stop SDL it use lua script to handle SDL state during scripts execution and bash scripts to run and stop SDL.
+
+### Event engine
+
+Provide functionality for basic event engine and common expectation
+
+### Config
+
+Contains configurable data for ATF run.
+*Config is lua script with name = value paramaters*
+
 ### Transport
 
 Components used to provide specific transport in ATF
@@ -59,15 +72,22 @@ Provide ability to connect to remote host and transfer web-socket data.
 
 Use web-socket connection to transfer json requests/responses
 
+#### File connection
+
+Used as socket abstraction for mobile connection to prevent  memory overflow.
+This component writes to file system all data that it received. And write to socket when socket is ready.
 
 ### Mobile Connection
 
 Implements logic of receiving/sending mobile requests/responses 
 
-#### File connection
+### Validation
 
-Used as socket abstraction for mobile connection to prevent  memory overflow.
-This component writes to file system all data that it received. And write to socket when socket is ready.
+This components use HMI and mobile API to validate input and output data.
+
+### Protocol handler 
+
+Used to validate and parse mobile data on protocol layer. Used by mobile connection. 
 
 #### Mobile Session 
 
@@ -77,25 +97,3 @@ Implements all session logic:
 - Session multiplexing
 - Open/close session
 
-
-### Validation
-
-This components use HMI and mobile API to validate input and output data.
-
-
-### Protocol handler 
-
-Used to validate and parse mobile data on protocol layer. Used by mobile connection. 
-
-### Launcher
-
-Contains logic run and stop SDL it use lua script to handle SDL state during scripts execution and bash scripts to run and stop SDL.
-
-### Event engine
-
-Provide functionality for basic event engine and common expectation
-
-### Config
-
-Contains configurable data for ATF run.
-*Config is lua script with name = value paramaters*
