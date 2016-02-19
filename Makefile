@@ -38,10 +38,12 @@ libqttest.so: $(SOURCES) test/Makefile
 	make -C test
 	ln -sf test/libqttest.so.1.0.0 libqttest.so
 
-test: interp libqttest.so test/testbase.lua modules/libxml.so \
-	test/dynamic.lua test/connect.lua test/network.lua \
-	test/reportTest.lua test/SDLLogTest.lua \
+test: run_tests.sh
 	./run_tests.sh
+
+run_tests.sh: interp libqttest.so test/testbase.lua modules/libxml.so \
+	test/dynamic.lua test/connect.lua test/network.lua \
+	test/reportTest.lua test/SDLLogTest.lua
 
 $(PROJECT).mk: $(SOURCES) $(PROJECT).pro check-env
 	$(QMAKE) $(PROJECT).pro -o $@
@@ -52,5 +54,5 @@ ifndef QMAKE
 	export QMAKE={full_path_to_qmake_v5.3} . \
 	Searching hint: locate -b '\qmake')
 else
-	$(info QMAKE=$(QMAKE))
+	$(info using QMAKE=$(QMAKE))
 endif

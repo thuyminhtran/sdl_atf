@@ -58,3 +58,6 @@ $ sudo find / -name qmake
 ## Run:
 **3**
 ``` ./start.sh [options] [script file name] ```
+
+## Run tests
+``` make test ```
