@@ -47,7 +47,7 @@ $ sudo find / -name qmake
    Solution:
    You have to chage location of qmake in Makefile in atf root directory
    Find location of qmake executable on your local PC:
-   (It should look like: .../Qt/5.4/gcc_64/bin/qmake)
+   (It should look like: .../Qt/5.3/gcc_64/bin/qmake)
 
    and put it into Makefile to the line:
    QMAKE=<your path to qmake>
