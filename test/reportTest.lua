@@ -4,8 +4,8 @@ local io = require("atf.stdlib.std.io")
 function FindDirectory(directory,currDate)
   local t, popen = "", io.popen
   for filename in popen('ls -a "'..directory..'"'):lines() do
-    if string.find(filename,"TestingReports_"..currDate,1,true) ~=nil then
-      t= filename
+    if string.find(filename,"TestingReports_"..currDate,1,true) ~= nil then
+      t = filename
     end
   end
   return t
@@ -15,9 +15,9 @@ function FindReportPath(ReportPath)
   filereport = assert(io.open(ReportPath,"r"))
 
   if filereport == nil then
-    print("ERROR: Directory \"Testing Reports\" was not found")
+    print("ERROR: Directory \"TestingReports\" was not found")
   else
-    print("Directory \"Testing Reports\" was successfully found")
+    print("Directory \"TestingReports\" was successfully found")
   end
 
   filereport:close()
@@ -27,8 +27,8 @@ function FindReport(ReportPath, xmlName, currDate)
 
   local t, popen = "", io.popen
   for reportName in popen('ls -a "'..ReportPath..'"'):lines() do
-    if string.find(reportName,xmlName.."_"..currDate,1,true) ~=nil then
-      t= reportName
+    if string.find(reportName,xmlName.."_"..currDate,1,true) ~= nil then
+      t = reportName
       print("Xml report file was successfully found")
     end
   end
@@ -48,29 +48,63 @@ function cleanTestDirectory(ReportPath,ReportName)
 
 end
 
+function CheckUnexpectedXMLEnd(line)
+  if line == nil then
+    print ("ERROR: unexpected end of xml file")
+    return true
+  end
+  return false
+end
+
+function AddMessageWithID(MessageType)
+  xmlReporter.AddMessage(MessageType, {["RequestId"] = "RequestId",["FunctionName"] = 
+    "SendRequest"},"{[\"methodName\"] = \"New method\"}")
+end
+
+function ReadMessageWithID(MessageType)
+  line = filereport:read()
+  result = string.find(line,"<" .. MessageType .. 
+    " FunctionName=\"SendRequest\" RequestId=\"RequestId\">{[\"methodName\"] = \"New method\"}</" .. 
+    MessageType .. ">",1,true)
+
+  if result == nil then
+    result = string.find(line,"<" .. MessageType .. 
+      " RequestId=\"RequestId\" FunctionName=\"SendRequest\">{[\"methodName\"] = \"New method\"}</" 
+      .. MessageType .. ">",1,true)
+  end
+
+  if result == nil then
+    print("ERROR: incorrect parameter line with arguments, get "..line)
+  end
+
+end
+
 function createXmlFile(xmlname)
   xmlReporter.init(tostring("test/"..xmlname))
   xmlReporter.AddCase("InitHMI")
-  xmlReporter.CaseMessageTotal(xmlReporter.current_case_name,{ ["result"] = "success", ["timestamp"] ="100"} )
+  xmlReporter.CaseMessageTotal(xmlReporter.current_case_name,
+    { ["result"] = "success", ["timestamp"] ="100"} )
   xmlReporter.AddMessage("EXPECT_HMIEVENT", {["FunctionName"] = "Connected websocket"})
-  xmlReporter.AddMessage("hmi_connection", {["FunctionName"] = "SendRequest"},"{[\"methodName\"] = \"New method\"}")
+  xmlReporter.AddMessage("hmi_connection", {["FunctionName"] = 
+    "SendRequest"},"{[\"methodName\"] = \"New method\"}")
+  AddMessageWithID("hmi_connection")
+  AddMessageWithID("EXPECT_RESPONSE")
+  AddMessageWithID("EXPECT_RESULT")
+  AddMessageWithID("EXPECT_HMICALL")
   xmlReporter:finalize()
 end
 
 function AnalyzeXmlReport(ReportPath,ReportName)
   filereport = assert(io.open(ReportPath.."/"..ReportName,"r"))
 
-  line = filereport:read()
-  if line == nil then
-    print ("ERROR: unexpected end of xml file")
+  if CheckUnexpectedXMLEnd(filereport:read()) then 
     return
   end
-  line = filereport:read()
-  if line == nil then
-    print ("ERROR: unexpected end of xml file")
+  if CheckUnexpectedXMLEnd(filereport:read()) then 
     return
   end
-  if line ~= "<test_validationTest_lua>" then
+
+  if line == "<test_validationTest_" then
     print("ERROR: incorrect case, get "..line)
   end
   line = filereport:read()
@@ -78,11 +112,11 @@ function AnalyzeXmlReport(ReportPath,ReportName)
     print ("ERROR: unexpected end of xml file")
     return
   end
-  result =string.find(line,"result=\"success\"",1,true)
+  result = string.find(line,"result=\"success\"",1,true)
   if result == nil then
     print("ERROR: incorrect result")
   end
-  result =string.find(line,"timestamp=\"100\"",1,true)
+  result = string.find(line,"timestamp=\"100\"",1,true)
   if result == nil then
     print("ERROR: incorrect timestamp, get " .. line)
   end
@@ -91,7 +125,7 @@ function AnalyzeXmlReport(ReportPath,ReportName)
     print ("ERROR: unexpected end of xml file")
     return
   end
-  result =string.find(line,"<EXPECT_HMIEVENT FunctionName=\"Connected websocket\"/>",1,true)
+  result = string.find(line,"<EXPECT_HMIEVENT FunctionName=\"Connected websocket\"/>",1,true)
   if result == nil then
     print("ERROR: incorrect parameter line, get "..line)
   end
@@ -101,27 +135,31 @@ function AnalyzeXmlReport(ReportPath,ReportName)
     print ("ERROR: unexpected end of xml file")
     return
   end
-  result =string.find(line,"<hmi_connection FunctionName=\"SendRequest\">{[\"methodName\"] = \"New method\"}</hmi_connection>",1,true)
+  result = string.find(line,
+    "<hmi_connection FunctionName=\"SendRequest\">{[\"methodName\"] = \"New method\"}</hmi_connection>",1,true)
   if result == nil then
     print("ERROR: incorrect parameter line with arguments, get "..line)
   end
 
-  line = filereport:read()
-  if line == nil then
-    print ("ERROR: unexpected end of xml file")
-    return
-  end
-  result =string.find(line,"</InitHMI>",1,true)
-  if result == nil then
-    print("ERROR: expected close bracket of test case")
-  end
+  ReadMessageWithID("hmi_connection")
+  ReadMessageWithID("EXPECT_RESPONSE")
+  ReadMessageWithID("EXPECT_RESULT")
+  ReadMessageWithID("EXPECT_HMICALL")
 
   line = filereport:read()
   if line == nil then
     print ("ERROR: unexpected end of xml file")
     return
   end
-  if line ~= "</test_validationTest_lua>" then
+  result = string.find(line,"</InitHMI>",1,true)
+  if result == nil then
+    print("ERROR: expected close bracket of test case")
+  end
+
+  if CheckUnexpectedXMLEnd(filereport:read()) then 
+    return
+  end
+  if line == "</test_validationTest_" then
     print("ERROR: expected close bracket of main test part")
   end
 
@@ -139,9 +177,9 @@ dates = os.date("%Y%m%d%H%M")
 xmlname = "validationTest.lua"
 createXmlFile(xmlname)
 
-ReportPath = FindDirectory("./Testing Reports/",dates)
+ReportPath = FindDirectory("./TestingReports/",dates)
 
-ReportPath = "Testing Reports/".. ReportPath.."/test"
+ReportPath = "TestingReports/".. ReportPath.."/test"
 
 FindReportPath(ReportPath)
 
