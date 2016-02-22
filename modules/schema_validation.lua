@@ -192,7 +192,7 @@ local function compare(schema, function_id, msgType, user_data, mandatory_check)
                     if (compare_type(type(val), api_type)) then
                         retval=true
                     else
-                        ret_error_mes = "not valid type '"..k .."': current type - '".. type(val) .."' ; Avalible - '".. tostring(api_type) .."'"
+                        ret_error_mes = "not valid type '"..k .."': current type - '".. type(val) .."' ; Available - '".. tostring(api_type) .."'"
                     end
                 end
 
@@ -256,7 +256,7 @@ local function compare(schema, function_id, msgType, user_data, mandatory_check)
       if (types.classes[xmlNode.class] ~= 'nil') then
         if (not compare_type(string.lower(type(dataNode)), xmlNode.class) ) then
           bool_result = false
-          errorMessage[ key ] = "not valid type '"..key .."': current type - '".. string.lower(type(dataNode)) .."' ; Avalible - '".. tostring(xmlNode.class) .."'"
+          errorMessage[ key ] = "not valid type '"..key .."': current type - '".. string.lower(type(dataNode)) .."' ; Available - '".. tostring(xmlNode.class) .."'"
         end
       else
         errorMessage[ key ] = "not valid type: "..key
