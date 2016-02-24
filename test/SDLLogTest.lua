@@ -4,18 +4,17 @@ config = require("config")
 local sdl_log = require('sdl_logger')
 local io = require("atf.stdlib.std.io")
 
-function FindDirectory(directory,currDate)
-  local t, popen = "", io.popen
-  for filename in popen('ls -a "'..directory..'"'):lines() do
-    if string.find(filename,"SDLLogs_"..currDate,1,true) ~=nil then
-      t= filename
+function FindDirectory(directory, sub_directory)
+  for filename in io.popen('ls -a "'..directory..'"'):lines() do
+    if string.find(filename, sub_directory, 1, true) ~=nil then
+      return filename
     end
   end
-  return t
+  print("ERROR: Directory \""..directory.."\" does not contain sub_folder \""..sub_directory.."'")
 end
 
 function FindReportPath(ReportPath)
-  filereport = assert(io.open(ReportPath,"r"))
+  local filereport = assert(io.open(ReportPath, "r"))
 
   if filereport == nil then
     print("ERROR: Directory was not found. Possibly problem in date, look there")
@@ -27,33 +26,27 @@ function FindReportPath(ReportPath)
 end
 
 function FindReport(ReportPath, reporter_name, currDate)
-
-  local t, popen = "", io.popen
-  for reportName in popen('ls -a "'..ReportPath..'"'):lines() do
-    if string.find(reportName, reporter_name.."_"..currDate,1,true) ~=nil then
-      t= reportName
+  for reportName in io.popen('ls -a "'..ReportPath..'"'):lines() do
+    if string.find(reportName, reporter_name,1,true) ~=nil then
       print("SDL log file was successfully found")
+      return reportName
     end
   end
-  if t == "" then
-    print("ERROR: SDL log file does not exist")
-  end
-  return t
+  print("ERROR: SDL log file \""..ReportPath.."\" does not exist")
 end
 
 --=================================
 print ("Sdl Logger test started")
 print("==============\n")
 
-dates = os.date("%Y%m%d%H%M")
+local dates = os.date("%Y%m%d%H%M")
 
-ReportPath = FindDirectory("./Testing Reports/",dates)
-ReportPath = "Testing Reports/".. ReportPath.."/test"
+local ReportPath = FindDirectory("./TestingReports/", "ATFLogs_"..dates)
+ReportPath = "TestingReports/".. ReportPath.."/test"
 
 FindReportPath(ReportPath)
 
-reporter_name = "SDLLogTest"
-ReportName = FindReport(ReportPath, reporter_name, dates)
+ReportName = FindReport(ReportPath, "SDLLogTest_"..dates)
 
 print("============== \n")
 print ("Test ended")
