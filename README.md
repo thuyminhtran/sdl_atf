@@ -60,4 +60,4 @@ $ sudo find / -name qmake
 ``` ./start.sh [options] [script file name] ```
 
 ## Run tests
-``` ./run_tests.sh```
+``` make test```
