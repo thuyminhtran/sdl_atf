@@ -26,6 +26,13 @@ if (not _res) then print("validate_mobile_response:"..tostring(_res).." ==> ".._
 _res, _err = validator.validate_mobile_response( 'Slider',{ success = 'true', resultCode = {"SUCCESS"} },true)
 if (not _res) then print("validate_mobile_response:"..tostring(_res).." ==> ".._err) else print ("validate_mobile_response:"..tostring(_res)) end
 
+_res, _err = validator.validate_mobile_response( "WrongFunctionName", { success = false, resultCode = "INVALID_DATA", info = nil })
+if (not _res) then
+  print("validate_mobile_response with \"WrongFuntionName\":"..tostring(_res).." ==> ".._err)
+else
+  print ("validate_mobile_response with \"WrongFuntionName\":"..tostring(_res))
+end
+
 _res, _err = validator.validate_hmi_notification( 'BasicCommunication.OnSystemRequest', { requestType = {"PROPRIETARY"}})
 if (not _res) then print("validate_hmi_notification:"..tostring(_res).." ==> ".._err) else print ("validate_hmi_notification:"..tostring(_res)) end
 
