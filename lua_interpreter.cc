@@ -81,7 +81,7 @@ LuaInterpreter::LuaInterpreter(QObject *parent, const QStringList::iterator& arg
   lua_concat(lua_state, 2);
   lua_setfield(lua_state, -2, "cpath");
 
-  lua_pushstring(lua_state, "./modules/?.lua;");
+  lua_pushstring(lua_state, "./modules/?.lua;./modules/atf/stdlib/?.lua;");
   lua_getfield(lua_state, -2, "path");
   assert(!lua_isnil(lua_state, -1));
   lua_concat(lua_state, 2);
