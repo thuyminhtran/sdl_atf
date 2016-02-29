@@ -146,7 +146,7 @@ end
 
 function module.sdl_core(str)
   if (not is_file_exists(str.."smartDeviceLinkCore")) then
-    print("SDL is not accessible at the specified path: "..str)
+    error("SDL is not accessible at the specified path: "..str)
     os.exit(1)
   end
   config.pathToSDL = str
