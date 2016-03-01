@@ -267,6 +267,7 @@ end
 
 function StopSDL()
   event_dispatcher:ClearEvents()
+  module.expectations_list:Clear()
   return SDL:StopSDL()
 end
 
