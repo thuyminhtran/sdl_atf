@@ -16,6 +16,8 @@ SOURCES= lua_interpreter.cc \
 all: interp modules/libxml.so
 
 interp: $(PROJECT).mk $(SOURCES)
+	ln -sf `g++ -print-file-name=libgcc.a`
+	ln -sf `g++ -print-file-name=libstdc+.a`
 	make -f $<
 
 modules/libxml.so: lua_xml.cc
