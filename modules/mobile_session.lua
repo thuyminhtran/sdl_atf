@@ -70,8 +70,8 @@ function mt.__index:ExpectResponse(cor_id, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["id"] = tostring(cor_id),["name"] = tostring(func_name),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["id"] = tostring(cor_id),["name"] = tostring(func_name),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_response(func_name, arguments)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.payload, "payload")
