@@ -12,10 +12,8 @@ lua-stdlib         | MIT
 Qt5.3 WebSockets   | LGPL 2.1
 Qt5.3 Network      | LGPL 2.1
 Qt5.3 Core         | LGPL 2.1
-Qt5.3 Gui          | LGPL 2.1
 Qt5.3 Test         | LGPL 2.1
-**Other libs**     | 
-lGL                | Mesa(MIT)
+**Other libs**     |
 lpthread           | LGPL
 libxml2            | MIT
 
@@ -45,7 +43,7 @@ $ sudo find / -name qmake
    Project ERROR: Unknown module(s) in QT: websockets
 
    Solution:
-   You have to chage location of qmake in Makefile in atf root directory
+   You have to change location of qmake in Makefile in atf root directory
    Find location of qmake executable on your local PC:
    (It should look like: .../Qt/5.3/gcc_64/bin/qmake)
 
