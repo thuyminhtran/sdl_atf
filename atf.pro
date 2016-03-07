@@ -12,7 +12,7 @@ SOURCES = network.cc \
           main.cc \
           lua_interpreter.cc
 TARGET  = interp
-QT += network websockets
+QT = core network websockets
 CONFIG += c++11 qt debug
 # link with libc to meet cross-platform restricts
 QMAKE_LFLAGS += -static-libgcc -static-libstdc++

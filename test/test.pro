@@ -1,3 +1,4 @@
+QT = core
 SOURCES = qttest.cc \
           object1.cc
 
