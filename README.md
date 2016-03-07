@@ -4,11 +4,12 @@ Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/
 ## Dependencies:
 Library            | License
 ------------------ | -------------
-**Lua libs**       | 
-liblua5.2-dev      | MIT
+**Lua libs**       |
+liblua5.2          | MIT
 json4lua           | MIT
 lua-stdlib         | MIT
-**Qt libs**        | 
+lua-lpeg           |
+**Qt libs**        |
 Qt5.3 WebSockets   | LGPL 2.1
 Qt5.3 Network      | LGPL 2.1
 Qt5.3 Core         | LGPL 2.1
@@ -16,6 +17,9 @@ Qt5.3 Test         | LGPL 2.1
 **Other libs**     |
 lpthread           | LGPL
 libxml2            | MIT
+
+## For ATF usage:
+```$ sudo apt-get install liblua5.2 libxml2 lua-lpeg```
 
 [Qt5](https://download.qt.io/archive/qt/5.3/5.3.1/)
 
@@ -27,7 +31,12 @@ $ git submodule init
 $ git submodule update
 ```
 ## Compilation:
-**1**  Setup QMAKE enviroment vaeriable to path to qmake
+**1** Install 3d-parties developers libraries
+```sudo apt-get install liblua5.2-dev libxml2-dev lua-lpeg-dev```
+
+**2** Install Qt5.3+
+
+**2** Setup QMAKE environment variable to path to qmake
 ```export QMAKE=${PATH_TO_QMAKE} ``` 
 *You can get path to qmake this way:*
 ```
@@ -54,7 +63,6 @@ $ sudo find / -name qmake
    Here you can find qmake location.
 
 ## Run:
-**3**
 ``` ./start.sh [options] [script file name] ```
 
 ## Run tests
