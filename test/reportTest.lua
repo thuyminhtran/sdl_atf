@@ -91,6 +91,8 @@ function createXmlFile(xmlname)
   AddMessageWithID("EXPECT_RESPONSE")
   AddMessageWithID("EXPECT_RESULT")
   AddMessageWithID("EXPECT_HMICALL")
+  AddMessageWithID("EXPECT_NOTIFICATION")
+  AddMessageWithID("EXPECT_HMINOTIFICATION")
   xmlReporter:finalize()
 end
 
@@ -145,6 +147,8 @@ function AnalyzeXmlReport(ReportPath,ReportName)
   ReadMessageWithID("EXPECT_RESPONSE")
   ReadMessageWithID("EXPECT_RESULT")
   ReadMessageWithID("EXPECT_HMICALL")
+  ReadMessageWithID("EXPECT_NOTIFICATION")
+  ReadMessageWithID("EXPECT_HMINOTIFICATION")
 
   line = filereport:read()
   if line == nil then
