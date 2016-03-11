@@ -123,6 +123,7 @@ local function CheckStatus()
   module.expectations_list:Clear()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then
+    SDL:StopSDL()
     quit(1)
   end
   control:next()
