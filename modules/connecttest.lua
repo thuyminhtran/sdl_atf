@@ -252,8 +252,12 @@ function EXPECT_EVENT(event, name)
   return ret
 end
 
-function RAISE_EVENT(event, data)
-  xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(event))
+function RAISE_EVENT(event, data, eventName)
+  event_str = "noname"
+  if eventName then
+    event_str = eventName
+  end
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, event_str)
   event_dispatcher:RaiseEvent(module.mobileConnection, data)
 end
 
