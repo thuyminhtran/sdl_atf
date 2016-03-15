@@ -36,6 +36,8 @@ QTcpSocket *tcpSocket =
   if(tcpSocket->isOpen()){
     QByteArray result = tcpSocket->read(maxSize);
     lua_pushlstring(L, result.data(), result.count()); 
+  } else {
+    fprintf(stderr, "Error: Socket not opened");
   }
   return 1;
 }/*}}}*/
@@ -63,6 +65,8 @@ QTcpSocket *tcpSocket =
   if(tcpSocket->isOpen()) {
     int result = tcpSocket->write(data, size);
     lua_pushinteger(L, result); 
+  } else {
+    fprintf(stderr, "Error: Socket not opened");
   }
   return 1;
 }/*}}}*/
