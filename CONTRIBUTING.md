@@ -12,7 +12,7 @@ We use <a href="http://nvie.com/posts/a-successful-git-branching-model/">Gitflow
 
 ### Pull Requests
 * Please follow the repository's for all code and documentation.
-* All pull requests should be sent to `CustomSDL/sdl_atf/`, to `develop` or `master` branch.
+* All pull requests should be sent to `smartdevicelink/sdl_atf/`, to `develop` or `master` branch.
 * All feature branches should be based on `develop` and have the format `feature/branch_name`.
 * All fix branches should be based on `develop` and have the format `fix/branch_name`.
 * All new functionality requests should be provided only for `develop` branch.
@@ -30,6 +30,6 @@ In order to accept Pull Requests from contributors, you must first sign [the Con
 * [General GitHub documentation](https://help.github.com/)
 * [GitHub pull request documentation](https://help.github.com/send-pull-requests/)
 * [Contributor's License Agreement](https://docs.google.com/forms/d/1VNR8EUd5b46cQ7uNbCq1fJmnu0askNpUp5dudLKRGpU/viewform)
-* [Committers.md](https://github.com/CustomSDL/sdl_atf/blob/feature/Add_Committers_file/COMMITTERS.md)
+* [Committers.md](https://github.com/smartdevicelink/sdl_atf/blob/master/COMMITTERS.md)
 
 

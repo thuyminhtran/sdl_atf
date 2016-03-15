@@ -1,5 +1,5 @@
 # Automated Test Framework (ATF)
-Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/ATF2.2)
+Current release version: 2.2 (https://github.com/smartdevicelink/sdl_atf/releases/tag/ATF2.2)
 
 ## Dependencies:
 Library            | License
@@ -25,7 +25,7 @@ For ATF usage:
 
 ## Get source code:
 ```
-$ git clone https://github.com/CustomSDL/sdl_atf
+$ git clone https://github.com/smartdevicelink/sdl_atf
 $ cd sdl_atf
 $ git submodule init
 $ git submodule update
