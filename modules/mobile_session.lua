@@ -102,14 +102,12 @@ function mt.__index:ExpectNotification(funcName, ...)
   end
   args = table.pack(...)
 
-  if #args ~= 0 then
-    if #args[1] > 0 or args[1].n == 0 then
-      -- These conditions need to validate expectations received from EXPECT_NOTIFICATION
-      -- First condition - to put out array with expectations which already packed in table
-      -- Second condition - to put out expectation without parameters
-      -- Only args[1].n == 0 allow to validate notifications without parameters from EXPECT_NOTIFICATION
-      args = args[1]
-    end
+  if #args ~= 0 and (#args[1] > 0 or args[1].n == 0) then
+    -- These conditions need to validate expectations received from EXPECT_NOTIFICATION
+    -- Second condition - to put out array with expectations which already packed in table
+    -- Third condition - to put out expectation without parameters
+    -- Only args[1].n == 0 allow to validate notifications without parameters from EXPECT_NOTIFICATION
+    args = args[1]
   end
 
   local ret = Expectation(funcName .. " notification", self.connection)
