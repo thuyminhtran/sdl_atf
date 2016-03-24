@@ -188,8 +188,13 @@ end
 
 module.timers = { }
 
-function RUN_AFTER(func, timeout)
-  xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(func), {["Timeout"] = tostring(timeout)})
+function RUN_AFTER(func, timeout, funcName)
+  func_name_str = "noname"
+  if funcName then
+    func_name_str = funcName
+  end
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, func_name_str, 
+    {["functionLine"] = debug.getinfo(func, "S").linedefined, ["Timeout"] = tostring(timeout)})
   local d = qt.dynamic()
   d.timeout = function(self)
     func()
@@ -247,8 +252,12 @@ function EXPECT_EVENT(event, name)
   return ret
 end
 
-function RAISE_EVENT(event, data)
-  xmlReporter.AddMessage(debug.getinfo(1, "n").name, tostring(event))
+function RAISE_EVENT(event, data, eventName)
+  event_str = "noname"
+  if eventName then
+    event_str = eventName
+  end
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, event_str)
   event_dispatcher:RaiseEvent(module.mobileConnection, data)
 end
 
