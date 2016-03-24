@@ -150,8 +150,6 @@ function EXPECT_NOTIFICATION(func,...)
     else
       arguments = args
     end
-    arguments["notifyId"] = module.notification_counter
-    module.notification_counter = module.notification_counter + 1
     return module.mobileSession:ExpectNotification(func,arguments)
   end
   return module.mobileSession:ExpectNotification(func,args)

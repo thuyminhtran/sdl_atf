@@ -13,6 +13,11 @@ local FAILED = expectations.FAILED
 local module = {}
 local mt = { __index = { } }
 local wrong_function_name = "WrongFunctionName"
+
+mt.__index.cor_id_func_map = { }
+
+module.notification_counter = 0
+
 function mt.__index:ExpectEvent(event, name)
   local ret = Expectation(name, self.connection)
   ret.event = event
@@ -121,8 +126,11 @@ function mt.__index:ExpectNotification(funcName, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        module.notification_counter = module.notification_counter + 1
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
+          ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
+          ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = validator.validate_mobile_notification(funcName, arguments)
         if (not _res) then
           return _res,_err
