@@ -105,7 +105,7 @@ function mt.__index:ExpectNotification(funcName, ...)
     return data.rpcFunctionId == functionId[funcName] and
     data.sessionId == self.sessionId
   end
-  args = table.pack(...)
+  local args = table.pack(...)
 
   if #args ~= 0 and (#args[1] > 0 or args[1].n == 0) then
     -- These conditions need to validate expectations received from EXPECT_NOTIFICATION
