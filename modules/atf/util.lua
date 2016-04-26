@@ -145,7 +145,8 @@ function module.heartbeat(str)
 end
 
 function module.sdl_core(str)
-  if (not is_file_exists(str.."smartDeviceLinkCore")) then
+  if (not is_file_exists(str.."smartDeviceLinkCore")) and 
+     (not is_file_exists(str.."/smartDeviceLinkCore")) then
     error("SDL is not accessible at the specified path: "..str)
     os.exit(1)
   end
