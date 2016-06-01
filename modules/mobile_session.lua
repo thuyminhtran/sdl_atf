@@ -176,13 +176,13 @@ function mt.__index:Send(message)
       }
     })
   if not self.cor_id_func_map[message_correlation_id] then
+    self.cor_id_func_map[message_correlation_id] = wrong_function_name
     for fname, fid in pairs(functionId) do
       if fid == message.rpcFunctionId then
         self.cor_id_func_map[message_correlation_id] = fname
         break
       end
-    end
-    self.cor_id_func_map[message_correlation_id] = wrong_function_name
+    end    
   else
     error("MobileSession:Send: message with correlationId: "..message_correlation_id.." was sent earlier by ATF")
   end
