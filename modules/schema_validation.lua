@@ -91,6 +91,14 @@ function module.mt.__index:CompareStructs( data_elem, struct_schema,name_of_stru
   return result, error_message
 end
 
+-- If data is empty, then we think it is empty array
+-- Json's isArray recieve false in this case
+-- If data is non empty then we check data using json
+local function isArray(data)
+  if next(data) == nil then return true,0 end 
+  return json.isArray(data);
+end
+
 -- Calls if element has attribute array=true
 -- Check that element is array
 -- For each element of array call CompareType with isArray=false
@@ -98,7 +106,7 @@ function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParam
   local result = true
   local error_message  = {}
   local elem1 = type(data_elem)
-  if json.isArray(data_elem) then
+  if isArray(data_elem) then
     for key, value in pairs(data_elem) do
       result, error_message[key]= self:CompareType(value, schemaElem, false, nameofParameter.."."..key, name_of_structure)
     end
@@ -222,7 +230,7 @@ end
 -- Check element is array
 -- Check count of values
 local function CheckArray(data_elem, schemaElem, elem_name)
-  if not json.isArray(data_elem) then
+  if not isArray(data_elem) then
     return false
   end   
   arraySize = CountInArray(data_elem)
