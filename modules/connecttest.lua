@@ -353,7 +353,11 @@ function module:initHMI()
           "UI.OnRecordStart"
         })
       registerComponent("VehicleInfo")
-      registerComponent("Navigation")
+      registerComponent("Navigation",
+        {
+          "Navigation.OnAudioDataStreaming",
+          "Navigation.OnVideoDataStreaming"
+        })
     end)
   self.hmiConnection:Connect()
 end
