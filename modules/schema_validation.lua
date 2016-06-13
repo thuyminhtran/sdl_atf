@@ -95,7 +95,8 @@ end
 -- Json's isArray recieve false in this case
 -- If data is non empty then we check data using json
 local function isArray(data)
-  if next(data) == nil then return true,0 end 
+  if(type(data)~='table') then return false end
+  if next(data) == nil then return true end 
   return json.isArray(data);
 end
 
