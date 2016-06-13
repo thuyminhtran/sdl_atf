@@ -47,7 +47,6 @@ end
 function fstream_mt.__index:GetMessage()
   local timespan = timestamp() - self.ts
   local header = {}
-  if timespan == 0 then return end
   if timespan > 5000 then
     self.ts = self.ts + timespan - 1000
     self.bytesSent = self.bytesSent / (timespan / 1000)
