@@ -7,7 +7,7 @@ local errors = {}
 local usage = [[
 ATF 2.2
 
-Usage: atf cmd_test.lua [OPTIONS] script.lua
+Usage: ./start.sh [OPTIONS] script.lua
 
 ]]
 

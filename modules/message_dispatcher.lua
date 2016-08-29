@@ -47,7 +47,6 @@ end
 function fstream_mt.__index:GetMessage()
   local timespan = timestamp() - self.ts
   local header = {}
-  if timespan == 0 then return end
   if timespan > 5000 then
     self.ts = self.ts + timespan - 1000
     self.bytesSent = self.bytesSent / (timespan / 1000)
@@ -130,6 +129,9 @@ function module.MessageDispatcher(connection)
         res.idx = 1
       end
       local header, msg, timeout = res.generators[res.idx]:GetMessage()
+      if header and header.messageId then
+        xmlReporter:LOG("SDLtoMOB", header)         
+      end
       if msg and #msg > 0 then
         if res.bufferSize > #msg then
           res.bufferSize = res.bufferSize - #msg

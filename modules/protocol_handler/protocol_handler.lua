@@ -80,7 +80,8 @@ function mt.__index:Parse(binary, validateJson)
           msg.binaryData = self.frames[msg.messageId] .. msg.binaryData
           self.frames[msg.messageId] = nil
         end
-        if msg.serviceType == constants.SERVICE_TYPE.RPC then
+        if msg.serviceType == constants.SERVICE_TYPE.RPC or 
+        msg.serviceType == constants.SERVICE_TYPE.BULK_DATA then
           msg.rpcType = bit32.rshift(string.byte(msg.binaryData, 1), 4)
           msg.rpcFunctionId = bit32.band(bytesToInt32(msg.binaryData, 1), 0x0fffffff)
           msg.rpcCorrelationId = bytesToInt32(msg.binaryData, 5)
@@ -164,7 +165,9 @@ function mt.__index:Compose(message)
       if frame_number == #multiframe_payloads then --last frame
         frame_info = 0
       else
-        frame_info = bit32.band(frame_number + 1, 0xFF)
+        -- frame info range should be [1 - 255].
+        -- frame info can't be 0, 0 mean last frame
+        frame_info = ((frame_number - 1) % 255) + 1
       end
       header = create_ford_header(message.version, message.encryption, kConsecutiveframe_frameType, message.serviceType,
         frame_info, message.sessionId, multiframe_payloads[frame_number], message.messageId)

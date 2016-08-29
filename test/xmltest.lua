@@ -36,8 +36,17 @@ x = ndoc:xpath("//hello[last()]")[1]
 ndoc:write("test.xml")
 
 local f = io.open("test.xml", "r")
-s = f:read("*all")
+local s = f:read("*all")
 print(s)
 f:close()
+
+local broken_file_name = "broken.xml"
+local broken_file = io.open(broken_file_name, "w")
+broken_file:write("<test>  <hello>Hi</hello###>  </test>")
+broken_file:close()
+
+print("Trying to parse broken xml to get an output error:")
+local broken_xml = xml.open(broken_file_name)
+if broken_xml then error("Broken xml shall not be successfuly loaded") return end
 
 quit()

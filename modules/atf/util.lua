@@ -145,13 +145,12 @@ function module.heartbeat(str)
 end
 
 function module.sdl_core(str)
-  if (is_file_exists(str)) then
-    config.pathToSDL = str
-  else
-    print("Incorrect path to sdl binary dir")
-    print("Use default from config")
-    print("=======================")
+  if (not is_file_exists(str.."smartDeviceLinkCore")) and 
+     (not is_file_exists(str.."/smartDeviceLinkCore")) then
+    error("SDL is not accessible at the specified path: "..str)
+    os.exit(1)
   end
+  config.pathToSDL = str
 end
 
 function parse_cmdl()

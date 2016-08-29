@@ -3,10 +3,13 @@
 run_test()
 {
   # Usage: run_test <test title> <test name> <timeout>
-  echo -n "Running $1..."
-  timeout $3s ./interp $4 test/$2.lua $5> test/out/$2.out 2>&1
+  title=$1
+  test_name=$2
+  timeout_delay=$3s
+  echo -n "Running $title..."
+  timeout $timeout_delay ./interp $4 test/$test_name.lua $5> test/out/$test_name.out 2>&1
   RES=$?
-  if [ $RES ] && diff test/out/$2.out test/out/$2.success > /dev/null; then
+  if [ $RES ] && diff test/out/$test_name.out test/out/$test_name.success > /dev/null; then
     echo "OK"
   else
     echo "FAIL. See test/out/$2.out for results"
