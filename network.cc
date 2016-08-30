@@ -33,10 +33,27 @@ QTcpSocket *tcpSocket =
   *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
 #line 40 "network.nw"
   int maxSize = luaL_checkinteger(L, 2);
-  QByteArray result = tcpSocket->read(maxSize);
+  if(tcpSocket->isOpen()){
+    QByteArray result = tcpSocket->read(maxSize);
+    lua_pushlstring(L, result.data(), result.count()); 
+  } else {
+    fprintf(stderr, "Error: Socket not opened");
+  }
+  return 1;
+}/*}}}*/
+
+
+int tcp_socket_read_all(lua_State *L) {/*{{{*/
+  
+#line 65 "network.nw"
+QTcpSocket *tcpSocket =
+  *static_cast<QTcpSocket**>(luaL_checkudata(L, 1, "network.TcpSocket"));
+#line 40 "network.nw"
+  QByteArray result = tcpSocket->readAll();
   lua_pushlstring(L, result.data(), result.count()); 
   return 1;
 }/*}}}*/
+
 int tcp_socket_write(lua_State *L) {/*{{{*/
   
 #line 65 "network.nw"
@@ -45,8 +62,12 @@ QTcpSocket *tcpSocket =
 #line 47 "network.nw"
   size_t size;
   const char* data = luaL_checklstring(L, 2, &size);
-  int result = tcpSocket->write(data, size);
-  lua_pushinteger(L, result); 
+  if(tcpSocket->isOpen()) {
+    int result = tcpSocket->write(data, size);
+    lua_pushinteger(L, result); 
+  } else {
+    fprintf(stderr, "Error: Socket not opened");
+  }
   return 1;
 }/*}}}*/
 int tcp_socket_close(lua_State *L) {/*{{{*/
@@ -200,6 +221,7 @@ int luaopen_network(lua_State *L) {
   luaL_Reg tcp_socket_functions[] = {
     { "connect", &tcp_socket_connect },
     { "read", &tcp_socket_read },
+    { "read_all", &tcp_socket_read_all },
     { "write", &tcp_socket_write },
     { "close", &tcp_socket_close },
     { NULL, NULL }

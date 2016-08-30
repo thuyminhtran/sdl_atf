@@ -3,8 +3,6 @@ require('os')
 local SDL = { }
 
 SDL.exitOnCrash = true
-SDL.autoRun = false
-
 SDL.STOPPED = 0
 SDL.RUNNING = 1
 SDL.CRASH = -1
@@ -18,14 +16,18 @@ function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   if status == self.STOPPED then
     local result = os.execute ('./StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
     if result then
+      local msg = "SDL started"
+      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
       return true
     else
       local msg = "SDL had already started not from ATF or unexpectedly crashed"
+      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
       print(console.setattr(msg, "cyan", 1))
       return nil, msg
     end
   end
   local msg = "SDL had already started from ATF"
+  xmlReporter.AddMessage("StartSDL", {["message"] = msg})
   print(console.setattr(msg, "cyan", 1))
   return nil, msg
 end
@@ -41,6 +43,7 @@ function SDL:StopSDL()
     end
   else
     local msg = "SDL had already stopped"
+    xmlReporter.AddMessage("StopSDL", {["message"] = msg})
     print(console.setattr(msg, "cyan", 1))
     return nil, msg
   end

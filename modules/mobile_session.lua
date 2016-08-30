@@ -5,14 +5,22 @@ local functionId = require('function_id')
 local json = require('json')
 local expectations = require('expectations')
 local constants = require('protocol_handler/ford_protocol_constants')
-local validator = require('schema_validation')
+local load_schema = require('load_schema')
+
+local mob_schema = load_schema.mob_schema
+
 local Expectation = expectations.Expectation
 local Event = events.Event
 local SUCCESS = expectations.SUCCESS
 local FAILED = expectations.FAILED
 local module = {}
 local mt = { __index = { } }
+local wrong_function_name = "WrongFunctionName"
+
 mt.__index.cor_id_func_map = { }
+
+module.notification_counter = 0
+
 function mt.__index:ExpectEvent(event, name)
   local ret = Expectation(name, self.connection)
   ret.event = event
@@ -70,9 +78,9 @@ function mt.__index:ExpectResponse(cor_id, ...)
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_RESPONSE",{["name"] = tostring(cor_id),["Type"]= "AVALIABLE_RESULT"}, data.payload)
-        local _res, _err = validator.validate_mobile_response(func_name, arguments)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["id"] = tostring(cor_id),["name"] = tostring(func_name),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_RESPONSE",{["id"] = tostring(cor_id),["name"] = tostring(func_name),["Type"]= "AVALIABLE_RESULT"}, data.payload)
+        local _res, _err = mob_schema:Validate(func_name, load_schema.response, data.payload)
         if (not _res) then return _res,_err end
         return compareValues(arguments, data.payload, "payload")
       end)
@@ -94,29 +102,44 @@ function mt.__index:ExpectAny()
   self.exp_list:Add(ret)
   return ret
 end
-function mt.__index:ExpectNotification(funcName, args)
+function mt.__index:ExpectNotification(funcName, ...)
   local event = events.Event()
   event.matches = function(_, data)
     return data.rpcFunctionId == functionId[funcName] and
     data.sessionId == self.sessionId
   end
+  local args = table.pack(...)
+
+  if #args ~= 0 and (#args[1] > 0 or args[1].n == 0) then
+    -- These conditions need to validate expectations received from EXPECT_NOTIFICATION
+    -- Second condition - to put out array with expectations which already packed in table
+    -- Third condition - to put out expectation without parameters
+    -- Only args[1].n == 0 allow to validate notifications without parameters from EXPECT_NOTIFICATION
+    args = args[1]
+  end
+
   local ret = Expectation(funcName .. " notification", self.connection)
   if #args > 0 then
-   local notify_id = args.notifyId
-   args= table.removeKey(args,'notifyId')
-   ret:ValidIf(function(self, data)
+    local notify_id = args.notifyId
+    args = table.removeKey(args,'notifyId')
+    ret:ValidIf(function(self, data)
         local arguments
         if self.occurences > #args then
           arguments = args[#args]
         else
           arguments = args[self.occurences]
         end
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = notify_id, ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
-        local _res, _err = validator.validate_mobile_notification(funcName, arguments)
-        if (not _res) then return _res,_err end
+        module.notification_counter = module.notification_counter + 1
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
+          ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
+          ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)      
+        local _res, _err = mob_schema:Validate(funcName, load_schema.notification, data.payload)
+        if (not _res) then
+          return _res,_err
+        end
         return compareValues(arguments, data.payload, "payload")
-      end)
+    end)
   end
   ret.event = event
   event_dispatcher:AddEvent(self.connection, event, ret)
@@ -129,6 +152,13 @@ function mt.__index:Send(message)
   end
   if not message.frameInfo then
     error("MobileSession:Send: frameInfo must be specified")
+  end
+  local message_correlation_id
+  if message.rpcCorrelationId then
+    message_correlation_id = message.rpcCorrelationId 
+  else
+    self.correlationId = self.correlationId + 1
+    message_correlation_id = self.correlationId
   end
   self.messageId = self.messageId + 1
   self.connection:Send(
@@ -148,13 +178,16 @@ function mt.__index:Send(message)
         binaryData = message.binaryData
       }
     })
-  if not self.cor_id_func_map[self.correlationId] then
+  if not self.cor_id_func_map[message_correlation_id] then
+    self.cor_id_func_map[message_correlation_id] = wrong_function_name
     for fname, fid in pairs(functionId) do
       if fid == message.rpcFunctionId then
-        self.cor_id_func_map[self.correlationId] = fname
+        self.cor_id_func_map[message_correlation_id] = fname
         break
       end
-    end
+    end    
+  else
+    error("MobileSession:Send: message with correlationId: "..message_correlation_id.." was sent earlier by ATF")
   end
 
   xmlReporter.AddMessage("mobile_connection","Send",
@@ -181,7 +214,6 @@ function mt.__index:StopStreaming(filename)
 end
 function mt.__index:SendRPC(func, arguments, fileName)
   self.correlationId = self.correlationId + 1
-  self.cor_id_func_map[self.correlationId] = func
   local msg =
   {
     serviceType = 7,
@@ -341,7 +373,6 @@ function mt.__index:Start()
 
         self.connection:OnInputData(function(_, msg)
             if self.sessionId ~= msg.sessionId then return end
-            xmlReporter:LOG("SDLtoMOB", msg)
             if self.heartbeatEnabled then
                 if msg.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
                    msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK and
@@ -385,6 +416,7 @@ function module.MobileSession(test, connection, regAppParams)
   res.sendHeartbeatToSDL = true
   res.answerHeartbeatFromSDL = true
   res.ignoreHeartBeatAck = false
+  res.cor_id_func_map = { }
   setmetatable(res, mt)
   return res
 end

@@ -31,10 +31,12 @@ local resultCodes =
   WARNINGS = 21,
   GENERIC_ERROR = 22,
   USER_DISALLOWED = 23,
-  TRUNCATED_DATA = 24
+  TRUNCATED_DATA = 24,
+  SAVED = 25
 }
 
 function module.mt.__index:Send(text)
+  xmlReporter.AddMessage("hmi_connection","Send",{["json"] = tostring(text)})
   self.connection:Send(text)
 end
 
@@ -47,7 +49,7 @@ function module.mt.__index:SendRequest(methodName, params)
   data.params = params
   local text = json.encode(data)
   self:Send(text)
-  xmlReporter.AddMessage("hmi_connection",{["RequestId"]= tostring(self.requestId),["Type"]= "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
+  xmlReporter.AddMessage("hmi_connection",{["RequestId"] = tostring(self.requestId),["Type"] = "SendRequest"},{ ["methodName"] = methodName,["params"]=params } )
   return self.requestId
 end
 
@@ -62,7 +64,7 @@ function module.mt.__index:SendNotification(methodName, params)
 end
 
 function module.mt.__index:SendResponse(id, methodName, code, params)
-  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"]= params} )
+  xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"] = params} )
   local data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -79,7 +81,7 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
 end
 
 function module.mt.__index:SendError(id, methodName, code, errorMessage)
-  xmlReporter.AddMessage("hmi_connection","SendError",{["id"]=id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] = errorMessage } )
+  xmlReporter.AddMessage("hmi_connection","SendError",{["id"] = id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] = errorMessage } )
   local data = {}
   data.error = {}
   data.error.data = {}

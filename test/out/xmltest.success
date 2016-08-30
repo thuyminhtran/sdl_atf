@@ -1,15 +1,17 @@
 9 interfaces
 Root node: interfaces
-Structures count: 42 = 42
+Structures count: 43 = 43
 functions having more than two params one of which is 'appID' (intentionally overcomplicated query):
 Buttons.OnButtonEvent
 Buttons.OnButtonPress
+Buttons.OnButtonSubscription
 BasicCommunication.OnFileRemoved
 BasicCommunication.ActivateApp
 BasicCommunication.OnSystemRequest
 BasicCommunication.SystemRequest
 VR.AddCommand
 VR.DeleteCommand
+VR.OnCommand
 VR.ChangeRegistration
 TTS.Speak
 TTS.ChangeRegistration
@@ -25,18 +27,17 @@ UI.ChangeRegistration
 UI.Slider
 UI.ScrollableMessage
 UI.PerformAudioPassThru
+Navigation.SendLocation
 Navigation.ShowConstantTBT
 Navigation.UpdateTurnList
 VehicleInfo.ReadDID
 VehicleInfo.GetDTCs
 VehicleInfo.DiagnosticMessage
-VehicleInfo.SubscribeVehicleData
 VehicleInfo.UnsubscribeVehicleData
-VehicleInfo.GetVehicleData
 SDL.OnAppPermissionConsent
 SDL.OnAppPermissionChanged
 The first //param:
-168
+173
 messageCode	String
 <?xml version="1.0" encoding="utf-8"?>
 <test>
@@ -53,4 +54,9 @@ messageCode	String
     <bye until="Friday">Good luck</bye>
   </hello>
 </test>
+
+Trying to parse broken xml to get an output error:
+Lua error:
+Error parsing xml file:
+broken.xml:1: expected '>'
 
