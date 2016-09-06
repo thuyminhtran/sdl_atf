@@ -1,5 +1,4 @@
 # Automated Test Framework (ATF)
-Current release version: 2.2 (https://github.com/CustomSDL/sdl_atf/releases/tag/ATF2.2)
 
 ## Dependencies:
 Library            | License
@@ -18,14 +17,14 @@ Qt5.3 Test         | LGPL 2.1
 lpthread           | LGPL
 libxml2            | MIT
 
-## For ATF usage:
-```$ sudo apt-get install liblua5.2 libxml2 lua-lpeg```
+For ATF usage:
+```sudo apt-get install liblua5.2 libxml2 lua-lpeg```
 
 [Qt5](https://download.qt.io/archive/qt/5.3/5.3.1/)
 
 ## Get source code:
 ```
-$ git clone https://github.com/CustomSDL/sdl_atf
+$ git clone https://github.com/smartdevicelink/sdl_atf
 $ cd sdl_atf
 $ git submodule init
 $ git submodule update
@@ -37,7 +36,7 @@ $ git submodule update
 **2** Install Qt5.3+
 
 **2** Setup QMAKE environment variable to path to qmake
-```export QMAKE=${PATH_TO_QMAKE} ``` 
+```export QMAKE=${PATH_TO_QMAKE} ```
 *You can get path to qmake this way:*
 ```
 $ sudo find / -name qmake
@@ -113,4 +112,4 @@ ServerPort = 8087
 TCPAdapterPort = 12345
 ```
 ## Run tests
-``` make test ```
+``` make test```
