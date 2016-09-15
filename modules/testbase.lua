@@ -72,6 +72,7 @@ function control.runNextCase()
   if testcase then
     module.current_case_name = module.case_names[testcase]
     xmlReporter.AddCase(module.current_case_name)
+    atf_logger.LOGTestCaseStart(module.current_case_name)
     testcase(module)
   else
     if SDL.autoStarted then
