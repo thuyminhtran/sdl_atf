@@ -373,7 +373,9 @@ end
 function module.mt.__index:Validate(function_id, function_type, user_data)
   local result = true
   local error_message = {}
-  result, error_message = self:Compare(function_id, function_type, user_data)
+  if config.ValidateSchema then
+    result, error_message = self:Compare(function_id, function_type, user_data)
+  end
   return result, errorMsgToString(error_message)
 end
 
