@@ -22,6 +22,9 @@ config.ExitOnCrash = true
 config.autorunSDL = true
 config.ShowTimeInConsole = true
 
+-- Validation of Mobile and HMI Api
+config.ValidateSchema = true
+
 -- By default, report is collecting
 config.excludeReport = false
 -- Create separate file with full ATF logs for all test cases.
