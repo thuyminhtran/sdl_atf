@@ -39,6 +39,7 @@ function mt.__index:PreconditionForStartHeartbeat()
         print("\27[31m SDL didn't send anything for " .. self.heartbeatFromSDLTimer:interval()
           .. " msecs. Closing session # " .. self.session.sessionId.get().."\27[0m")
         self.control_services:StopService(7)
+        :Do(self:StopHeartbeat())
       end
     end
 
