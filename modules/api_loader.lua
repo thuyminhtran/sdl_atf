@@ -132,8 +132,7 @@ local function LoadInterfaces( api, dest )
 end
 
 
- function module.init(path, include_parent_name)
-  module.include_parent_name = include_parent_name
+ function module.init(path)
   local result = {}
   result.interface = { }
 
