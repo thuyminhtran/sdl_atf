@@ -1,3 +1,15 @@
+---- RPC validator
+--
+-- Uses given lua table schema (from `api_loader`) for validation in- or outcome RPC
+--  
+--  For more detail design information refer to @{Validation|Validation SDD}
+--  
+--  Dependencies: `json`
+--  
+--  @module schema_validation
+--  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+--  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local json = require("json")
 local wrong_function_name = "WrongFunctionName"
 local generic_response = "GenericResponse"
@@ -6,7 +18,13 @@ local module = {
   mt = {__index = { } }
 }
 
+--- Create Validator by given schema
+-- @param schema table with a list of RPCs 
+-- @return `Validator`
+-- @see Validator
+-- @function schema_validation.CreateSchemaValidator
 function module.CreateSchemaValidator(schema)
+
   res = { }
   res.schema = schema
   setmetatable(res, module.mt)
@@ -42,7 +60,7 @@ local function errorMsgToString(tbl)
   return tmp
 end
 
--- Check that all mandatory parameters in current schema are existing
+--- Check that all mandatory parameters in current schema are existing
 local function CheckExistenceOfMandatoryParam(func_schema, user_data, name_of_structure)
   local error_message = {}
   local result = true
@@ -64,7 +82,7 @@ local function CheckExistenceOfMandatoryParam(func_schema, user_data, name_of_st
   return result, error_message
 end
 
--- Get names of function or structures
+--- Get names of function or structures
 local function GetNames( name )
   if (string.find(name, "%.")) then
     return name:match("([^.]+).([^.]+)")
@@ -72,8 +90,9 @@ local function GetNames( name )
   return 'Ford Sync RAPI', name
 end
 
--- Compare structs. For each structure should be called
+--- Compare structs. For each structure should be called
 -- check of mandatory params and types for all elements in the struct
+-- @function Validator:CompareStructs
 function module.mt.__index:CompareStructs( data_elem, struct_schema,name_of_structure)
   local mandatory_check_result = true --for mandatory param
   local type_parameter_check_result = true -- for correct types of param
@@ -92,7 +111,7 @@ mandatory_check_result = true--(struct_params, data_elem, name_of_structure)
   return result, error_message
 end
 
--- If data is empty, then we think it is empty array
+--- If data is empty, then we think it is empty array
 -- Json's isArray recieve false in this case
 -- If data is non empty then we check data using json
 local function isArray(data)
@@ -101,9 +120,10 @@ local function isArray(data)
   return json.isArray(data);
 end
 
--- Calls if element has attribute array=true
+--- Calls if element has attribute array=true
 -- Check that element is array
 -- For each element of array call CompareType with isArray=false
+-- @function Validator:CheckTypesInArray
 function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParameter, name_of_structure)
   local result = true
   local error_message  = {}
@@ -122,7 +142,7 @@ function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParam
 end
 
 
--- Check that length of value more than minlength and less then maxlength
+--- Check that length of value more than minlength and less then maxlength
 local function CheckLength( data_elem, schemaElem, data_name )
   local length = string.len(data_elem)
   if schemaElem["minlength"] ~= nil then
@@ -138,7 +158,7 @@ local function CheckLength( data_elem, schemaElem, data_name )
   return true
 end
 
--- Check value is more than minvalue and less then maxvalue
+--- Check value is more than minvalue and less then maxvalue
 local function CheckValue( data_elem, schemaElem, data_name )
   if schemaElem["minvalue"] ~= nil then
     if(data_elem < schemaElem["minvalue"]) then
@@ -153,7 +173,7 @@ local function CheckValue( data_elem, schemaElem, data_name )
   return true
 end
 
---Compare types of element
+--- Compare types of element
 -- For elements with "array = true" process CheckTypesInArray
 -- For types "string", "integer" and "float" check values are in intervals from schema
 -- For enum value check that value are included in schema
@@ -169,6 +189,7 @@ local function table_contains(table, element)
 end
 
 
+-- @function Validator:CompareType
 function module.mt.__index:CompareType(data_elem, schemaElem, isArray, nameofParameter, name_of_structure)
   local elem1 = type(data_elem)
   if (isArray=='true') then
@@ -255,7 +276,7 @@ local function CountInArray(T)
 end
 
 
--- Check element is array
+--- Check element is array
 -- Check count of values
 local function CheckArray(data_elem, schemaElem, elem_name)
   if not isArray(data_elem) then
@@ -280,10 +301,11 @@ local function CheckArray(data_elem, schemaElem, elem_name)
   return true, err_msg
 end
 
--- Check parameters includes:
+--- Check parameters includes:
 -- Check data is table
 -- Call checking of Array
 -- Call comparation of types with schema's types
+-- @function Validator:CheckTypeOfParam
 function module.mt.__index:CheckTypeOfParam( func_schema, user_data, error_message, name_of_structure)
   local result = true
   local result1 = true
@@ -315,8 +337,9 @@ function module.mt.__index:CheckTypeOfParam( func_schema, user_data, error_messa
   return result, error_message
 end
 
--- Call checking that mandatory params are existing
+--- Call checking that mandatory params are existing
 -- Call checking that parameters has correct type and values
+-- @function Validator:CheckFunctionParams
 function  module.mt.__index:CheckFunctionParams( interface_name, function_name, function_type, user_data )
 
   local result1 = true --for mandatory param
@@ -337,9 +360,10 @@ function  module.mt.__index:CheckFunctionParams( interface_name, function_name, 
 end
 
 
--- Extract function name and interface from function_id
+--- Extract function name and interface from function_id
 -- Check that function and interface exist
 -- Call CheckFunctionParams for processing function
+-- @function Validator:Compare
 function module.mt.__index:Compare(function_id,function_type, user_data)
   local result = true
   local error_message = {}
@@ -369,7 +393,8 @@ function module.mt.__index:Compare(function_id,function_type, user_data)
   return result, error_message
 end
 
-
+---
+-- @function Validator:Validate
 function module.mt.__index:Validate(function_id, function_type, user_data)
   local result = true
   local error_message = {}
