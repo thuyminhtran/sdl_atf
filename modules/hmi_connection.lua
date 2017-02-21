@@ -1,39 +1,18 @@
 local json = require("json")
+local api_loader = require("modules/api_loader")
+
 local module = { mt = { __index = { } } }
 
 function module.mt.__index:Connect()
   self.connection:Connect()
 end
 
-local resultCodes =
-{
-  SUCCESS = 0,
-  UNSUPPORTED_REQUEST = 1,
-  UNSUPPORTED_RESOURCE = 2,
-  DISALLOWED = 3,
-  REJECTED = 4,
-  ABORTED = 5,
-  IGNORED = 6,
-  RETRY = 7,
-  IN_USE = 8,
-  DATA_NOT_AVAILABLE = 9,
-  TIMED_OUT = 10,
-  INVALID_DATA = 11,
-  CHAR_LIMIT_EXCEEDED = 12,
-  INVALID_ID = 13,
-  DUPLICATE_NAME = 14,
-  APPLICATION_NOT_REGISTERED = 15,
-  WRONG_LANGUAGE = 16,
-  OUT_OF_MEMORY = 17,
-  TOO_MANY_PENDING_REQUESTS = 18,
-  NO_APPS_REGISTERED = 19,
-  NO_DEVICES_CONNECTED = 20,
-  WARNINGS = 21,
-  GENERIC_ERROR = 22,
-  USER_DISALLOWED = 23,
-  TRUNCATED_DATA = 24,
-  SAVED = 25
-}
+local function getResultCodes( )
+  local hmi_schema = api_loader.init("data/HMI_API.xml")
+  return hmi_schema.interface["Common"].enum["Result"]
+end
+
+local resultCodes = getResultCodes()
 
 function module.mt.__index:Send(text)
   xmlReporter.AddMessage("hmi_connection","Send",{["json"] = tostring(text)})
