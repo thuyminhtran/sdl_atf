@@ -1,7 +1,20 @@
+----  APIs validator loader.
+--
+--  Use `load_schema` for loading Mobile and HMI API validation schema.
+--  
+--  For more detail design information refer to @{Validation|Validation SDD}
+--  
+--  Dependencies: `xml`
+--  @module api_loader
+--  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+--  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local xml = require('xml')
+
+--- @table api_loader
 local module = { }
 
--- Include result codes that are elements in functions from Mobile Api.
+--- Include result codes that are elements in functions from Mobile Api.
 -- Each function with paremeter resultCode that has type Result
 -- should contain types of Resultcode directly in function.
 -- Other resultCodes are kept in structs
@@ -16,8 +29,8 @@ local function LoadResultCodes( param )
   return resultCodes
 end
 
---Load parameteres in function. Load ResultCodes if
---type of parameter is "Result"
+--- Load parameters in function. Load ResultCodes if
+-- type of parameter is "Result"
 local function LoadParamsInFunction(param, interface)
   local name = param:attr("name")
   local p_type = param:attr("type")
@@ -51,8 +64,7 @@ local function LoadParamsInFunction(param, interface)
   return name, data
 end
 
-
-
+--- Load Enums values
  local function LoadEnums(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("enum")) do
@@ -73,6 +85,7 @@ end
   end
  end
 
+--- Load structures
  local function LoadStructs(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("struct")) do
@@ -91,6 +104,7 @@ end
  end
 
 
+--- Load functions with all fields
 local function LoadFunction( api, dest  )
   for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("function")) do
@@ -111,7 +125,11 @@ local function LoadFunction( api, dest  )
   end
 end
 
+<<<<<<< HEAD
 -- Load interfaces from api. Each function, enum and struct will be
+=======
+--- Load interfaces from api. Each function, enum and struct will be 
+>>>>>>> eaf6beb... Add Validation ldoc
 -- kept inside appropriate interface
 local function LoadInterfaces( api, dest )
   local interfaces = api:xpath("//interface")
@@ -131,8 +149,20 @@ local function LoadInterfaces( api, dest )
   end
 end
 
+<<<<<<< HEAD
 
  function module.init(path)
+=======
+--- Parse xml file to lua table.
+-- Each function, enum and struct will be 
+-- kept inside appropriate interface
+-- @param path; path to the xml file
+-- @param include_parent_name; parent name
+-- @return lua table with all xml RPCs
+-- @function api_loader.init
+ function module.init(path, include_parent_name)
+  module.include_parent_name = include_parent_name
+>>>>>>> eaf6beb... Add Validation ldoc
   local result = {}
   result.interface = { }
 
