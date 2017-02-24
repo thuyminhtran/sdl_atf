@@ -1,9 +1,9 @@
 ----  APIs validator loader.
 --
 --  Use `load_schema` for loading Mobile and HMI API validation schema.
---  
+--
 --  For more detail design information refer to @{Validation|Validation SDD}
---  
+--
 --  Dependencies: `xml`
 --  @module api_loader
 --  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
@@ -125,11 +125,7 @@ local function LoadFunction( api, dest  )
   end
 end
 
-<<<<<<< HEAD
--- Load interfaces from api. Each function, enum and struct will be
-=======
---- Load interfaces from api. Each function, enum and struct will be 
->>>>>>> eaf6beb... Add Validation ldoc
+--- Load interfaces from api. Each function, enum and struct will be
 -- kept inside appropriate interface
 local function LoadInterfaces( api, dest )
   local interfaces = api:xpath("//interface")
@@ -149,12 +145,8 @@ local function LoadInterfaces( api, dest )
   end
 end
 
-<<<<<<< HEAD
-
- function module.init(path)
-=======
 --- Parse xml file to lua table.
--- Each function, enum and struct will be 
+-- Each function, enum and struct will be
 -- kept inside appropriate interface
 -- @param path; path to the xml file
 -- @param include_parent_name; parent name
@@ -162,7 +154,6 @@ end
 -- @function api_loader.init
  function module.init(path, include_parent_name)
   module.include_parent_name = include_parent_name
->>>>>>> eaf6beb... Add Validation ldoc
   local result = {}
   result.interface = { }
 
