@@ -1,9 +1,9 @@
 ---- Test Cases executor.
---  
+--
 --  Runs all new methods with a first Capital letter as a Tests.
 --  Tests are being executed one by one and interrupt execution is case of
 --  any critical issues (each Test could be marked as Critical)
---  
+--
 --  For component overview description and a list of responsibilities, please, follow [ATF SAD Component View](https://smartdevicelink.com/en/guides/pull_request/93dee199f30303b4b26ec9a852c1f5261ff0735d/atf/components-view/#test-base).
 --  @module TestBase
 --  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
@@ -134,7 +134,9 @@ local function CheckStatus()
   local success = true
   local errorMessage = {}
   if SDL:CheckStatusSDL() == CRASH then
-    success = false
+    if SDL.exitOnCrash == true then
+      success = false
+    end
     print(console.setattr("SDL has unexpectedly crashed or stop responding!", "cyan", 1))
     critical(SDL.exitOnCrash)
     SDL:DeleteFile()
@@ -158,7 +160,9 @@ local function CheckStatus()
   module.current_case_name = nil
   if module.current_case_mandatory and not success then
     SDL:StopSDL()
-    quit(exit_codes.aborted)
+    if SDL.exitOnCrash == true then
+      quit(exit_codes.aborted)
+    end
   end
   control:next()
 end
