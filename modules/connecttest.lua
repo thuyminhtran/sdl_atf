@@ -329,7 +329,6 @@ function module:runSDL()
   end
   local result, errmsg = SDL:StartSDL(config.pathToSDL, config.SDL, config.ExitOnCrash)
   if not result then
-    SDL:DeleteFile()
     quit(exit_codes.aborted)
   end
   SDL.autoStarted = true
