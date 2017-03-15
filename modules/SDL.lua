@@ -37,24 +37,24 @@ function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
     local msg = "SDL had already started out of ATF"
     xmlReporter.AddMessage("StartSDL", {["message"] = msg})
     print(console.setattr(msg, "cyan", 1))
-    return nil, msg
+    return false, msg
   end
 
   CopyInterface()
   local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
-  if config.storeFullSDLLogs == true then
-    sdl_logger.init_log(get_script_file_name())
-  end
+
+  local msg
   if result then
-    local msg = "SDL started"
-    xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-    return true
+    msg = "SDL started"
+    if config.storeFullSDLLogs == true then
+      sdl_logger.init_log(get_script_file_name())
+    end
   else
-    local msg = "SDL had already started not from ATF or unexpectedly crashed"
-    xmlReporter.AddMessage("StartSDL", {["message"] = msg})
+    msg = "SDL had already started not from ATF or unexpectedly crashed"
     print(console.setattr(msg, "cyan", 1))
-    return nil, msg
   end
+  xmlReporter.AddMessage("StartSDL", {["message"] = msg})
+  return result, msg
 
 end
 
