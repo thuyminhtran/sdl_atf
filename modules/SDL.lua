@@ -33,33 +33,29 @@ function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   end
   local status = self:CheckStatusSDL()
 
-  while status == self.RUNNING do
-    sleep(1)
-    print('Waiting for SDL shutdown')
-    status = self:CheckStatusSDL()
+  if (status == self.RUNNING) then
+    local msg = "SDL had already started out of ATF"
+    xmlReporter.AddMessage("StartSDL", {["message"] = msg})
+    print(console.setattr(msg, "cyan", 1))
+    return false, msg
   end
 
-  if status == self.STOPPED  or status == self.CRASH then
-    CopyInterface()
-    local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
+  CopyInterface()
+  local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
+
+  local msg
+  if result then
+    msg = "SDL started"
     if config.storeFullSDLLogs == true then
       sdl_logger.init_log(get_script_file_name())
     end
-    if result then
-      local msg = "SDL started"
-      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-      return true
-    else
-      local msg = "SDL had already started not from ATF or unexpectedly crashed"
-      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-      print(console.setattr(msg, "cyan", 1))
-      return nil, msg
-    end
+  else
+    msg = "SDL had already started not from ATF or unexpectedly crashed"
+    print(console.setattr(msg, "cyan", 1))
   end
-  local msg = "SDL had already started from ATF"
   xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-  print(console.setattr(msg, "cyan", 1))
-  return nil, msg
+  return result, msg
+
 end
 
 function SDL:StopSDL()
