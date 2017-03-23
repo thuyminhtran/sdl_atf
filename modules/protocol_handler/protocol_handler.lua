@@ -45,7 +45,7 @@ local function create_ford_header(version, encryption, frameType, serviceType, f
   local res = string.char(
     bit32.bor(
       bit32.lshift(version, 4),
-      (encryption and 0x80 or 0),
+      (encryption and 0x08 or 0),
       bit32.band(frameType, 0x07)),
     serviceType,
     frameInfo,
