@@ -80,7 +80,7 @@ function mt.__index:Parse(binary, validateJson)
           msg.binaryData = self.frames[msg.messageId] .. msg.binaryData
           self.frames[msg.messageId] = nil
         end
-        if msg.serviceType == constants.SERVICE_TYPE.RPC or 
+        if msg.serviceType == constants.SERVICE_TYPE.RPC or
         msg.serviceType == constants.SERVICE_TYPE.BULK_DATA then
           msg.rpcType = bit32.rshift(string.byte(msg.binaryData, 1), 4)
           msg.rpcFunctionId = bit32.band(bytesToInt32(msg.binaryData, 1), 0x0fffffff)
@@ -119,7 +119,10 @@ function mt.__index:Compose(message)
   local res = {}
   local multiframe_payloads = {}
 
-  if message.frameType ~= constants.FRAME_TYPE.CONTROL_FRAME and message.serviceType == constants.SERVICE_TYPE.RPC and message.payload then
+  if message.frameType ~= constants.FRAME_TYPE.CONTROL_FRAME and
+    (message.serviceType == constants.SERVICE_TYPE.RPC or
+      message.serviceType == constants.SERVICE_TYPE.BULK_DATA)
+    and message.payload then
     payload = rpcPayload(message.rpcType,
       message.rpcFunctionId,
       message.rpcCorrelationId,
