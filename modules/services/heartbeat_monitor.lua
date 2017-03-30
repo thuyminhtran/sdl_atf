@@ -11,7 +11,7 @@ function mt.__index:PreconditionForStartHeartbeat()
       return data.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
       data.serviceType == constants.SERVICE_TYPE.CONTROL and
       data.frameInfo == constants.FRAME_INFO.HEARTBEAT   and
-      self.session.sessionId == data.sessionId
+      self.session.sessionId.get() == data.sessionId
     end
     self.expectations:ExpectEvent(event, "Heartbeat")
     :Pin()
