@@ -172,7 +172,6 @@ end
 -- @param cause reason of test fail
 -- @function FailTestCase
 local function FailTestCase(self, cause)
-  module.expectations_list:Clear()
   local exp = expectations.Expectation("AutoFail")
   exp.status = FAILED
   table.insert(exp.errorMessage, cause)
