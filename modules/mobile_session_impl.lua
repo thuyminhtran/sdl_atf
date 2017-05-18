@@ -54,8 +54,17 @@ function mt.__index:StartHeartbeat()
   self.heartbeat_monitor:StartHeartbeat()
 end
 
+function mt.__index:SendHeartbeatAck()
+  self.heartbeat_monitor:SendHeartbeatAck()
+end
+
+
 function mt.__index:SetHeartbeatTimeout(timeout)
   self.heartbeat_monitor:SetHeartbeatTimeout(timeout)
+end
+
+function mt.__index:AddHeartbeatExpectation()
+  self.heartbeat_monitor:AddHeartbeatExpectation()
 end
 
 function mt.__index:StartRPC()
@@ -63,7 +72,6 @@ function mt.__index:StartRPC()
   ret:Do(function()
       -- Heartbeat
       if self.version > 2 then
-        self.heartbeat_monitor:PreconditionForStartHeartbeat()
         self.heartbeat_monitor:StartHeartbeat()
       end
     end)
