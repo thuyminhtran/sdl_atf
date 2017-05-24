@@ -1,14 +1,16 @@
 local events = require('events')
 local constants = require('protocol_handler/ford_protocol_constants')
 
- local module = {}
- local mt = { __index = { } }
- local d = qt.dynamic()
-
+local module = {}
+local mt = { __index = { } }
+local d = qt.dynamic()
+local time_offset = 1000
 
 function mt.__index:ExpectHeartbeatAck()
   self.session.connection:OnInputData(function(_, msg)
-    if self.session.sessionId.get() ~= msg.sessionId then return end
+    if self.session.sessionId.get() ~= msg.sessionId then
+      return
+    end
     if self.heartbeatEnabled then
         if msg.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
            msg.frameInfo == constants.FRAME_INFO.HEARTBEAT_ACK and
@@ -64,14 +66,14 @@ function mt.__index:StartHeartbeat()
     end
   end
 
-  xmlReporter.AddMessage("StartHearbeat", "True", (config.heartbeatTimeout + 1000))
+  xmlReporter.AddMessage("StartHearbeat", "True", (config.heartbeatTimeout + time_offset))
   if self.heartbeatToSDLTimer then
     self.heartbeatToSDLTimer:start(config.heartbeatTimeout)
     qt.connect(self.heartbeatToSDLTimer, "timeout()", d, "SendHeartbeat()")
   end
 
   if self.heartbeatFromSDLTimer then
-    self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + 1000)
+    self.heartbeatFromSDLTimer:start(config.heartbeatTimeout + time_offset)
     qt.connect(self.heartbeatFromSDLTimer, "timeout()", d, "CloseSession()")
   end
 
@@ -95,7 +97,7 @@ end
 function mt.__index:SetHeartbeatTimeout(timeout)
   if self.heartbeatToSDLTimer and self.sessionheartbeatFromSDLTimer then
     self.heartbeatToSDLTimer:setInterval(timeout)
-    self.heartbeatFromSDLTimer:setInterval(timeout + 1000)
+    self.heartbeatFromSDLTimer:setInterval(timeout + time_offset)
   end
 end
 

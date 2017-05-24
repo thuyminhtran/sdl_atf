@@ -86,10 +86,6 @@ function mt.__index:StartHeartbeat()
   self.mobile_session_impl:StartHeartbeat()
 end
 
-function mt.__index:SendHeartbeatAck()
-  self.mobile_session_impl:SendHeartbeatAck()
-end
-
 function mt.__index:SetHeartbeatTimeout(timeout)
   self.mobile_session_impl:SetHeartbeatTimeout(timeout)
 end
@@ -97,13 +93,11 @@ end
 --! @brief Start service 7 and heartBeat
 --! @return return expectation for expectation for StartService Ack
 function mt.__index:StartRPC(custom_hb_processor)
-  local hb_processor = custom_hb_processor
-  if hb_processor == nil then
-   hb_processor = function (_,_)
-      self.mobile_session_impl:AddHeartbeatExpectation()
-   end
-  end
-  return self.mobile_session_impl:StartRPC():Do(hb_processor)
+  custom_hb_processor = custom_hb_processor
+    or function (_,_)
+        self.mobile_session_impl:AddHeartbeatExpectation()
+    end
+  return self.mobile_session_impl:StartRPC():Do(custom_hb_processor)
 end
 
 --! @brief Stop service 7

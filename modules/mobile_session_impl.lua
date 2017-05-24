@@ -54,11 +54,6 @@ function mt.__index:StartHeartbeat()
   self.heartbeat_monitor:StartHeartbeat()
 end
 
-function mt.__index:SendHeartbeatAck()
-  self.heartbeat_monitor:SendHeartbeatAck()
-end
-
-
 function mt.__index:SetHeartbeatTimeout(timeout)
   self.heartbeat_monitor:SetHeartbeatTimeout(timeout)
 end
