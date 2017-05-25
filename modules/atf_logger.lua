@@ -3,8 +3,8 @@ local config = require('config')
 local io = require('atf.stdlib.std.io')
 local ford_constants = require("protocol_handler/ford_protocol_constants")
 
-local Logger = 
-{  
+local Logger =
+{
   is_open = true,
   full_atf_log_file = '',
   script_file_name = '',
@@ -13,8 +13,8 @@ local Logger =
   mobile_log_format = '',
   hmi_log_format = '',
   start_file_timestamp = 0,
-  mt = { 
-    __index={} 
+  mt = {
+    __index={}
   }
 }
 
@@ -23,9 +23,9 @@ Logger.hmi_log_format = "%s[%s] : %s \n"
 
 function Logger.formated_time(withoutDate)
   if withoutDate ==true then
-    return qdatetime.get_datetime("hh:mm:ss,zzz")  
+    return qdatetime.get_datetime("hh:mm:ss,zzz")
   end
-  return qdatetime.get_datetime("dd MM yyyy hh:mm:ss, zzz")  
+  return qdatetime.get_datetime("dd MM yyyy hh:mm:ss, zzz")
 end
 
 local function is_hmi_tract(tract, message)
@@ -33,16 +33,16 @@ local function is_hmi_tract(tract, message)
   if string.find(str, "HMI") or
     (message.frameType ~= ford_constants.FRAME_TYPE.CONTROL_FRAME) and
     (message.serviceType ~= ford_constants.SERVICE_TYPE.PCM) and
-    (message.serviceType ~= ford_constants.SERVICE_TYPE.VIDEO) then 
+    (message.serviceType ~= ford_constants.SERVICE_TYPE.VIDEO) then
     return true
-  end 
+  end
   return false
 end
 
 
 function Logger:MOBtoSDL(track, message)
-  local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", Logger.formated_time(), 
-    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo, 
+  local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", Logger.formated_time(),
+    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo,
     message.messageId, message.payload)
   if is_hmi_tract(tract, message) then
     self.atf_log_file:write(log_str)
@@ -64,8 +64,8 @@ function Logger:SDLtoMOB(tract, message)
   if type(payload) == "table" then
     payload = json.encode(payload)
   end
-  local log_str = string.format(Logger.mobile_log_format,"SDL->MOB", Logger.formated_time(), 
-    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo, 
+  local log_str = string.format(Logger.mobile_log_format,"SDL->MOB", Logger.formated_time(),
+    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo,
     message.messageId, payload)
   if is_hmi_tract(tract, message) then
     self.atf_log_file:write(log_str)
@@ -123,19 +123,19 @@ function Logger.init_log(script_name)
   Logger.start_file_timestamp = timestamp()
 
   local timestamp = tostring(os.date('%Y%m%d%H%M%S', os.time()))
-  local log_file_name = get_log_file_name(timestamp, "ATFLogs") 
+  local log_file_name = get_log_file_name(timestamp, "ATFLogs")
   local atf_log_file_name = log_file_name ..".txt"
-  Logger.atf_log_file = io.open(atf_log_file_name, "r") 
-  if Logger.atf_log_file ~= nil then 
+  Logger.atf_log_file = io.open(atf_log_file_name, "r")
+  if Logger.atf_log_file ~= nil then
     io.close(Logger.atf_log_file)
   end
   Logger.atf_log_file = io.open(atf_log_file_name, "w+")
-  
+
   if config.storeFullATFLogs then
     local full_atf_log_file_name = log_file_name .. "_full.txt";
     Logger.full_atf_log_file = io.open(full_atf_log_file_name, "r")
     if Logger.full_atf_log_file ~= nil then
-      io.close(Logger.full_atf_log_file)      
+      io.close(Logger.full_atf_log_file)
     end
     Logger.full_atf_log_file = io.open(full_atf_log_file_name, "w+")
   end
