@@ -2,6 +2,7 @@ local json = require('json')
 local config = require('config')
 local io = require('atf.stdlib.std.io')
 local ford_constants = require("protocol_handler/ford_protocol_constants")
+local rpc_function_id = require('function_id')
 
 local Logger =
 {
@@ -18,11 +19,21 @@ local Logger =
   }
 }
 
-Logger.mobile_log_format = "%s(%s) [version: %s, frameType: %s, encryption: %s, serviceType: %s, frameInfo: %s, messageId: %s] : %s \n"
-Logger.hmi_log_format = "%s[%s] : %s \n"
+Logger.mobile_log_format = "%s (%s) [rpcFunction: %s, sessionId: %s, version: %s, frameType: %s, "
+      .. "encryption: %s, serviceType: %s, frameInfo: %s, messageId: %s] : %s \n"
+Logger.hmi_log_format = "%s (%s) : %s \n"
+
+local function get_function_name(function_id)
+  for name, id in pairs(rpc_function_id) do
+    if id == function_id then
+      return name
+    end
+  end
+  return "nil"
+end
 
 function Logger.formated_time(withoutDate)
-  if withoutDate ==true then
+  if withoutDate == true then
     return qdatetime.get_datetime("hh:mm:ss,zzz")
   end
   return qdatetime.get_datetime("dd MM yyyy hh:mm:ss, zzz")
@@ -39,11 +50,10 @@ local function is_hmi_tract(tract, message)
   return false
 end
 
-
-function Logger:MOBtoSDL(track, message)
+function Logger:MOBtoSDL(tract, message)
   local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", Logger.formated_time(),
-    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo,
-    message.messageId, message.payload)
+    get_function_name(message.rpcFunctionId), message.sessionId, message.version, message.frameType,
+    message.encryption, message.serviceType, message.frameInfo, message.messageId, message.payload)
   if is_hmi_tract(tract, message) then
     self.atf_log_file:write(log_str)
   end
@@ -65,8 +75,8 @@ function Logger:SDLtoMOB(tract, message)
     payload = json.encode(payload)
   end
   local log_str = string.format(Logger.mobile_log_format,"SDL->MOB", Logger.formated_time(),
-    message.version, message.frameType, message.encryption, message.serviceType, message.frameInfo,
-    message.messageId, payload)
+    get_function_name(message.rpcFunctionId), message.sessionId, message.version, message.frameType,
+    message.encryption, message.serviceType, message.frameInfo, message.messageId, payload)
   if is_hmi_tract(tract, message) then
     self.atf_log_file:write(log_str)
   end
