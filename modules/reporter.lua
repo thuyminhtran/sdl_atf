@@ -115,7 +115,6 @@ function module.init(script_file_name)
   module.ndoc = xml.new()
   local alias = report_header_name:gsub('%.', '_'):gsub('/','_')
   module.root = module.ndoc:createRootNode(alias)
-
   return module
 end
 

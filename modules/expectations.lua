@@ -3,13 +3,16 @@ module.FAILED = { }
 module.SUCCESS = { }
 
 local cardinalities = require('cardinalities')
+
 function module.Expectation(name, connection)
   local mt = { __index = { } }
+
   function mt.__index:Action(data)
     for i = 1, #self.actions do
       self.actions[i](self, data)
     end
   end
+
   function mt.__index:Times(c)
     if type(c) == 'table' and getmetatable(c) == cardinalities.mt then
       self.timesLE = c.lower
@@ -25,16 +28,19 @@ function module.Expectation(name, connection)
     end
     return self
   end
+
   function mt.__index:Pin()
     self.pinned = true
     if list then list:Pin(self) end
     return self
   end
+
   function mt.__index:Unpin()
     self.pinned = false
     if list then list:Unpin(self) end
     return self
   end
+
   function mt.__index:DoOnce(func)
     local idx = #self.actions + 1
     table.insert(self.actions,
@@ -44,14 +50,17 @@ function module.Expectation(name, connection)
       end)
     return self
   end
+
   function mt.__index:Do(func)
     table.insert(self.actions, func)
     return self
   end
+
   function mt.__index:Timeout(ms)
     self.timeout = ms
     return self
   end
+
   function mt.__index:validate()
     -- Check Timeout status
     if not self.status and timestamp() - self.ts > self.timeout then
@@ -77,6 +86,7 @@ function module.Expectation(name, connection)
       end
     end
   end
+
   function mt.__index:ValidIf(func)
     if not self.verifyData then self.verifyData = {} end
     self.verifyData[#self.verifyData + 1] = function(self, data)
@@ -93,6 +103,7 @@ function module.Expectation(name, connection)
     end
     return self
   end
+
   function mt:__tostring() return self.name end
   local e =
   {
@@ -113,6 +124,7 @@ function module.Expectation(name, connection)
   setmetatable(e, mt)
   return e
 end
+
 function module.ExpectationsList()
   local mt = { __index = {} }
   function mt.__index:Add(e)
@@ -124,6 +136,7 @@ function module.ExpectationsList()
       e.index = self.expectations
     end
   end
+
   function mt.__index:Remove(e)
     if e.pinned then
       table.remove(self.pinned, e.index)
@@ -137,22 +150,27 @@ function module.ExpectationsList()
       end
     end
   end
+
   function mt.__index:Clear()
     self.expectations = { }
   end
   function mt.__index:Empty()
     return #self.expectations == 0
   end
+
   function mt.__index:Any(func)
     for _, e in ipairs(self.expectations) do
       if func(e) then return true end
     end
     return false
   end
+
   function mt.__index:List()
     return pairs(self.expectations)
   end
+
   function mt:__pairs() return pairs(self.expectations) end
+
   function mt:__ipairs()
     local function expnext(t, i)
       if self.expectations[i + 1] then
@@ -165,6 +183,7 @@ function module.ExpectationsList()
     end
     return expnext, self.expectations, 0
   end
+
   function mt.__index:Pin(e)
     for i = 1, #self.expectations do
       if self.expectations[i] == e then
@@ -174,6 +193,7 @@ function module.ExpectationsList()
       end
     end
   end
+
   function mt.__index.Unpin(e)
     for i = 1, #self.pinned do
       if self.pinned[i] == e then

@@ -132,5 +132,4 @@ function module.HeartBeatMonitor(session)
   return res
 end
 
-
- return module
+return module

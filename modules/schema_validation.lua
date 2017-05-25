@@ -1,11 +1,11 @@
 ---- RPC validator
 --
 -- Uses given lua table schema (from `api_loader`) for validation in- or outcome RPC
---  
+--
 --  For more detail design information refer to @{Validation|Validation SDD}
---  
+--
 --  Dependencies: `json`
---  
+--
 --  @module schema_validation
 --  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
 --  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
@@ -19,12 +19,11 @@ local module = {
 }
 
 --- Create Validator by given schema
--- @param schema table with a list of RPCs 
+-- @param schema table with a list of RPCs
 -- @return `Validator`
 -- @see Validator
 -- @function schema_validation.CreateSchemaValidator
 function module.CreateSchemaValidator(schema)
-
   res = { }
   res.schema = schema
   setmetatable(res, module.mt)
@@ -64,7 +63,6 @@ end
 local function CheckExistenceOfMandatoryParam(func_schema, user_data, name_of_structure)
   local error_message = {}
   local result = true
-
   for key,value in pairs(func_schema) do
       if (type(user_data)~='table')then
         return false, "not valid type of "..key .. " expected structure, got "..type(user_data)
@@ -98,7 +96,6 @@ function module.mt.__index:CompareStructs( data_elem, struct_schema,name_of_stru
   local type_parameter_check_result = true -- for correct types of param
   local error_message = {}
   local error_message2 = {}
-
   local struct_params = struct_schema["param"]
   mandatory_check_result, error_message= CheckExistenceOfMandatoryParam(struct_params, data_elem, name_of_structure)
 mandatory_check_result = true--(struct_params, data_elem, name_of_structure)
@@ -140,7 +137,6 @@ function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParam
   end
   return result, error_message
 end
-
 
 --- Check that length of value more than minlength and less then maxlength
 local function CheckLength( data_elem, schemaElem, data_name )

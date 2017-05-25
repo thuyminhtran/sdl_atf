@@ -168,7 +168,6 @@ function module.MobileSession(test, connection, regAppParams)
 
   res.mobile_session_impl = mobile_session_impl.MobileSessionImpl(
   res.SessionId, res.CorrelationId, test, connection, res.SendHeartbeatToSDL, res.AnswerHeartbeatFromSDL, res.IgnoreSDLHeartBeatAck, regAppParams )
-
   setmetatable(res, mt)
   return res
 end

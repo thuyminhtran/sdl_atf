@@ -1,12 +1,12 @@
 local ph = require('protocol_handler/protocol_handler')
 
-local module = { 
+local module = {
   mt = { __index = { } }
 }
 local fbuffer_mt = { __index = { } }
 local fstream_mt = { __index = { } }
 
-function module.FileStorage(filename)    
+function module.FileStorage(filename)
   local res = {}
   res.filename = filename
   res.protocol_handler = ph.ProtocolHandler()
@@ -15,6 +15,7 @@ function module.FileStorage(filename)
   setmetatable(res, fbuffer_mt)
   return res
 end
+
 function module.FileStream(filename, sessionId, service, bandwidth, chunksize)
   local res = { }
   res.filename = filename
@@ -31,12 +32,15 @@ function module.FileStream(filename, sessionId, service, bandwidth, chunksize)
   setmetatable(res, fstream_mt)
   return res
 end
+
 function fbuffer_mt.__index:KeepMessage(msg)
   self.keep = msg
 end
+
 function fstream_mt.__index:KeepMessage(msg)
   self.keep = msg
 end
+
 function fbuffer_mt.__index:WriteMessage(msg)
   self.wfd:write(string.char(bit32.band(#msg, 0xff),
       bit32.band(bit32.rshift(#msg, 8), 0xff),
@@ -44,9 +48,11 @@ function fbuffer_mt.__index:WriteMessage(msg)
       bit32.band(bit32.rshift(#msg, 24), 0xff)))
   self.wfd:write(msg)
 end
+
 function fbuffer_mt.__index:Flush()
   self.wfd:flush()
 end
+
 function fstream_mt.__index:GetMessage()
   local timespan = timestamp() - self.ts
   local header = {}
@@ -85,6 +91,7 @@ function fstream_mt.__index:GetMessage()
   end
   return header, res
 end
+
 function fbuffer_mt.__index:GetMessage()
   local header = {}
   if self.keep then
@@ -106,7 +113,8 @@ function fbuffer_mt.__index:GetMessage()
   end
   return header, nil
 end
-function module.MessageDispatcher(connection)  
+
+function module.MessageDispatcher(connection)
   local res = {}
   res._d = qt.dynamic()
   res.generators = { }
@@ -120,6 +128,7 @@ function module.MessageDispatcher(connection)
     self:bytesWritten(0)
   end
   res.sender = qt.dynamic()
+
   function res.sender:SignalMessageSent() end
 
   function res._d:bytesWritten(c)
@@ -133,7 +142,7 @@ function module.MessageDispatcher(connection)
       end
       local header, msg, timeout = res.generators[res.idx]:GetMessage()
       if header and header.messageId then
-        atf_logger.LOG("SDLtoMOB", header)        
+        atf_logger.LOG("SDLtoMOB", header)
       end
       if msg and #msg > 0 then
         if res.bufferSize > #msg then
@@ -166,6 +175,7 @@ function module.mt.__index:MapFile(filebuffer)
   self.mapped[filebuffer.filename] = filebuffer
   table.insert(self.generators, filebuffer)
 end
+
 function module.mt.__index:UnmapFile(filebuffer)
   if not filebuffer then
     error("File was not mapped")
@@ -178,7 +188,9 @@ function module.mt.__index:UnmapFile(filebuffer)
     end
   end
 end
+
 function module.mt.__index:Pulse()
   self._d:bytesWritten(0)
 end
+
 return module

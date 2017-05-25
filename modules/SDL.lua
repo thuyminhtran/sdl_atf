@@ -19,7 +19,7 @@ function CopyFile(file, newfile)
 end
 
 function CopyInterface()
-  if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces~=nil then
+  if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces ~= nil then
     local mobile_api = config.pathToSDLInterfaces .. '/MOBILE_API.xml'
     local hmi_api = config.pathToSDLInterfaces .. '/HMI_API.xml'
     CopyFile(mobile_api, 'data/MOBILE_API.xml')

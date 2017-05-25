@@ -1,4 +1,5 @@
 local module = { mt = { __index = {} } }
+
 function module.Connection(host, port)
   local res =
   {
@@ -22,17 +23,20 @@ function module.Connection(host, port)
 
   return res
 end
+
 local function checkSelfArg(s)
   if type(s) ~= "table" or
   getmetatable(s) ~= module.mt then
     error("Invalid argument 'self': must be connection (use ':', not '.')")
   end
 end
+
 function module.mt.__index:Connect()
   xmlReporter.AddMessage("tcp_connection","Connect")
   checkSelfArg(self)
   self.socket:connect(self.host, self.port)
 end
+
 function module.mt.__index:Send(data)
   -- xmlReporter.AddMessage("tcp_connection","Send", data)
   checkSelfArg(self)
@@ -40,6 +44,7 @@ function module.mt.__index:Send(data)
     self.socket:write(c)
   end
 end
+
 function module.mt.__index:OnInputData(func)
   checkSelfArg(self)
   local d = qt.dynamic()
@@ -49,6 +54,7 @@ function module.mt.__index:OnInputData(func)
   end
   qt.connect(self.qtproxy, "inputData(QByteArray)", d, "inputData(QByteArray)")
 end
+
 function module.mt.__index:OnDataSent(func)
   local d = qt.dynamic()
   local this = self
@@ -57,6 +63,7 @@ function module.mt.__index:OnDataSent(func)
   end
   qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
 end
+
 function module.mt.__index:OnConnected(func)
   checkSelfArg(self)
   if self.qtproxy.connected then
@@ -66,6 +73,7 @@ function module.mt.__index:OnConnected(func)
   self.qtproxy.connected = function() func(this) end
   qt.connect(self.socket, "connected()", self.qtproxy, "connected()")
 end
+
 function module.mt.__index:OnDisconnected(func)
   checkSelfArg(self)
   if self.qtproxy.disconnected then
@@ -75,9 +83,11 @@ function module.mt.__index:OnDisconnected(func)
   self.qtproxy.disconnected = function() func(this) end
   qt.connect(self.socket, "disconnected()", self.qtproxy, "disconnected()")
 end
+
 function module.mt.__index:Close()
   xmlReporter.AddMessage("tcp_connection","Close")
   checkSelfArg(self)
   self.socket:close();
 end
+
 return module

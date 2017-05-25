@@ -5,7 +5,6 @@ local control_services = require('services/control_service')
 local rpc_services = require('services/rpc_service')
 local heartbeatMonitor = require('services/heartbeat_monitor')
 local mobileExpectations = require('expectations/session_expectations')
-
 local Event = events.Event
 local FAILED = expectations.FAILED
 local module = {}
@@ -98,8 +97,6 @@ function mt.__index:Send(message)
   message.frameType = message.frameType or 1
   message.sessionId = self.sessionId.get()
   message.messageId = self.messageId
-
-
   self.connection:Send({message})
   xmlReporter.AddMessage("e","Send",{message})
   return message

@@ -1,9 +1,9 @@
 ---- Facade for the Validation component.
 --
 --  Use `load_schema` for loading Mobile and HMI API validation schema.
---  
---  For more detail design information refer to @{Validation|Validation SDD} 
---  
+--
+--  For more detail design information refer to @{Validation|Validation SDD}
+--
 --  Dependencies: `api_loader`, `schema_validation`
 --  @module load_schema
 --  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
@@ -20,10 +20,11 @@ local module = { }
 module.response = 'response'
 module.request = 'request'
 module.notification = 'notification'
-if (not module.mob_schema) then 
+if (not module.mob_schema) then
   module.mob_schema = validator.CreateSchemaValidator(api_loader.init("data/MOBILE_API.xml"))
 end
 if (not module.hmi_schema) then
   module.hmi_schema = validator.CreateSchemaValidator(api_loader.init("data/HMI_API.xml"))
 end
+
 return module

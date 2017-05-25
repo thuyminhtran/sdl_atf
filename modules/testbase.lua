@@ -17,7 +17,6 @@ local fmt = require('format')
 local SDL = require('SDL')
 local exit_codes = require('exit_codes')
 
-
 local module = { }
 
 local Expectation = expectations.Expectation

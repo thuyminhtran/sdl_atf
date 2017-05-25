@@ -84,6 +84,7 @@ function mt.__index:AddConnection(connection)
       this:RaiseEvent(self, data)
     end)
 end
+
 function mt.__index:RaiseEvent(connection, data)
   if self.preEventHandler and data then
     self.preEventHandler(data)
@@ -108,6 +109,7 @@ function mt.__index:RaiseEvent(connection, data)
     self.postEventHandler(data)
   end
 end
+
 function mt.__index:AddEvent(connection, event, expectation)
   if event.level == 3 then
     self._pool3[connection][event] = expectation
@@ -117,16 +119,19 @@ function mt.__index:AddEvent(connection, event, expectation)
     self._pool1[connection][event] = expectation
   end
 end
+
 function mt.__index:RemoveEvent(connection, event)
   self._pool3[connection][event] = nil
   self._pool2[connection][event] = nil
   self._pool1[connection][event] = nil
 end
+
 function mt.__index:ClearEvents()
   for c, pool in pairs(self._pool3) do self._pool3[c] = { } end
   for c, pool in pairs(self._pool2) do self._pool2[c] = { } end
   for c, pool in pairs(self._pool1) do self._pool1[c] = { } end
 end
+
 function module.EventDispatcher()
   local res =
   {
@@ -139,4 +144,5 @@ function module.EventDispatcher()
   setmetatable(res, mt)
   return res
 end
+
 return module

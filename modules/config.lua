@@ -89,6 +89,7 @@ config.application2 =
     }
   }
 }
+
 config.application3 =
 {
   registerAppInterfaceParams =
@@ -114,6 +115,7 @@ config.application3 =
     }
   }
 }
+
 config.application4 =
 {
   registerAppInterfaceParams =
@@ -139,6 +141,7 @@ config.application4 =
     }
   }
 }
+
 config.application5 =
 {
   registerAppInterfaceParams =

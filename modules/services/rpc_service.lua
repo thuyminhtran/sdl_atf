@@ -19,7 +19,6 @@ local mt = { __index = { } }
 
 mt.__index.cor_id_func_map = { }
 
-
 module.notification_counter = 0
 
 function module.RPCService(session)
@@ -32,7 +31,7 @@ end
 function mt.__index:CheckCorrelationID(message)
   local message_correlation_id
   if message.rpcCorrelationId then
-    message_correlation_id = message.rpcCorrelationId 
+    message_correlation_id = message.rpcCorrelationId
   else
     local cor_id = self.session.correlationId.get()
     self.session.correlationId.set(cor_id+1)
@@ -45,7 +44,7 @@ function mt.__index:CheckCorrelationID(message)
         self.cor_id_func_map[message_correlation_id] = fname
         break
       end
-    end    
+    end
   else
     error("MobileSession:Send: message with correlationId: "..message_correlation_id.." in session "..self.session.sessionId.get() .." was sent earlier by ATF")
   end
@@ -53,7 +52,7 @@ end
 
 function mt.__index:SendRPC(func, arguments, fileName)
   self.session.correlationId.set(self.session.correlationId.get()+1)
-  
+
   local msg =
   {
     serviceType = 7,
@@ -82,9 +81,9 @@ function mt.__index:ExpectResponse(cor_id, ...)
   if func_name then
     self.cor_id_func_map[cor_id] = nil
   else
-    if type(cor_id) == 'string' then 
+    if type(cor_id) == 'string' then
         for fid, fname in pairs(self.cor_id_func_map) do
-           if fname == cor_id then 
+           if fname == cor_id then
                 func_name = fname
                 table.insert(tbl_corr_id, fid)
                 table.removeKey(self.cor_id_func_map, fid)
@@ -92,7 +91,7 @@ function mt.__index:ExpectResponse(cor_id, ...)
         end
     cor_id = tbl_corr_id[1]
     end
-    if not func_name then 
+    if not func_name then
       error("Function with cor_id : "..temp_cor_id.." was not sent by ATF")
     end
   end
@@ -102,7 +101,7 @@ function mt.__index:ExpectResponse(cor_id, ...)
     error("ExpectResponse: argument 1 (cor_id) must be number")
     return nil
   end
-  if(#tbl_corr_id>0) then 
+  if(#tbl_corr_id>0) then
        event.matches = function(_, data)
                for k,v in pairs(tbl_corr_id) do
                     if data.rpcCorrelationId  == v and  data.sessionId == self.session.sessionId.get() then
@@ -170,10 +169,10 @@ function mt.__index:ExpectNotification(funcName, ...)
           arguments = args[self.occurences]
         end
         module.notification_counter = module.notification_counter + 1
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter,
           ["name"] = tostring(funcName),["Type"]= "EXPECTED_RESULT"}, arguments)
-        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter, 
-          ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)      
+        xmlReporter.AddMessage("EXPECT_NOTIFICATION",{["Id"] = module.notification_counter,
+          ["name"] = tostring(funcName),["Type"]= "AVALIABLE_RESULT"}, data.payload)
         local _res, _err = mob_schema:Validate(funcName, load_schema.notification, data.payload)
         if (not _res) then
           return _res,_err

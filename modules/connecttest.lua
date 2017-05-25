@@ -41,6 +41,7 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       else
         arguments = args[self.occurences]
       end
+
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "EXPECTED_RESULT"},arguments)
       xmlReporter.AddMessage("EXPECT_HMIRESPONSE", {["Id"] = tostring(id),["Type"] = "AVALIABLE_RESULT"},data)
       local func_name = data.method

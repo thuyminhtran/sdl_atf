@@ -1,7 +1,7 @@
 ---- *LEGACY* RPC validator
 --
 -- Load HMI API to table
---  
+--
 --  Dependencies: `xml`
 --  @module validation
 --  @warning investigate legacy status and remove

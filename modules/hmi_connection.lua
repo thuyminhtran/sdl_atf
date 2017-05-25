@@ -84,9 +84,11 @@ end
 function module.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
 end
+
 function module.mt.__index:OnDisconnected(func)
   self.connection:OnDisconnected(function() func(self) end)
 end
+
 function module.mt.__index:Close()
   self.connection:Close()
 end

@@ -2,6 +2,7 @@ local module = {}
 local json = require("json")
 local constants = require('protocol_handler/ford_protocol_constants')
 local mt = { __index = { } }
+
 function module.ProtocolHandler()
   ret =
   {
@@ -11,6 +12,7 @@ function module.ProtocolHandler()
   setmetatable(ret, mt)
   return ret
 end
+
 local function int32ToBytes(val)
   local res = string.char(
     bit32.rshift(bit32.band(val, 0xff000000), 24),
@@ -54,6 +56,7 @@ local function create_ford_header(version, encryption, frameType, serviceType, f
   int32ToBytes(messageId)
   return res
 end
+
 function mt.__index:Parse(binary, validateJson)
   self.buffer = self.buffer .. binary
   local res = { }
@@ -107,6 +110,7 @@ function mt.__index:Parse(binary, validateJson)
   end
   return res
 end
+
 function mt.__index:Compose(message)
   local kMax_protocol_payload_size = 1488
   local kFirstframe_frameType = 0x02
@@ -188,4 +192,5 @@ function mt.__index:Compose(message)
   end
   return res
 end
+
 return module

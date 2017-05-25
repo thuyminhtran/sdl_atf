@@ -10,7 +10,7 @@ local module = {}
 local mt = { __index = { } }
 
 --! @brief Expectation of specific event
---! @param event 
+--! @param event
 --! @param name is event name
 --! @return return expectation table
 function mt.__index:ExpectEvent(event, name)
@@ -42,6 +42,5 @@ function module.MobileExpectations(session)
   setmetatable(res, mt)
   return res
 end
-
 
 return module

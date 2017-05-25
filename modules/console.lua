@@ -1,4 +1,5 @@
 local module = { }
+
 function module.setattr(string, color, bold, underline)
   if color == "black" then c = '30'
   elseif color == "red" then c = '31'
@@ -34,4 +35,5 @@ function module.setattr(string, color, bold, underline)
   end
   return prefix .. string .. suffix
 end
+
 return module

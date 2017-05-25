@@ -1,5 +1,6 @@
 local module = { }
 module.mt = { __index = { } }
+
 function module.Cardinality(lower, upper)
   local c = { }
   c.lower = lower
@@ -32,7 +33,9 @@ function Between(a, b)
   end
   return module.Cardinality(a, b)
 end
+
 function Exactly(num)
   return module.Cardinality(num, num)
 end
+
 return module

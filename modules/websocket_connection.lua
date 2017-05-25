@@ -1,6 +1,6 @@
 local json = require("json")
 
-local module = { 
+local module = {
   mt = { __index = {} }
 }
 
@@ -19,12 +19,14 @@ end
 function module.mt.__index:Connect()
   self.socket:open(self.url, self.port)
 end
+
 local function checkSelfArg(s)
   if type(s) ~= "table" or
   getmetatable(s) ~= module.mt then
     error("Invalid argument 'self': must be connection (use ':', not '.')")
   end
 end
+
 function module.mt.__index:Send(text)
   atf_logger.LOG("HMItoSDL", text)
   self.socket:write(text)
@@ -68,8 +70,10 @@ function module.mt.__index:OnDisconnected(func)
   self.qtproxy.disconnected = function() func(this) end
   qt.connect(self.socket, "disconnected()", self.qtproxy, "disconnected()")
 end
+
 function module.mt.__index:Close()
   checkSelfArg(self)
   self.socket:close();
 end
+
 return module

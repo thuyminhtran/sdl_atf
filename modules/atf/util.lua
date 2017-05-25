@@ -12,7 +12,7 @@ config = require('config')
 xmlReporter = require("reporter")
 atf_logger = require("atf_logger")
 
-local module = { 
+local module = {
   script_file_name = ""
 }
 local script_files = {}
@@ -39,7 +39,7 @@ function table2str(o)
   return tostring(o)
 end
 
---- Print lua tables to console 
+--- Print lua tables to console
 -- @param in list of tables
 function print_table(t,... )
   if (type(t) == 'table' ) then
@@ -89,7 +89,7 @@ end
 --- Convert milliseconds count to string in a format
 -- "1d 2h 3m 4s 5ms (summary 999ms)".
 -- @param millisecondsx
--- @return result string in a format 
+-- @return result string in a format
 local function convertMs(milliseconds)
   local seconds = math.floor( (milliseconds / 1000) % 60)
   local minutes = math.floor( ((milliseconds / (1000 * 60)) % 60))
@@ -119,18 +119,18 @@ end
 -- Checks: SDL Core binary, HMI and MObile API files
 -- Stop ATF execution in case any error
 local function check_required_fields()
-  if (not is_file_exists(config.pathToSDL.."smartDeviceLinkCore")) and 
+  if (not is_file_exists(config.pathToSDL.."smartDeviceLinkCore")) and
      (not is_file_exists(config.pathToSDL.."/smartDeviceLinkCore")) then
     print("ERROR: SDL is not accessible at the specified path: "..config.pathToSDL)
     os.exit(1)
   end
   if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces~=nil then
-    if (not is_file_exists(config.pathToSDLInterfaces.."MOBILE_API.xml")) and 
+    if (not is_file_exists(config.pathToSDLInterfaces.."MOBILE_API.xml")) and
        (not is_file_exists(config.pathToSDLInterfaces.."/MOBILE_API.xml")) then
       print("ERROR: XML files are not accessible at the specified path: "..config.pathToSDLInterfaces)
       os.exit(1)
     end
-  else 
+  else
     print "\27[33m WARNING: Parameter pathToSDLInterfaces is not specified, default APIs are used \27[0m"
   end
 end
@@ -155,7 +155,7 @@ end
 -- @param a first table
 -- @param b second table
 -- @param name table help comment for output error string
--- @return results bool value of comparison and error message 
+-- @return results bool value of comparison and error message
 function compareValues(a, b, name)
   local function iter(a, b, name, msg)
     if type(a) == 'table' and type(b) == 'table' then
@@ -257,15 +257,19 @@ function parse_cmdl()
   end
   return script_files
 end
+
 function PrintUsage()
   utils.PrintUsage()
 end
+
 function declare_opt(...)
   utils.declare_opt(...)
 end
+
 function declare_long_opt(...)
   utils.declare_long_opt(...)
 end
+
 function declare_short_opt(...)
   utils.declare_short_opt(...)
 end
@@ -274,7 +278,7 @@ end
 -- @param script_name path to the script file with a tests
 function script_execute(script_name)
   check_required_fields()
-  module.script_file_name = script_name  
+  module.script_file_name = script_name
   xmlReporter = xmlReporter.init(tostring(script_name))
   atf_logger = atf_logger.init_log(tostring(script_name))
   dofile(script_name)

@@ -7,11 +7,9 @@ local events = require('events')
 local Event = events.Event
 local expectations = require('expectations')
 
-
 local Expectation = expectations.Expectation
 local SUCCESS = expectations.SUCCESS
 local FAILED = expectations.FAILED
-
 
 local module = {}
 local mt = { __index = { } }
@@ -24,15 +22,15 @@ function module.Service(session)
 end
 
 function mt.__index:Send(message)
-  message.frameType = constants.FRAME_TYPE.CONTROL_FRAME    
+  message.frameType = constants.FRAME_TYPE.CONTROL_FRAME
   self.session:Send(message)
-  xmlReporter.AddMessage("mobile_connection","Send",{message})    
+  xmlReporter.AddMessage("mobile_connection","Send",{message})
   return message
 end
 
 function mt.__index:SendControlMessage(message)
-  message.frameType = constants.FRAME_TYPE.CONTROL_FRAME  
-  message.serviceType = constants.SERVICE_TYPE.CONTROL  
+  message.frameType = constants.FRAME_TYPE.CONTROL_FRAME
+  message.serviceType = constants.SERVICE_TYPE.CONTROL
   self:Send(message)
   return message
 end
@@ -51,7 +49,7 @@ function mt.__index:StartService(service)
     return data.frameType == 0 and
     data.serviceType == service and
     (service == constants.SERVICE_TYPE.RPC or data.sessionId == self.session.sessionId.get()) and
-    (data.frameInfo == constants.FRAME_INFO.START_SERVICE_ACK or 
+    (data.frameInfo == constants.FRAME_INFO.START_SERVICE_ACK or
       data.frameInfo == constants.FRAME_INFO.START_SERVICE_NACK)
   end
   self:Send(startSession)
@@ -65,7 +63,6 @@ function mt.__index:StartService(service)
     end)
   return ret
 end
-
 
 function mt.__index:StopService(service)
   assert(self.session.hashCode ~= 0, "StartServiceAck was not received. Unable to stop not started service")
@@ -84,7 +81,7 @@ function mt.__index:StopService(service)
     return data.frameType == constants.FRAME_TYPE.CONTROL_FRAME and
     data.serviceType == service and
     (service == constants.SERVICE_TYPE.RPC or data.sessionId == self.session.sessionId.get()) and
-    (data.frameInfo == constants.FRAME_INFO.END_SERVICE_ACK or 
+    (data.frameInfo == constants.FRAME_INFO.END_SERVICE_ACK or
       data.frameInfo == constants.FRAME_INFO.END_SERVICE_NACK)
   end
 
@@ -95,6 +92,5 @@ function mt.__index:StopService(service)
     end)
   return ret
 end
-
 
 return module
