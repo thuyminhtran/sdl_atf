@@ -1,43 +1,69 @@
+--- Module which provides ATF configuration and predefined mobile application data
+--
+-- *Dependencies:* none
+--
+-- *Globals:* none
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local config = { }
-
+--- Flag which defines usage of color for reporting
 config.color = true
+--- Define URL for HMI connection
 config.hmiUrl = "ws://localhost"
+--- Define port for HMI connection
 config.hmiPort = 8087
+--- Define host for default mobile device connection
 config.mobileHost = "localhost"
+--- Define port for default mobile device connection
 config.mobilePort = 12345
+--- Define timeout for Heartbeat in msec
 config.heartbeatTimeout = 7000
--- By default protocol version is 3
+--- Define default version of Ford protocol
+--
+-- 1 - basic
+--
+-- 2 - RPC, encription
+--
+-- 3 - video/audio streaming, heartbeat
+--
+-- 4 - SDL 4.0
 config.defaultProtocolVersion = 3
-
--- path to SDL binary
+--- Define path to SDL binary
+--
 -- Example: "/home/user/sdl_build/bin"
 config.pathToSDL = ""
+--- Define path to SDL interfaces
+--
 -- Example: "/home/user/sdl_panasonic/src/components/interfaces"
 config.pathToSDLInterfaces = ""
+--- Define SDL modification
 config.SDL = "smartDeviceLinkCore"
+--- Definehost for SDL logs
 config.sdl_logs_host = "localhost"
+--- Define port for SDL logs
 config.sdl_logs_port = 6676
-
+--- Flag which defines behavior of ATF on SDL crash
 config.ExitOnCrash = true
+--- Flag which defines whether ATF starts SDL on startup
 config.autorunSDL = true
+--- Flag which defines whether ATF displays time of test step run
 config.ShowTimeInConsole = true
-
--- Validation of Mobile and HMI Api
+--- Flag which defines whether ATF performs validation of Mobile and HMI messages by API
 config.ValidateSchema = true
-
--- By default, report is collecting
+--- Flag which defines whether ATF ignores collecting of reports
 config.excludeReport = false
--- Create separate file with full ATF logs for all test cases.
--- Log includes json files and service messages related to each test case
+--- Flag which defines whether ATF creates full ATF logs (with json files and service messages)
 config.storeFullATFLogs = true
--- Store full SDLCore logs
+--- Flag which defines whether ATF stores full SDLCore logs
 config.storeFullSDLLogs = true
--- Path to collecting ATF and SDL logs
+--- Define path to collected ATF and SDL logs
 config.reportPath = "./TestingReports"
--- For storing sdl log -"x" before start script and +"x" after end script execution. In milliseconds(ms).
+--- Define delays for storing sdl log -"x" before start script
+-- and +"x" after end script execution. In milliseconds(ms).
 config.x_sdllog = 100
 
--- Basic applications. Using in Register tests
+--- Predefined mobile application data (application1)
 config.application1 =
 {
   registerAppInterfaceParams =
@@ -64,6 +90,7 @@ config.application1 =
   }
 }
 
+--- Predefined mobile application data (application2)
 config.application2 =
 {
   registerAppInterfaceParams =
@@ -90,6 +117,7 @@ config.application2 =
   }
 }
 
+--- Predefined mobile application data (application3)
 config.application3 =
 {
   registerAppInterfaceParams =
@@ -116,6 +144,7 @@ config.application3 =
   }
 }
 
+--- Predefined mobile application data (application4)
 config.application4 =
 {
   registerAppInterfaceParams =
@@ -142,6 +171,7 @@ config.application4 =
   }
 }
 
+--- Predefined mobile application data (application5)
 config.application5 =
 {
   registerAppInterfaceParams =
