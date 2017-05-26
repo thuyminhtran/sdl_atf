@@ -62,7 +62,7 @@ end
 --! @return return expectation for StartService Ack
 function mt.__index:StartService(service)
   if service == 7 then
-    return self.mobile_session_impl:StartRPC()
+    return self:StartRPC()
   end
   -- in case StartService(7) it should be change on StartRPC
   return self.mobile_session_impl:StartService(service)
@@ -92,8 +92,12 @@ end
 
 --! @brief Start service 7 and heartBeat
 --! @return return expectation for expectation for StartService Ack
-function mt.__index:StartRPC()
-  return self.mobile_session_impl:StartRPC()
+function mt.__index:StartRPC(custom_hb_processor)
+  custom_hb_processor = custom_hb_processor
+    or function (_,_)
+        self.mobile_session_impl:AddHeartbeatExpectation()
+    end
+  return self.mobile_session_impl:StartRPC():Do(custom_hb_processor)
 end
 
 --! @brief Stop service 7

@@ -58,12 +58,15 @@ function mt.__index:SetHeartbeatTimeout(timeout)
   self.heartbeat_monitor:SetHeartbeatTimeout(timeout)
 end
 
+function mt.__index:AddHeartbeatExpectation()
+  self.heartbeat_monitor:AddHeartbeatExpectation()
+end
+
 function mt.__index:StartRPC()
   local ret = self:StartService(7)
   ret:Do(function()
       -- Heartbeat
       if self.version > 2 then
-        self.heartbeat_monitor:PreconditionForStartHeartbeat()
         self.heartbeat_monitor:StartHeartbeat()
       end
     end)
