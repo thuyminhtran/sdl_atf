@@ -1,8 +1,26 @@
-local module = { }
+--- Module which is responsible for formated output into console
+--
+-- *Dependencies:* `console`, `config`
+--
+-- *Globals:* `console`
+-- @module format
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
+--- Singleton table which is used for perform formated output into console
+-- @table Format
+local Format = { }
 console = require('console')
 local config = require('config')
 
-function module.PrintCaseResult(startCaseTime, caseName, success, errorMessage, timespan)
+--- Print formated information about test step result into console
+-- @tparam string startCaseTime String representation of time of test step start
+-- @tparam string caseName Test step name
+-- @tparam boolean success Boolean representation of successes of test step
+-- @tparam string errorMessage Error message
+-- @tparam number timespan Duration of test step execution in msec
+-- @treturn Format Module Format
+function Format.PrintCaseResult(startCaseTime, caseName, success, errorMessage, timespan)
   caseName = tostring(caseName)
   if #caseName > 85 then
     caseName = string.sub(caseName, 1, 82) .. "..."
@@ -47,7 +65,7 @@ function module.PrintCaseResult(startCaseTime, caseName, success, errorMessage, 
       end
     end
   end
-  return module
+  return Format
 end
 
-return module
+return Format
