@@ -1,3 +1,12 @@
+--- Module which provide Service type
+--
+-- *Dependencies:* `atf.util`, `function_id`, `json`, `protocol_handler.ford_protocol_constants`, `events`, `expectations`
+--
+-- *Globals:* `xmlReporter`
+-- @module services.control_service
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 require('atf.util')
 
 local functionId = require('function_id')
@@ -11,16 +20,25 @@ local Expectation = expectations.Expectation
 local SUCCESS = expectations.SUCCESS
 local FAILED = expectations.FAILED
 
-local module = {}
+local ControlService = {}
 local mt = { __index = { } }
 
-function module.Service(session)
+--- Type which represents control service
+-- @type Service
+
+--- Construct instance of Service type
+-- @tparam MobileSession session Mobile session
+-- @treturn Service Constructed instance
+function ControlService.Service(session)
   local res = { }
   res.session = session
   setmetatable(res, mt)
   return res
 end
 
+--- Send message with control frame
+-- @tparam table message Message
+-- @treturn table Message
 function mt.__index:Send(message)
   message.frameType = constants.FRAME_TYPE.CONTROL_FRAME
   self.session:Send(message)
@@ -28,6 +46,9 @@ function mt.__index:Send(message)
   return message
 end
 
+--- Send message with control frame and control service type
+-- @tparam table message Service message
+-- @treturn table Service message
 function mt.__index:SendControlMessage(message)
   message.frameType = constants.FRAME_TYPE.CONTROL_FRAME
   message.serviceType = constants.SERVICE_TYPE.CONTROL
@@ -35,6 +56,9 @@ function mt.__index:SendControlMessage(message)
   return message
 end
 
+--- Start service and create expectation on this event
+-- @tparam number service type of service
+-- @treturn Expectation Expectation on start service event
 function mt.__index:StartService(service)
   xmlReporter.AddMessage("StartService", service)
   local startSession =
@@ -64,6 +88,9 @@ function mt.__index:StartService(service)
   return ret
 end
 
+--- Stop service and create expectation on this event
+-- @tparam number service type of service
+-- @treturn Expectation Expectation on end service event
 function mt.__index:StopService(service)
   assert(self.session.hashCode ~= 0, "StartServiceAck was not received. Unable to stop not started service")
   xmlReporter.AddMessage("StopService", service)
@@ -93,4 +120,4 @@ function mt.__index:StopService(service)
   return ret
 end
 
-return module
+return ControlService
