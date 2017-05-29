@@ -1,11 +1,24 @@
+--- Module which is responsible for all heartbeat emulation activities and provides HeartBeatMonitor type
+--
+-- *Dependencies:* `events`, `protocol_handler.ford_protocol_constants`, `qt`, `timers`
+--
+-- *Globals:* `xmlReporter`, `AnyNumber()`, `qt`, `timers`
+-- @module services.heartbeat_monitor
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local events = require('events')
 local constants = require('protocol_handler/ford_protocol_constants')
 
-local module = {}
+local HbMonitor = {}
 local mt = { __index = { } }
 local d = qt.dynamic()
 local time_offset = 1000
 
+--- Type which represents Heartbeat monitor. It responsible for all heartbeat emulation activities.
+-- @type HeartBeatMonitor
+
+--- Create and register expectation for heartbeat ACK from SDL
 function mt.__index:ExpectHeartbeatAck()
   self.session.connection:OnInputData(function(_, msg)
     if self.session.sessionId.get() ~= msg.sessionId then
@@ -22,10 +35,12 @@ function mt.__index:ExpectHeartbeatAck()
   end)
 end
 
+--- Send Heartbeat ACK to SDL
 function mt.__index:SendHeartbeatAck()
   self.control_services:SendControlMessage( {frameInfo = constants.FRAME_INFO.HEARTBEAT_ACK } )
 end
 
+--- Create and register expectation for heartbeat
 function mt.__index:AddHeartbeatExpectation()
   local event = events.Event()
   event.matches = function(s, data)
@@ -44,7 +59,7 @@ function mt.__index:AddHeartbeatExpectation()
     end)
 end
 
-
+--- Start heartbeat
 function mt.__index:StartHeartbeat()
   self.heartbeatEnabled = true
 
@@ -80,7 +95,7 @@ function mt.__index:StartHeartbeat()
   self:ExpectHeartbeatAck()
 end
 
-
+--- Stop heartbeat
 function mt.__index:StopHeartbeat()
   if self.heartbeatEnabled then
     self.heartbeatEnabled = false
@@ -94,6 +109,8 @@ function mt.__index:StopHeartbeat()
   end
 end
 
+--- Set heartbeat interval
+-- @tparam number timeout Heartbeat interval in msec
 function mt.__index:SetHeartbeatTimeout(timeout)
   if self.heartbeatToSDLTimer and self.sessionheartbeatFromSDLTimer then
     self.heartbeatToSDLTimer:setInterval(timeout)
@@ -101,8 +118,10 @@ function mt.__index:SetHeartbeatTimeout(timeout)
   end
 end
 
-
-function module.HeartBeatMonitor(session)
+--- Construct instance of HeartBeatMonitor type
+-- @tparam MobileSession session Mobile session
+-- @treturn HeartBeatMonitor Constructed instance
+function HbMonitor.HeartBeatMonitor(session)
   local res = { }
   res.session = session
   res.sessionId = session.sessionId
@@ -132,4 +151,4 @@ function module.HeartBeatMonitor(session)
   return res
 end
 
-return module
+return HbMonitor
