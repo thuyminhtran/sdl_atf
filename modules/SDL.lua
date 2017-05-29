@@ -1,23 +1,41 @@
+--- The module which is responsible for managing SDL from ATF
+--
+-- *Dependencies:* `os`, `sdl_logger`, `config`, `atf.util`
+--
+-- *Globals:* `sleep()`, `CopyFile()`, `CopyInterface()`, `xmlReporter`, `console`
+-- @module SDL
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 require('os')
 local sdl_logger = require('sdl_logger')
 local config = require('config')
 local SDL = { }
 
 require('atf.util')
-
+--- The flag responsible for stopping ATF in case of emergency completion of SDL
 SDL.exitOnCrash = true
+--- SDL state constant: SDL completed correctly
 SDL.STOPPED = 0
+--- SDL state constant: SDL works
 SDL.RUNNING = 1
+--- SDL state constant: SDL crashed
 SDL.CRASH = -1
 
+--- A global function for organizing execution delays (using the OS)
+-- @tparam number n The delay in ms
 function sleep(n)
   os.execute("sleep " .. tonumber(n))
 end
 
+--- Global function for copying a file (using the OS)
+-- @tparam string file Original file
+-- @tparam string newfile Result file
 function CopyFile(file, newfile)
   return os.execute (string.format('cp "%s" "%s"', file, newfile))
 end
 
+--- Global function for copying SDL interfaces (mobile_api.xml, hmi_api.xml)
 function CopyInterface()
   if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces ~= nil then
     local mobile_api = config.pathToSDLInterfaces .. '/MOBILE_API.xml'
@@ -27,6 +45,12 @@ function CopyInterface()
   end
 end
 
+--- Launch SDL from ATF
+-- @tparam string pathToSDL Path to SDL
+-- @tparam string smartDeviceLinkCore The name of the SDL to run
+-- @tparam boolean ExitOnCrash Flag whether Stop ATF in case SDL shutdown
+-- @treturn boolean The main result. Indicates whether the launch of SDL was successful
+-- @treturn string Additional information on the main SDL startup result
 function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   if ExitOnCrash ~= nil then
     self.exitOnCrash = ExitOnCrash
@@ -55,9 +79,11 @@ function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
   end
   xmlReporter.AddMessage("StartSDL", {["message"] = msg})
   return result, msg
-
 end
 
+--- Stop SDL from ATF (SIGINT is used)
+-- @treturn nil The main result. Always nil.
+-- @treturn string Additional information on the main result of stopping SDL
 function SDL:StopSDL()
   self.autoStarted = false
   local status = self:CheckStatusSDL()
@@ -77,6 +103,14 @@ function SDL:StopSDL()
   end
 end
 
+--- SDL status check
+-- @treturn number SDL state
+--
+-- SDL.STOPPED = 0 Completed the work correctly
+--
+-- SDL.RUNNING = 1 Running
+--
+-- SDL.CRASH = -1 Crash
 function SDL:CheckStatusSDL()
   local testFile = os.execute ('test -e sdl.pid')
   if testFile then
@@ -89,6 +123,7 @@ function SDL:CheckStatusSDL()
   return self.STOPPED
 end
 
+--- Deleting an SDL process indicator file
 function SDL:DeleteFile()
   if os.execute ('test -e sdl.pid') then
     os.execute('rm -f sdl.pid')
