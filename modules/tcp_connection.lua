@@ -1,13 +1,29 @@
-local module = { mt = { __index = {} } }
+--- Module which provides transport level interface for emulate connection with mobile for SDL
+--
+-- *Dependencies:* `qt`, `network`
+--
+-- *Globals:* `xmlReporter`, `qt`, `network`
+-- @module tcp_connection
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
 
-function module.Connection(host, port)
+local Tcp = { mt = { __index = {} } }
+
+--- Type which provides transport level interface for emulate connection with mobile for SDL
+-- @type Connection
+
+--- Construct instance of Connection type
+-- @tparam string host SDL host address
+-- @tparam string port SDL port
+-- @treturn Connection Constructed instance
+function Tcp.Connection(host, port)
   local res =
   {
     host = host,
     port = port
   }
   res.socket = network.TcpClient()
-  setmetatable(res, module.mt)
+  setmetatable(res, Tcp.mt)
   res.qtproxy = qt.dynamic()
 
   function res:inputData() end
@@ -24,20 +40,24 @@ function module.Connection(host, port)
   return res
 end
 
+--- Check 'self' argument
 local function checkSelfArg(s)
   if type(s) ~= "table" or
-  getmetatable(s) ~= module.mt then
+  getmetatable(s) ~= Tcp.mt then
     error("Invalid argument 'self': must be connection (use ':', not '.')")
   end
 end
 
-function module.mt.__index:Connect()
+--- Connect with SDL through QT transport interface
+function Tcp.mt.__index:Connect()
   xmlReporter.AddMessage("tcp_connection","Connect")
   checkSelfArg(self)
   self.socket:connect(self.host, self.port)
 end
 
-function module.mt.__index:Send(data)
+--- Send pack of messages from mobile to SDL
+-- @tparam table data Data to be sent
+function Tcp.mt.__index:Send(data)
   -- xmlReporter.AddMessage("tcp_connection","Send", data)
   checkSelfArg(self)
   for _, c in ipairs(data) do
@@ -45,7 +65,9 @@ function module.mt.__index:Send(data)
   end
 end
 
-function module.mt.__index:OnInputData(func)
+--- Set handler for OnInputData
+-- @tparam function func Handler function
+function Tcp.mt.__index:OnInputData(func)
   checkSelfArg(self)
   local d = qt.dynamic()
   local this = self
@@ -55,7 +77,9 @@ function module.mt.__index:OnInputData(func)
   qt.connect(self.qtproxy, "inputData(QByteArray)", d, "inputData(QByteArray)")
 end
 
-function module.mt.__index:OnDataSent(func)
+--- Set handler for OnDataSent
+-- @tparam function func Handler function
+function Tcp.mt.__index:OnDataSent(func)
   local d = qt.dynamic()
   local this = self
   function d:bytesWritten(num)
@@ -64,7 +88,9 @@ function module.mt.__index:OnDataSent(func)
   qt.connect(self.socket, "bytesWritten(qint64)", d, "bytesWritten(qint64)")
 end
 
-function module.mt.__index:OnConnected(func)
+--- Set handler for OnConnected
+-- @tparam function func Handler function
+function Tcp.mt.__index:OnConnected(func)
   checkSelfArg(self)
   if self.qtproxy.connected then
     error("Tcp connection: connected signal is handled already")
@@ -74,7 +100,9 @@ function module.mt.__index:OnConnected(func)
   qt.connect(self.socket, "connected()", self.qtproxy, "connected()")
 end
 
-function module.mt.__index:OnDisconnected(func)
+--- Set handler for OnDisconnected
+-- @tparam function func Handler function
+function Tcp.mt.__index:OnDisconnected(func)
   checkSelfArg(self)
   if self.qtproxy.disconnected then
     error("Tcp connection: disconnected signal is handled already")
@@ -84,10 +112,11 @@ function module.mt.__index:OnDisconnected(func)
   qt.connect(self.socket, "disconnected()", self.qtproxy, "disconnected()")
 end
 
-function module.mt.__index:Close()
+--- Close connection
+function Tcp.mt.__index:Close()
   xmlReporter.AddMessage("tcp_connection","Close")
   checkSelfArg(self)
   self.socket:close();
 end
 
-return module
+return Tcp
