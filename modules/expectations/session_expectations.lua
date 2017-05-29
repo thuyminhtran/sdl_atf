@@ -1,3 +1,14 @@
+--- Module which is responsible for mobile expectations handling
+--
+-- It provides next types: `Expectation` and `ExpectationsList`
+--
+-- *Dependencies:* `expectations`, `events`
+--
+-- *Globals:* `event_dispatcher`
+-- @module expectations.session_expectations
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local expectations = require('expectations')
 local events = require('events')
 
@@ -6,13 +17,16 @@ local Event = events.Event
 local SUCCESS = expectations.SUCCESS
 local FAILED = expectations.FAILED
 
-local module = {}
+local SessionExpectations = {}
 local mt = { __index = { } }
 
---! @brief Expectation of specific event
---! @param event
---! @param name is event name
---! @return return expectation table
+--- Type which represents single mobile expectation
+-- @type MobileExpectations
+
+--- Expectation of specific event
+-- @tparam Event event Event which is expected
+-- @tparam string name Event name
+-- @treturn Expectation Created expectation
 function mt.__index:ExpectEvent(event, name)
   local ret = Expectation(name, self.session.connection)
   ret.event = event
@@ -21,8 +35,8 @@ function mt.__index:ExpectEvent(event, name)
   return ret
 end
 
---! @brief Expectation of any event
---! @return return expectation table for any unprocessed event
+--- Expectation of any event
+-- @treturn Expectation Expectation table for any unprocessed event
 function mt.__index:ExpectAny()
   local event = events.Event()
   event.level = 1
@@ -36,11 +50,14 @@ function mt.__index:ExpectAny()
   return ret
 end
 
-function module.MobileExpectations(session)
+--- Construct instance of MobileExpectations type
+-- @tparam MobileSession session Mobile session
+-- @treturn MobileExpectations Constructed instance
+function SessionExpectations.MobileExpectations(session)
   local res = { }
   res.session = session
   setmetatable(res, mt)
   return res
 end
 
-return module
+return SessionExpectations
