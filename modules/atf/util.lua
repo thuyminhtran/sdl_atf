@@ -3,6 +3,13 @@
   Utils component is a set of classes for ATF components support
 
   For component overview description and a list of responsibilities, please, follow [ATF SAD Component View](https://smartdevicelink.com/en/guides/pull_request/93dee199f30303b4b26ec9a852c1f5261ff0735d/atf/components-view/#utils).
+
+  *Dependencies:* `atf.stdlib.argument_parser`, `config`, `reporter`, `atf_logger`
+
+  *Globals:* `config`, `xmlReporter`, `atf_logger`, `RequiredArgument`, `OptionalArgument`, `NoArgument`,
+  `table2str()`, `print_table()`, `is_file_exists()`, `print_startscript()`, `print_stopscript()`,
+  `compareValues()`, `parse_cmdl()`, `PrintUsage()`, `declare_opt()`, `declare_long_opt()`,
+  `declare_short_opt()`, `script_execute()`
   @module atf.util
   @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
   @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
@@ -12,7 +19,7 @@ config = require('config')
 xmlReporter = require("reporter")
 atf_logger = require("atf_logger")
 
-local module = {
+local AtfUtil = {
   script_file_name = ""
 }
 local script_files = {}
@@ -22,11 +29,11 @@ OptionalArgument = utils.OptionalArgument
 NoArgument = utils.NoArgument
 
 function get_script_file_name()
-  return module.script_file_name
+  return AtfUtil.script_file_name
 end
 
 --- Serialization any lua table to string
--- @param in table for converting to string
+-- @param o table for converting to string
 function table2str(o)
   if type(o) == 'table' then
     local s = '{ '
@@ -40,7 +47,7 @@ function table2str(o)
 end
 
 --- Print lua tables to console
--- @param in list of tables
+-- @param t list of tables
 function print_table(t,... )
   if (type(t) == 'table' ) then
     print(table2str(t).. table2str(table.pack(...)))
@@ -88,7 +95,7 @@ end
 
 --- Convert milliseconds count to string in a format
 -- "1d 2h 3m 4s 5ms (summary 999ms)".
--- @param millisecondsx
+-- @param milliseconds
 -- @return result string in a format
 local function convertMs(milliseconds)
   local seconds = math.floor( (milliseconds / 1000) % 60)
@@ -185,10 +192,12 @@ function compareValues(a, b, name)
   local res = iter(a, b, name, message)
   return res, table.concat(message, '\n')
 end
---------------------------------------------------
+-- ------------------------------------------------
 -- parsing command line part
 
-function module.config_file(config_file)
+--- Set config file for ATF
+-- @tparam string config_file Path to config file
+function AtfUtil.config_file(config_file)
   if (is_file_exists(config_file)) then
     config_file = config_file:gsub('%.', " ")
     config_file = config_file:gsub("/", ".")
@@ -200,57 +209,92 @@ function module.config_file(config_file)
     print("==========================")
   end
 end
-function module.mobile_connection(str)
+
+--- Overwrite property mobileHost in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.mobile_connection(str)
   config.mobileHost = str
 end
-function module.mobile_connection_port(src)
-  config.mobilePort= src
-end
-function module.hmi_connection(str)
-  config.hmiUrl = str
-end
-function module.hmi_connection_port(src)
-  config.hmiPort = src
-end
-function module.perflog_connection(str)
-  config.perflogConnection=str
-end
-function module.perflog_connection_port(str)
-  config.perflogConnectionPort=str
-end
-function module.report_path(str)
-  config.reportPath=str
-end
-function module.report_mark(str)
-  config.reportMark=str
-end
-function module.add_script(src)
-  table.insert(script_files,src)
-end
-function module.storeFullSDLLogs(str)
-  config.storeFullSDLLogs=str
-end
-function module.heartbeat(str)
-  config.heartbeatTimeout=str
+
+--- Overwrite property mobilePort in configuration of ATF
+-- @tparam string src Value
+function AtfUtil.mobile_connection_port(src)
+  config.mobilePort = src
 end
 
-function module.sdl_core(str)
+--- Overwrite property hmiUrl in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.hmi_connection(str)
+  config.hmiUrl = str
+end
+
+--- Overwrite property hmiPort in configuration of ATF
+-- @tparam string src Value
+function AtfUtil.hmi_connection_port(src)
+  config.hmiPort = src
+end
+
+--- Overwrite property perflogConnection in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.perflog_connection(str)
+  config.perflogConnection = str
+end
+
+--- Overwrite property perflogConnectionPort in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.perflog_connection_port(str)
+  config.perflogConnectionPort = str
+end
+
+--- Overwrite property reportPath in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.report_path(str)
+  config.reportPath = str
+end
+
+--- Overwrite property reportMark in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.report_mark(str)
+  config.reportMark = str
+end
+
+--- Add test script to execute
+-- @tparam string src Path to script
+function AtfUtil.add_script(src)
+  table.insert(script_files,src)
+end
+
+--- Overwrite property storeFullSDLLogs in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.storeFullSDLLogs(str)
+  config.storeFullSDLLogs = str
+end
+
+--- Overwrite property heartbeatTimeout in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.heartbeat(str)
+  config.heartbeatTimeout = str
+end
+
+--- Overwrite property pathToSDL in configuration of ATF
+-- @tparam string str Value
+function AtfUtil.sdl_core(str)
   config.pathToSDL = str
 end
 
 function parse_cmdl()
   arguments = utils.getopt(argv, opts)
   if (arguments) then
-    if (arguments['config-file']) then module.config_file(arguments['config-file']) end
+    if (arguments['config-file']) then AtfUtil.config_file(arguments['config-file']) end
     for k,v in pairs(arguments) do
       if (type(k) ~= 'number') then
         if ( k ~= 'config-file') then
           k = (k):gsub ("%W", "_")
-          module[k](v)
+          AtfUtil[k](v)
         end
       else
         if k >= 2 and v ~= "modules/launch.lua" then
-          module.add_script(v)
+          AtfUtil.add_script(v)
         end
       end
     end
@@ -278,7 +322,7 @@ end
 -- @param script_name path to the script file with a tests
 function script_execute(script_name)
   check_required_fields()
-  module.script_file_name = script_name
+  AtfUtil.script_file_name = script_name
   xmlReporter = xmlReporter.init(tostring(script_name))
   atf_logger = atf_logger.init_log(tostring(script_name))
   dofile(script_name)
