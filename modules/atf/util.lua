@@ -1,3 +1,12 @@
+--[[-- ATF common utils
+
+  Utils component is a set of classes for ATF components support
+
+  For component overview description and a list of responsibilities, please, follow [ATF SAD Component View](https://smartdevicelink.com/en/guides/pull_request/93dee199f30303b4b26ec9a852c1f5261ff0735d/atf/components-view/#utils).
+  @module atf.util
+  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+]]
 local utils = require("atf.stdlib.argument_parser")
 config = require('config')
 xmlReporter = require("reporter")
@@ -16,6 +25,8 @@ function get_script_file_name()
   return module.script_file_name
 end
 
+--- Serialization any lua table to string
+-- @param in table for converting to string
 function table2str(o)
   if type(o) == 'table' then
     local s = '{ '
@@ -27,6 +38,9 @@ function table2str(o)
   end
   return tostring(o)
 end
+
+--- Print lua tables to console 
+-- @param in list of tables
 function print_table(t,... )
   if (type(t) == 'table' ) then
     print(table2str(t).. table2str(table.pack(...)))
@@ -34,10 +48,19 @@ function print_table(t,... )
     print(tostring(t).. table2str(table.pack(...)))
   end
 end
+
+--- Check file exist ans by given path
+-- @param name absolute path to the file
+-- @return boll existence
 function is_file_exists(name)
   local f = io.open(name,"r")
   if f ~=nil then io.close(f) return true else return false end
 end
+
+--- Remove table filed by name and value
+-- @param t table for manipulation
+-- @param k key value for remove
+-- @return result table
 function table.removeKey(t, k)
   local i = 0
   local keys, values = {},{}
@@ -46,7 +69,7 @@ function table.removeKey(t, k)
     keys[i] = k
     values[i] = v
   end
-                             
+
   while i>0 do
     if keys[i] == k then
         table.remove(keys, i)
@@ -55,7 +78,7 @@ function table.removeKey(t, k)
     end
     i = i - 1
   end
-                                     
+
   local a = {}
     for i = 1,#keys do
         a[keys[i]] = values[i]
@@ -63,6 +86,10 @@ function table.removeKey(t, k)
   return a
 end
 
+--- Convert milliseconds count to string in a format
+-- "1d 2h 3m 4s 5ms (summary 999ms)".
+-- @param millisecondsx
+-- @return result string in a format 
 local function convertMs(milliseconds)
   local seconds = math.floor( (milliseconds / 1000) % 60)
   local minutes = math.floor( ((milliseconds / (1000 * 60)) % 60))
@@ -88,16 +115,23 @@ local function convertMs(milliseconds)
   return converted_time
 end
 
-function check_required_fields()
+--- Check mandatory files existence for testing
+-- Checks: SDL Core binary, HMI and MObile API files
+-- Stop ATF execution in case any error
+local function check_required_fields()
   if (not is_file_exists(config.pathToSDL.."smartDeviceLinkCore")) and 
      (not is_file_exists(config.pathToSDL.."/smartDeviceLinkCore")) then
     print("ERROR: SDL is not accessible at the specified path: "..config.pathToSDL)
     os.exit(1)
   end
-  if (not is_file_exists(config.pathToSDLInterfaces.."MOBILE_API.xml")) and 
-     (not is_file_exists(config.pathToSDLInterfaces.."/MOBILE_API.xml")) then
-    print("ERROR: XML files are not accessible at the specified path: "..config.pathToSDLInterfaces)
-    os.exit(1)
+  if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces~=nil then
+    if (not is_file_exists(config.pathToSDLInterfaces.."MOBILE_API.xml")) and 
+       (not is_file_exists(config.pathToSDLInterfaces.."/MOBILE_API.xml")) then
+      print("ERROR: XML files are not accessible at the specified path: "..config.pathToSDLInterfaces)
+      os.exit(1)
+    end
+  else 
+    print "\27[33m WARNING: Parameter pathToSDLInterfaces is not specified, default APIs are used \27[0m"
   end
 end
 
@@ -106,8 +140,8 @@ function print_startscript(script_name)
   print(string.format("Start '%s'",script_name))
   print("==============================")
 end
-function print_stopscript(script_name)
 
+function print_stopscript(script_name)
   local count =  timestamp() - atf_logger.start_file_timestamp
   local counttime =  convertMs(count)
   atf_logger.LOGTestFinish(counttime)
@@ -116,6 +150,12 @@ function print_stopscript(script_name)
   print(string.format("Finish '%s'",script_name or script_files[1]))
   print("==============================")
 end
+
+--- Compare 2 tables field by field
+-- @param a first table
+-- @param b second table
+-- @param name table help comment for output error string
+-- @return results bool value of comparison and error message 
 function compareValues(a, b, name)
   local function iter(a, b, name, msg)
     if type(a) == 'table' and type(b) == 'table' then
@@ -146,7 +186,7 @@ function compareValues(a, b, name)
   return res, table.concat(message, '\n')
 end
 --------------------------------------------------
--- parsing commad line part
+-- parsing command line part
 
 function module.config_file(config_file)
   if (is_file_exists(config_file)) then
@@ -229,6 +269,9 @@ end
 function declare_short_opt(...)
   utils.declare_short_opt(...)
 end
+
+--- Test script execution
+-- @param script_name path to the script file with a tests
 function script_execute(script_name)
   check_required_fields()
   module.script_file_name = script_name  

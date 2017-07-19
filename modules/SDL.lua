@@ -19,52 +19,54 @@ function CopyFile(file, newfile)
 end
 
 function CopyInterface()
-  local mobile_api = config.pathToSDLInterfaces .. '/MOBILE_API.xml'
-  local hmi_api = config.pathToSDLInterfaces .. '/HMI_API.xml'
-  CopyFile(mobile_api, 'data/MOBILE_API.xml')
-  CopyFile(hmi_api, 'data/HMI_API.xml')
+  if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces~=nil then
+    local mobile_api = config.pathToSDLInterfaces .. '/MOBILE_API.xml'
+    local hmi_api = config.pathToSDLInterfaces .. '/HMI_API.xml'
+    CopyFile(mobile_api, 'data/MOBILE_API.xml')
+    CopyFile(hmi_api, 'data/HMI_API.xml')
+  end
 end
 
-function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)    
-  sdl_logger.init_log(get_script_file_name())
-  if ExitOnCrash then
+function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
+  if ExitOnCrash ~= nil then
     self.exitOnCrash = ExitOnCrash
   end
   local status = self:CheckStatusSDL()
 
-  while status == self.RUNNING do
-    sleep(1)
-    print('Waiting for SDL shutdown')
-    status = self:CheckStatusSDL()
+  if (status == self.RUNNING) then
+    local msg = "SDL had already started out of ATF"
+    xmlReporter.AddMessage("StartSDL", {["message"] = msg})
+    print(console.setattr(msg, "cyan", 1))
+    return false, msg
   end
 
-  if status == self.STOPPED  or status == self.CRASH then
-    CopyInterface()
-    local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
-    if result then
-      local msg = "SDL started"
-      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-      return true
-    else
-      local msg = "SDL had already started not from ATF or unexpectedly crashed"
-      xmlReporter.AddMessage("StartSDL", {["message"] = msg})
-      print(console.setattr(msg, "cyan", 1))
-      return nil, msg
+  CopyInterface()
+  local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
+
+  local msg
+  if result then
+    msg = "SDL started"
+    if config.storeFullSDLLogs == true then
+      sdl_logger.init_log(get_script_file_name())
     end
+  else
+    msg = "SDL had already started not from ATF or unexpectedly crashed"
+    print(console.setattr(msg, "cyan", 1))
   end
-  local msg = "SDL had already started from ATF"
-  xmlReporter.AddMessage("StartSDL", {["message"] = msg})  
-  print(console.setattr(msg, "cyan", 1))
-  return nil, msg
+  xmlReporter.AddMessage("StartSDL", {["message"] = msg})
+  return result, msg
+
 end
 
 function SDL:StopSDL()
   self.autoStarted = false
   local status = self:CheckStatusSDL()
   if status == self.RUNNING then
-    local result = os.execute ('./tools/StopSDL.sh')    
+    local result = os.execute ('./tools/StopSDL.sh')
     if result then
-      sdl_logger.close()
+      if config.storeFullSDLLogs == true then
+        sdl_logger.close()
+      end
       return true
     end
   else

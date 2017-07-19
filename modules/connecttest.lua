@@ -10,7 +10,7 @@ local events = require("events")
 local expectations = require('expectations')
 local functionId = require('function_id')
 local SDL = require('SDL')
-
+local exit_codes = require('exit_codes')
 local load_schema = require('load_schema')
 
 local mob_schema = load_schema.mob_schema
@@ -49,16 +49,28 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       if(table2str(arguments):match('result')) then
         results_args = arguments.result
         results_args2 = arguments.result
+      elseif(table2str(arguments):match('error')) then
+        results_args = arguments.error
+        results_args2 = arguments.error
       end
-      if results_args2 and results_args2.code then
-        results_args2 = table.removeKey(results_args2, 'code')
+
+      if results_args2 then
+        if results_args2.code then
+          results_args2 = table.removeKey(results_args2, 'code')
+        end
+        if results_args2.method then
+          results_args2 = table.removeKey(results_args2, 'method')
+        elseif results_args2.data and results_args2.data.method then
+          results_args2 = table.removeKey(results_args2.data, 'method')
+        end
       end
-      if results_args2 and results_args2.method then
-        results_args2 = table.removeKey(results_args2, 'method')
-      end
+
       if func_name == nil and type(data.result) == 'table' then
         func_name = data.result.method
+      elseif func_name == nil and type(data.error) == 'table' then
+        func_name = data.error.data.method
       end
+
       local _res, _err
       _res = true
       if not (table2str(arguments):match('error')) then
@@ -67,8 +79,11 @@ function module.hmiConnection:EXPECT_HMIRESPONSE(id, args)
       if (not _res) then
         return _res,_err
       end
+
       if func_name and results_args and data.result then
         return compareValues(results_args, data.result, "result")
+      elseif func_name and results_args and data.error then
+        return compareValues(results_args, data.error, "error")
       else
         return compareValues(results_args, data.params, "params")
       end
@@ -196,7 +211,7 @@ function RUN_AFTER(func, timeout, funcName)
   if funcName then
     func_name_str = funcName
   end
-  xmlReporter.AddMessage(debug.getinfo(1, "n").name, func_name_str, 
+  xmlReporter.AddMessage(debug.getinfo(1, "n").name, func_name_str,
     {["functionLine"] = debug.getinfo(func, "S").linedefined, ["Timeout"] = tostring(timeout)})
   local d = qt.dynamic()
   d.timeout = function(self)
@@ -314,8 +329,7 @@ function module:runSDL()
   end
   local result, errmsg = SDL:StartSDL(config.pathToSDL, config.SDL, config.ExitOnCrash)
   if not result then
-    SDL:DeleteFile()
-    quit(1)
+    quit(exit_codes.aborted)
   end
   SDL.autoStarted = true
 end
@@ -500,7 +514,7 @@ function module:initHMI_onReady()
       rows = rows or 1
     }
   end
-  local function image_field(name, width, heigth)
+  local function image_field(name, width, height)
     return
     {
       name = name,
@@ -640,7 +654,7 @@ function module:connectMobile()
   :Times(AnyNumber())
   :Do(function()
       print("Disconnected!!!")
-      quit(1)
+      quit(exit_codes.aborted)
     end)
   self.mobileConnection:Connect()
   return EXPECT_EVENT(events.connectedEvent, "Connected")

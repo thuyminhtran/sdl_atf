@@ -1,3 +1,13 @@
+---- *LEGACY* RPC validator
+--
+-- Load HMI API to table
+--  
+--  Dependencies: `xml`
+--  @module validation
+--  @warning investigate legacy status and remove
+--  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+--  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local xml = require('xml')
 local module = { }
 

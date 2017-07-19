@@ -16,6 +16,7 @@ Qt5.3 Test         | LGPL 2.1
 **Other libs**     |
 lpthread           | LGPL
 libxml2            | MIT
+ldoc               | MIT/X11
 
 For ATF usage:
 ```sudo apt-get install liblua5.2 libxml2 lua-lpeg```
@@ -67,6 +68,23 @@ $ sudo find / -name qmake
 
 ## Run:
 ``` ./start.sh [options] [script file name] ```
+
+## Documentation generation
+### Download and install [ldoc](stevedonovan.github.io/ldoc/manual/doc.md.html)
+```
+sudo apt install luarocks
+sudo luarocks install luasec
+sudo luarocks install penlight
+sudo luarocks install ldoc
+sudo luarocks install discount
+```
+### Generate ATF documentation
+```
+cd sdl_atf
+ldoc -c docs/config.ld .
+```
+### Open documentation
+```chromium-browser docs/html/index.html```
 
 ### Useful options:
 #### Path to SDL

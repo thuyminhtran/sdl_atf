@@ -1,10 +1,23 @@
+----  APIs validator loader.
+--
+--  Use `load_schema` for loading Mobile and HMI API validation schema.
+--
+--  For more detail design information refer to @{Validation|Validation SDD}
+--
+--  Dependencies: `xml`
+--  @module api_loader
+--  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+--  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local xml = require('xml')
+
+--- @table api_loader
 local module = { }
 
--- Include result codes that are elements in functions from Mobile Api.
+--- Include result codes that are elements in functions from Mobile Api.
 -- Each function with paremeter resultCode that has type Result
 -- should contain types of Resultcode directly in function.
--- Other resultCodes are kept in structs  
+-- Other resultCodes are kept in structs
 local function LoadResultCodes( param )
   local resultCodes ={}
   local i = 1
@@ -16,25 +29,25 @@ local function LoadResultCodes( param )
   return resultCodes
 end
 
---Load parameteres in function. Load ResultCodes if 
---type of parameter is "Result"
+--- Load parameters in function. Load ResultCodes if
+-- type of parameter is "Result"
 local function LoadParamsInFunction(param, interface)
   local name = param:attr("name")
   local p_type = param:attr("type")
   local mandatory = param:attr("mandatory")
   local array = param:attr("array")
 
-  if mandatory == nil then 
+  if mandatory == nil then
     mandatory = true
   end
 
-  if array == nil then 
+  if array == nil then
     array = false
   end
 
   local result_codes = nil
-  if name == "resultCode" and p_type == "Result" then 
-    result_codes  = LoadResultCodes(param) 
+  if name == "resultCode" and p_type == "Result" then
+    result_codes  = LoadResultCodes(param)
   end
 
   local data = {}
@@ -51,8 +64,7 @@ local function LoadParamsInFunction(param, interface)
   return name, data
 end
 
-
-
+--- Load Enums values
  local function LoadEnums(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("enum")) do
@@ -61,13 +73,19 @@ end
       local i = 1
       for _,e in ipairs(s:children("element")) do
         local enum_value = e:attr("name")
+
+        local value =  e:attr("value")
+        if tonumber(value) ~= nil then
+          i = tonumber(value)
+        end
         dest.interface[first].enum[name][enum_value]=i
         i= i + 1
       end
     end
   end
  end
- 
+
+--- Load structures
  local function LoadStructs(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("struct")) do
@@ -84,8 +102,9 @@ end
     end
    end
  end
- 
 
+
+--- Load functions with all fields
 local function LoadFunction( api, dest  )
   for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("function")) do
@@ -106,7 +125,7 @@ local function LoadFunction( api, dest  )
   end
 end
 
--- Load interfaces from api. Each function, enum and struct will be 
+--- Load interfaces from api. Each function, enum and struct will be
 -- kept inside appropriate interface
 local function LoadInterfaces( api, dest )
   local interfaces = api:xpath("//interface")
@@ -126,15 +145,21 @@ local function LoadInterfaces( api, dest )
   end
 end
 
-
+--- Parse xml file to lua table.
+-- Each function, enum and struct will be
+-- kept inside appropriate interface
+-- @param path; path to the xml file
+-- @param include_parent_name; parent name
+-- @return lua table with all xml RPCs
+-- @function api_loader.init
  function module.init(path, include_parent_name)
   module.include_parent_name = include_parent_name
   local result = {}
   result.interface = { }
- 
+
   local _api = xml.open(path)
   if not _api then error(path .. " not found") end
- 
+
   LoadInterfaces(_api, result)
   LoadEnums(_api, result)
   LoadStructs(_api, result)
@@ -142,5 +167,5 @@ end
   LoadFunction(_api, result)
   return result
  end
- 
+
  return module
