@@ -624,6 +624,15 @@ function module:initHMI_onReady()
           upDownAvailable = true,
           imageSupported = true
         }
+      },
+      systemCapabilities = {
+          navigationCapability = {
+              sendLocationEnabled = true,
+              getWayPointsEnabled = true
+          },
+          phoneCapability = {
+              dialNumberEnabled = true
+          }
       }
     })
 
