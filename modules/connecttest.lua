@@ -289,6 +289,7 @@ function Test:initHMI_onReady()
         trim = "SE"
       }
     })
+  ExpectRequest("VehicleInfo.GetVehicleData", true, { vin = "52-452-52-752" })
 
   local function button_capability(name, shortPressAvailable, longPressAvailable, upDownAvailable)
     return

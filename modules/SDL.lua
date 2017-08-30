@@ -64,7 +64,6 @@ function SDL:StartSDL(pathToSDL, smartDeviceLinkCore, ExitOnCrash)
     return false, msg
   end
 
-  CopyInterface()
   local result = os.execute ('./tools/StartSDL.sh ' .. pathToSDL .. ' ' .. smartDeviceLinkCore)
 
   local msg
