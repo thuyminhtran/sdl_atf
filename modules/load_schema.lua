@@ -17,16 +17,15 @@ local validator = require('schema_validation')
 -- @tfield string response Const for Response
 -- @tfield string request Const for Request
 -- @tfield string notification Const for Notification
-
 local LoadSchema = { }
-module.response = 'response'
-module.request = 'request'
-module.notification = 'notification'
-if (not module.mob_schema) then
-  module.mob_schema = validator.CreateSchemaValidator(api_loader.init("data/MOBILE_API.xml"))
+LoadSchema.response = 'response'
+LoadSchema.request = 'request'
+LoadSchema.notification = 'notification'
+if (not LoadSchema.mob_schema) then
+  LoadSchema.mob_schema = validator.CreateSchemaValidator(api_loader.init("data/MOBILE_API.xml"))
 end
-if (not module.hmi_schema) then
-  module.hmi_schema = validator.CreateSchemaValidator(api_loader.init("data/HMI_API.xml"))
+if (not LoadSchema.hmi_schema) then
+  LoadSchema.hmi_schema = validator.CreateSchemaValidator(api_loader.init("data/HMI_API.xml"))
 end
 
 return LoadSchema

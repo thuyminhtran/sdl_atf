@@ -97,21 +97,21 @@ function Expectations.Expectation(name, connection)
   function mt.__index:validate()
     -- Check Timeout status
     if not self.status and timestamp() - self.ts > self.timeout then
-      self.status = module.FAILED
+      self.status = Expectations.FAILED
       self.errorMessage["Timeout"] = string.format("%s: Timeout expired", self)
     end
     if self.occurences >= self.timesLE then
       -- Check if Times criteria is valid
       if self.timesGE and self.occurences > self.timesGE then
-        self.status = module.FAILED
+        self.status = Expectations.FAILED
         self.errorMessage["Times"] = "The most allowed occurences boundary exceed"
       elseif not self.status then
-        self.status = module.SUCCESS
+        self.status = Expectations.SUCCESS
       end
       -- Now check out the Sequence criteria
       for _, e in ipairs(self.after) do
         if not e.status then
-          exp.status = module.FAILED
+          exp.status = Expectations.FAILED
           exp.errorMessage["Sequence"] =
           string.format("\nSequence order violated:\n\"%s\""..
             " must have got occured before \"%s\"", e, exp)
@@ -129,7 +129,7 @@ function Expectations.Expectation(name, connection)
       local valid, msg = func(self, data)
 
       if not valid then
-        self.status = module.FAILED
+        self.status = Expectations.FAILED
         self.errorMessage["ValidIf"] = msg
       else
         if msg ~= nil and msg ~= "" then
