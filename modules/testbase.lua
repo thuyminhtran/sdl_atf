@@ -179,6 +179,10 @@ local function FailTestCase(self, cause)
   CheckStatus()
 end
 
+local function SkipTest(self)
+  quit(exit_codes.skipped)
+end
+
 --- Supports method for async Test Case status validation
 -- @lfunction control.start
 function control:checkstatus()
@@ -193,6 +197,7 @@ local function main()
   qt.connect(control, "next()", control, "runNextCase()")
 
   rawset(module, "FailTestCase", FailTestCase)
+  rawset(module, "SkipTest", SkipTest)
 
   event_dispatcher = ed.EventDispatcher()
   event_dispatcher:OnPostEvent(CheckStatus)

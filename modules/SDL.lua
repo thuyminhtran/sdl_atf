@@ -1,14 +1,66 @@
 require('os')
 local sdl_logger = require('sdl_logger')
 local config = require('config')
+local console = require('console')
 local SDL = { }
 
 require('atf.util')
 
+SDL.buildOptions = {}
 SDL.exitOnCrash = true
 SDL.STOPPED = 0
 SDL.RUNNING = 1
 SDL.CRASH = -1
+
+local usedBuildOptions = {
+  remoteControl =  {
+    sdlBuildParameter = "REMOTE_CONTROL",
+    defaultValue = "ON"
+  },
+  extendedPolicy =  {
+    sdlBuildParameter = "EXTENDED_POLICY",
+    defaultValue = "PROPRIETARY"
+  }
+}
+
+local function readParameterFromCMakeCacheFile(paramName)
+  local pathToFile = config.pathToSDL .. "/CMakeCache.txt"
+  if is_file_exists(pathToFile) then
+    local paramValue, paramType
+    for line in io.lines(pathToFile) do
+      paramType, paramValue = string.match(line, "^%s*" .. paramName .. ":(.+)=(%S*)")
+      if paramValue then
+        return paramValue, paramType
+      end
+    end
+  end
+  return nil
+end
+
+local function setSdlBuildOption(self, optionName, sdlBuildParam, defaultValue)
+  local value, paramType = readParameterFromCMakeCacheFile(sdlBuildParam)
+  if value == nil then
+    value = defaultValue
+    local msg = "SDL build option " ..
+      sdlBuildParam .. " is unavailable.\nAssume that SDL was built with " ..
+      sdlBuildParam .. " = " .. defaultValue
+    print(console.setattr(msg, "cyan", 1))
+  else
+    if paramType == "UNINITIALIZED" then
+      value = nil
+      local msg = "SDL build option " ..
+        sdlBuildParam .. " is unsupported."
+      print(console.setattr(msg, "cyan", 1))
+    end
+  end
+  self.buildOptions[optionName] = value
+end
+
+local function setAllSdlBuildOptions(self)
+  for option, data in pairs(usedBuildOptions) do
+    setSdlBuildOption(self, option, data.sdlBuildParameter, data.defaultValue)
+  end
+end
 
 function sleep(n)
   os.execute("sleep " .. tonumber(n))
@@ -80,5 +132,7 @@ function SDL:DeleteFile()
     os.execute('rm -f sdl.pid')
   end
 end
+
+setAllSdlBuildOptions(SDL)
 
 return SDL
