@@ -1,8 +1,23 @@
-local module = {}
+--- Module which is responsible for protocol level message handling and provides ProtocolHandler type
+--
+-- *Dependencies:* `json`, `protocol_handler.ford_protocol_constants`, `bit32`
+--
+-- *Globals:* `bit32`, ret
+-- @module protocol_handler.protocol_handler
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
+local ProtocolHandler = {}
 local json = require("json")
 local constants = require('protocol_handler/ford_protocol_constants')
 local mt = { __index = { } }
-function module.ProtocolHandler()
+
+--- Type which represents protocol level message handling
+-- @type ProtocolHandler
+
+--- Construct instance of ProtocolHandler type
+-- @treturn ProtocolHandler Constructed instance
+function ProtocolHandler.ProtocolHandler()
   ret =
   {
     buffer = "",
@@ -11,6 +26,10 @@ function module.ProtocolHandler()
   setmetatable(ret, mt)
   return ret
 end
+
+--- Build byte representation of int32
+-- @tparam userdata val Original int32 value
+-- @treturn string Byte representation of int32
 local function int32ToBytes(val)
   local res = string.char(
     bit32.rshift(bit32.band(val, 0xff000000), 24),
@@ -21,6 +40,10 @@ local function int32ToBytes(val)
   return res
 end
 
+--- Build int32 value from its byte representation
+-- @tparam string val Byte representation of int32
+-- @tparam number offset Offset
+-- @treturn userdata Built int32 value
 local function bytesToInt32(val, offset)
   local res = bit32.lshift(string.byte(val, offset), 24) +
   bit32.lshift(string.byte(val, offset + 1), 16) +
@@ -29,6 +52,12 @@ local function bytesToInt32(val, offset)
   return res
 end
 
+--- Build byte representation of RPC payload
+-- @tparam number rpcType RPC type
+-- @tparam number rpcFunctionId Function Id
+-- @tparam number rpcCorrelationId RPC correlation ID
+-- @tparam string payload Data
+-- @treturn string Built byte representation of RPC payload
 local function rpcPayload(rpcType, rpcFunctionId, rpcCorrelationId, payload)
   local res = string.char(
     bit32.lshift(rpcType, 4) + bit32.band(bit32.rshift(rpcFunctionId, 24), 0x0f),
@@ -41,6 +70,17 @@ local function rpcPayload(rpcType, rpcFunctionId, rpcCorrelationId, payload)
   return res
 end
 
+--- Build byte representation of message header
+-- @tparam number version Version number of the ford protocol
+-- @tparam number encryption Encription flag
+-- @tparam number frameType Frame type
+-- @tparam number serviceType Service type
+-- @tparam number frameInfo Frame info
+-- @tparam number sessionId Session Id
+-- @tparam string payload Data
+-- @tparam number messageId Message Id
+-- @treturn string Built byte representation of header
+-- @see `Applink Protocol`
 local function create_ford_header(version, encryption, frameType, serviceType, frameInfo, sessionId, payload, messageId)
   local res = string.char(
     bit32.bor(
@@ -54,6 +94,11 @@ local function create_ford_header(version, encryption, frameType, serviceType, f
   int32ToBytes(messageId)
   return res
 end
+
+--- Parse binary message from SDL to table with json validation
+-- @tparam string binary Message
+-- @tparam boolean validateJson True if JSON validation is required
+-- @treturn table Parsed message
 function mt.__index:Parse(binary, validateJson)
   self.buffer = self.buffer .. binary
   local res = { }
@@ -107,6 +152,10 @@ function mt.__index:Parse(binary, validateJson)
   end
   return res
 end
+
+--- Compose table with binary message and header for SDL
+-- @tparam table message Table representation of message
+-- @treturn table Table with binary message and header
 function mt.__index:Compose(message)
   local kMax_protocol_payload_size = 1488
   local kFirstframe_frameType = 0x02
@@ -188,4 +237,5 @@ function mt.__index:Compose(message)
   end
   return res
 end
-return module
+
+return ProtocolHandler

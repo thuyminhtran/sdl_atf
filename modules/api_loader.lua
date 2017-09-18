@@ -1,18 +1,18 @@
-----  APIs validator loader.
+--- Module which provides APIs validator loader.
 --
---  Use `load_schema` for loading Mobile and HMI API validation schema.
+-- Use `load_schema` for loading Mobile and HMI API validation schema.
 --
---  For more detail design information refer to @{Validation|Validation SDD}
+-- *Dependencies:* `xml`
 --
---  Dependencies: `xml`
---  @module api_loader
---  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
---  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+-- *Globals:* `param_name`, `param_data`, `name`
+-- @module api_loader
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/)
+-- and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
 
 local xml = require('xml')
 
---- @table api_loader
-local module = { }
+local apiLoader = { }
 
 --- Include result codes that are elements in functions from Mobile Api.
 -- Each function with paremeter resultCode that has type Result
@@ -64,7 +64,7 @@ local function LoadParamsInFunction(param, interface)
   return name, data
 end
 
---- Load Enums values
+--- Load Enums values from API
  local function LoadEnums(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("enum")) do
@@ -85,7 +85,7 @@ end
   end
  end
 
---- Load structures
+--- Load structures from API
  local function LoadStructs(api, dest)
    for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("struct")) do
@@ -104,7 +104,7 @@ end
  end
 
 
---- Load functions with all fields
+--- Load functions with all fields from API
 local function LoadFunction( api, dest  )
   for first, v in pairs (dest.interface) do
     for _, s in ipairs(v.body:children("function")) do
@@ -145,15 +145,14 @@ local function LoadInterfaces( api, dest )
   end
 end
 
---- Parse xml file to lua table.
+--- Parse api file to lua table.
 -- Each function, enum and struct will be
 -- kept inside appropriate interface
--- @param path; path to the xml file
--- @param include_parent_name; parent name
--- @return lua table with all xml RPCs
--- @function api_loader.init
- function module.init(path, include_parent_name)
-  module.include_parent_name = include_parent_name
+-- @tparam string path Path to the xml file
+-- @tparam string include_parent_name Parent name
+-- @treturn table lua table with all xml RPCs
+ function apiLoader.init(path, include_parent_name)
+  apiLoader.include_parent_name = include_parent_name
   local result = {}
   result.interface = { }
 
@@ -168,4 +167,4 @@ end
   return result
  end
 
- return module
+ return apiLoader

@@ -1,12 +1,27 @@
+--- Module which provides interface for emulate connection with HMI for SDL
+--
+-- *Dependencies:* `json`, `api_loader`
+--
+-- *Globals:* `data`, `xmlReporter`
+-- @module hmi_connection
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local json = require("json")
 local api_loader = require("modules/api_loader")
 
-local module = { mt = { __index = { } } }
+local HmiConnection = { mt = { __index = { } } }
 
-function module.mt.__index:Connect()
+--- Type which provides interface for emulate connection with HMI for SDL
+-- @type Connection
+
+--- Connect with SDL
+function HmiConnection.mt.__index:Connect()
   self.connection:Connect()
 end
 
+--- Read result codes from HMI API
+-- @treturn table Result codes
 local function getResultCodes( )
   local hmi_schema = api_loader.init("data/HMI_API.xml")
   return hmi_schema.interface["Common"].enum["Result"]
@@ -14,12 +29,18 @@ end
 
 local resultCodes = getResultCodes()
 
-function module.mt.__index:Send(text)
+--- Send message from HMI to SDL
+-- @tparam string text Message
+function HmiConnection.mt.__index:Send(text)
   xmlReporter.AddMessage("hmi_connection","Send",{["json"] = tostring(text)})
   self.connection:Send(text)
 end
 
-function module.mt.__index:SendRequest(methodName, params)
+--- Send request message from HMI to SDL
+-- @tparam string methodName Method name
+-- @tparam table params Request parameters
+-- @treturn number Request id
+function HmiConnection.mt.__index:SendRequest(methodName, params)
   data = {}
   self.requestId = self.requestId + 1
   data.jsonrpc = "2.0"
@@ -32,7 +53,10 @@ function module.mt.__index:SendRequest(methodName, params)
   return self.requestId
 end
 
-function module.mt.__index:SendNotification(methodName, params)
+--- Send notification message from HMI to SDL
+-- @tparam string methodName Method name
+-- @tparam table params Response parameters
+function HmiConnection.mt.__index:SendNotification(methodName, params)
   xmlReporter.AddMessage("hmi_connection","SendNotification",{ ["methodName"] = methodName, ["params"] = params } )
   local data = {}
   data.method = methodName
@@ -42,7 +66,12 @@ function module.mt.__index:SendNotification(methodName, params)
   self:Send(text)
 end
 
-function module.mt.__index:SendResponse(id, methodName, code, params)
+--- Send normal response message from HMI to SDL
+-- @tparam number id Request id
+-- @tparam string methodName Method name
+-- @tparam number code Result code
+-- @tparam table params Response parameters
+function HmiConnection.mt.__index:SendResponse(id, methodName, code, params)
   xmlReporter.AddMessage("hmi_connection","SendResponse",{ ["id"] = id, ["methodName"] = tostring(methodName), ["code"] = code , ["params"] = params} )
   local data = {}
   self.requestId = self.requestId + 1
@@ -61,7 +90,12 @@ function module.mt.__index:SendResponse(id, methodName, code, params)
   self:Send(text)
 end
 
-function module.mt.__index:SendError(id, methodName, code, errorMessage)
+--- Send error response message from HMI to SDL
+-- @tparam number id Message id
+-- @tparam string methodName Method name
+-- @tparam number code Result code
+-- @tparam string errorMessage Error message
+function HmiConnection.mt.__index:SendError(id, methodName, code, errorMessage)
   xmlReporter.AddMessage("hmi_connection","SendError",{["id"] = id, ["methodName"] = methodName, ["code"] = code,["errorMessage"] = errorMessage } )
   local data = {}
   data.error = {}
@@ -75,28 +109,40 @@ function module.mt.__index:SendError(id, methodName, code, errorMessage)
   self:Send(text)
 end
 
-function module.mt.__index:OnInputData(func)
+--- Set handler for OnInputData
+-- @tparam function func Handler function
+function HmiConnection.mt.__index:OnInputData(func)
   self.connection:OnInputData(function(_, data)
       func(self, data)
     end)
 end
 
-function module.mt.__index:OnConnected(func)
+--- Set handler for OnConnected
+-- @tparam function func Handler function
+function HmiConnection.mt.__index:OnConnected(func)
   self.connection:OnConnected(function() func(self) end)
 end
-function module.mt.__index:OnDisconnected(func)
+
+--- Set handler for OnDisconnected
+-- @tparam function func Handler function
+function HmiConnection.mt.__index:OnDisconnected(func)
   self.connection:OnDisconnected(function() func(self) end)
 end
-function module.mt.__index:Close()
+
+--- Close connection
+function HmiConnection.mt.__index:Close()
   self.connection:Close()
 end
 
-function module.Connection(connection)
+--- Construct instance of Connection type
+-- @tparam WebSocketConnection connection Lower level connection
+-- @treturn Connection Constructed instance
+function HmiConnection.Connection(connection)
   local res = { }
   res.connection = connection
   res.requestId = 0
-  setmetatable(res, module.mt)
+  setmetatable(res, HmiConnection.mt)
   return res
 end
 
-return module
+return HmiConnection

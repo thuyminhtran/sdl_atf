@@ -1,33 +1,30 @@
----- RPC validator
+--- Module which is responsible for validation income and outcome RPCs and provide type Validator
 --
--- Uses given lua table schema (from `api_loader`) for validation in- or outcome RPC
---  
---  For more detail design information refer to @{Validation|Validation SDD}
---  
---  Dependencies: `json`
---  
---  @module schema_validation
---  @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
---  @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+-- *Dependencies:* `json`
+--
+-- *Globals:* `config`, `res`, `arraySize`, `param_from_schema`
+-- @module schema_validation
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
 
 local json = require("json")
 local wrong_function_name = "WrongFunctionName"
 local generic_response = "GenericResponse"
 
-local module = {
+local SchemaValidation = {
   mt = {__index = { } }
 }
 
---- Create Validator by given schema
--- @param schema table with a list of RPCs 
--- @return `Validator`
--- @see Validator
--- @function schema_validation.CreateSchemaValidator
-function module.CreateSchemaValidator(schema)
+--- Type which responsible for validation income and outcome RPCs
+-- @type Validator
 
+--- Construct instance of Validator type
+-- @tparam table schema table with a list of RPCs
+-- @treturn Validator Constructed instance
+function SchemaValidation.CreateSchemaValidator(schema)
   res = { }
   res.schema = schema
-  setmetatable(res, module.mt)
+  setmetatable(res, SchemaValidation.mt)
   return res
 end
 
@@ -43,6 +40,7 @@ local function dump(o)
   return s .. '} \n'
 end
 
+--- Build error messa string from error message structure
 local function errorMsgToString(tbl)
   local tmp = ''
   if type(tbl) ~= 'table' then
@@ -64,7 +62,6 @@ end
 local function CheckExistenceOfMandatoryParam(func_schema, user_data, name_of_structure)
   local error_message = {}
   local result = true
-
   for key,value in pairs(func_schema) do
       if (type(user_data)~='table')then
         return false, "not valid type of "..key .. " expected structure, got "..type(user_data)
@@ -92,13 +89,20 @@ end
 
 --- Compare structs. For each structure should be called
 -- check of mandatory params and types for all elements in the struct
--- @function Validator:CompareStructs
-function module.mt.__index:CompareStructs( data_elem, struct_schema,name_of_structure)
+-- @tparam table data_elem Data
+-- @tparam table struct_schema Schema
+-- @tparam string name_of_structure Structure description
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the structure schema.
+-- @treturn string Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:CompareStructs( data_elem, struct_schema, name_of_structure)
   local mandatory_check_result = true --for mandatory param
   local type_parameter_check_result = true -- for correct types of param
   local error_message = {}
   local error_message2 = {}
-
   local struct_params = struct_schema["param"]
   mandatory_check_result, error_message= CheckExistenceOfMandatoryParam(struct_params, data_elem, name_of_structure)
 mandatory_check_result = true--(struct_params, data_elem, name_of_structure)
@@ -123,8 +127,17 @@ end
 --- Calls if element has attribute array=true
 -- Check that element is array
 -- For each element of array call CompareType with isArray=false
--- @function Validator:CheckTypesInArray
-function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParameter, name_of_structure)
+-- @tparam table data_elem Data
+-- @tparam table schemaElem Element of schema
+-- @tparam string nameofParameter Parameter name
+-- @tparam string name_of_structure Structure description
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn string Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParameter, name_of_structure)
   local result = true
   local error_message  = {}
   local elem1 = type(data_elem)
@@ -140,7 +153,6 @@ function module.mt.__index:CheckTypesInArray( data_elem, schemaElem, nameofParam
   end
   return result, error_message
 end
-
 
 --- Check that length of value more than minlength and less then maxlength
 local function CheckLength( data_elem, schemaElem, data_name )
@@ -188,9 +200,19 @@ local function table_contains(table, element)
   return false
 end
 
-
--- @function Validator:CompareType
-function module.mt.__index:CompareType(data_elem, schemaElem, isArray, nameofParameter, name_of_structure)
+--- Compare types of element and schema
+-- @tparam table data_elem Data
+-- @tparam table schemaElem Element of schema
+-- @tparam boolean isArray True for array elements
+-- @tparam string nameofParameter Parameter name
+-- @tparam string name_of_structure Structure description
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn string Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:CompareType(data_elem, schemaElem, isArray, nameofParameter, name_of_structure)
   local elem1 = type(data_elem)
   if (isArray=='true') then
     return self:CheckTypesInArray(data_elem, schemaElem, nameofParameter, name_of_structure)
@@ -301,12 +323,22 @@ local function CheckArray(data_elem, schemaElem, elem_name)
   return true, err_msg
 end
 
---- Check parameters includes:
+--- Check types of parameters includes:
+--
 -- Check data is table
+--
 -- Call checking of Array
--- Call comparation of types with schema's types
--- @function Validator:CheckTypeOfParam
-function module.mt.__index:CheckTypeOfParam( func_schema, user_data, error_message, name_of_structure)
+-- @tparam table func_schema Schema
+-- @tparam table user_data Data
+-- @tparam table error_message Table with error messages
+-- @tparam string name_of_structure Structure description
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn table Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:CheckTypeOfParam( func_schema, user_data, error_message, name_of_structure)
   local result = true
   local result1 = true
   local  result2 = true
@@ -339,8 +371,17 @@ end
 
 --- Call checking that mandatory params are existing
 -- Call checking that parameters has correct type and values
--- @function Validator:CheckFunctionParams
-function  module.mt.__index:CheckFunctionParams( interface_name, function_name, function_type, user_data )
+-- @tparam string interface_name RPC Interface name
+-- @tparam string function_name RPC function name
+-- @tparam string function_type RPC function type
+-- @tparam table user_data Data
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn table Additional result.
+--
+-- Provides additional information if main result is false
+function  SchemaValidation.mt.__index:CheckFunctionParams( interface_name, function_name, function_type, user_data )
 
   local result1 = true --for mandatory param
   local result2 = true -- for correct types of param
@@ -363,8 +404,16 @@ end
 --- Extract function name and interface from function_id
 -- Check that function and interface exist
 -- Call CheckFunctionParams for processing function
--- @function Validator:Compare
-function module.mt.__index:Compare(function_id,function_type, user_data)
+-- @tparam string function_id RPC function Id
+-- @tparam string function_type RPC function type
+-- @tparam table user_data Data
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn table Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:Compare(function_id,function_type, user_data)
   local result = true
   local error_message = {}
   local types = ''
@@ -393,9 +442,17 @@ function module.mt.__index:Compare(function_id,function_type, user_data)
   return result, error_message
 end
 
----
--- @function Validator:Validate
-function module.mt.__index:Validate(function_id, function_type, user_data)
+--- Validate data with schema
+-- @tparam string function_id RPC function Id
+-- @tparam string function_type RPC function type
+-- @tparam table user_data Data
+-- @treturn boolean Main result.
+--
+-- True if data corresponds to the types.
+-- @treturn string Additional result.
+--
+-- Provides additional information if main result is false
+function SchemaValidation.mt.__index:Validate(function_id, function_type, user_data)
   local result = true
   local error_message = {}
   if config.ValidateSchema then
@@ -404,4 +461,4 @@ function module.mt.__index:Validate(function_id, function_type, user_data)
   return result, errorMsgToString(error_message)
 end
 
-return module
+return SchemaValidation
