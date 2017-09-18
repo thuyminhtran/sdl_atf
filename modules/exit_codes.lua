@@ -1,3 +1,4 @@
+
 --- Module which represents enum of exit codes for ATF
 --
 -- *Dependencies:* none
@@ -17,5 +18,6 @@ exit_codes.aborted = 1
 exit_codes.failed = 2
 --- Test execution was finished with result WRONG ARGUMENTS (test run issue)
 exit_codes.wrong_arg = 3
-
+--- Test execution was finished with result SKIPPED
+exit_codes.skipped = 4
 return exit_codes
