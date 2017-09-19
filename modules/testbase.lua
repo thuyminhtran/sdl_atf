@@ -225,8 +225,8 @@ local function main()
 
   qt.connect(control, "next()", control, "runNextCase()")
 
-  rawset(module, "FailTestCase", FailTestCase)
-  rawset(module, "SkipTest", SkipTest)
+  rawset(Test, "FailTestCase", FailTestCase)
+  rawset(Test, "SkipTest", SkipTest)
 
   event_dispatcher = ed.EventDispatcher()
   event_dispatcher:OnPostEvent(CheckStatus)
