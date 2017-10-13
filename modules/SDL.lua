@@ -14,7 +14,7 @@ local console = require('console')
 local SDL = { }
 
 require('atf.util')
---- Table of SDL build options 
+--- Table of SDL build options
 SDL.buildOptions = {}
 --- The flag responsible for stopping ATF in case of emergency completion of SDL
 SDL.exitOnCrash = true
@@ -39,7 +39,7 @@ local usedBuildOptions = {
 
 --- Read specified parameter from CMakeCache.txt file
 -- @tparam string paramName Parameter to read value
--- @treturn string The main result. Value read of parameter. 
+-- @treturn string The main result. Value read of parameter.
 -- Can be nil in case parameter was not found.
 -- @treturn string Type of read parameter
 local function readParameterFromCMakeCacheFile(paramName)
@@ -195,6 +195,37 @@ function SDL:DeleteFile()
   end
 end
 
+--- Update SDL log4cxx.properties in order SDL will be able to write logs through Telnet
+local function updateSDLLogProperties()
+  if config.storeFullSDLLogs then
+    local pathToFile = config.pathToSDL .. "/log4cxx.properties"
+    local f = io.open(pathToFile, "r")
+    local content = f:read("*all")
+    f:close()
+
+    local paramsToUpdate = {
+      {
+        name = "log4j.rootLogger",
+        value = "ALL, SmartDeviceLinkCoreLogFile, TelnetLogging"
+      },
+      {
+        name = "log4j.appender.TelnetLogging.layout.ConversionPattern",
+        value = "%%-5p [%%d{yyyy-MM-dd HH-mm:ss,SSS}][%%t][%%c] %%F:%%L %%M: %%m"
+      }
+    }
+
+    for _, item in pairs(paramsToUpdate) do
+      content = string.gsub(content, item.name .. "=.-\n", item.name .. "=" .. item.value .. "\n")
+    end
+
+    f = io.open(pathToFile, "w")
+    f:write(content)
+    f:close()
+  end
+end
+
 setAllSdlBuildOptions(SDL)
+
+updateSDLLogProperties()
 
 return SDL
