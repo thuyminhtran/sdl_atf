@@ -84,7 +84,7 @@ local function GetNames( name )
   if (string.find(name, "%.")) then
     return name:match("([^.]+).([^.]+)")
   end
-  return 'Ford Sync RAPI', name
+  return 'SmartDeviceLink RAPI', name
 end
 
 --- Compare structs. For each structure should be called
@@ -255,7 +255,7 @@ function SchemaValidation.mt.__index:CompareType(data_elem, schemaElem, isArray,
         return true
       else
         -- Workaround for non-existed value in enum
-        if interface_name == "Ford Sync RAPI" then
+        if interface_name == "SmartDeviceLink RAPI" then
           local err_msg = "[WARNING]: got non-existed integer value \"".. tostring(data_elem).. "\" in enum ".. schemaElem
           return true, err_msg
         end
