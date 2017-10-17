@@ -94,23 +94,6 @@ function sleep(n)
   os.execute("sleep " .. tonumber(n))
 end
 
---- Global function for copying a file (using the OS)
--- @tparam string file Original file
--- @tparam string newfile Result file
-function CopyFile(file, newfile)
-  return os.execute (string.format('cp "%s" "%s"', file, newfile))
-end
-
---- Global function for copying SDL interfaces (mobile_api.xml, hmi_api.xml)
-function CopyInterface()
-  if config.pathToSDLInterfaces~="" and config.pathToSDLInterfaces ~= nil then
-    local mobile_api = config.pathToSDLInterfaces .. '/MOBILE_API.xml'
-    local hmi_api = config.pathToSDLInterfaces .. '/HMI_API.xml'
-    CopyFile(mobile_api, 'data/MOBILE_API.xml')
-    CopyFile(hmi_api, 'data/HMI_API.xml')
-  end
-end
-
 --- Launch SDL from ATF
 -- @tparam string pathToSDL Path to SDL
 -- @tparam string smartDeviceLinkCore The name of the SDL to run
