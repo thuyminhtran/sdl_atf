@@ -86,6 +86,7 @@ function module.getopt(argv, opts)
 
   return res
 end
+
 function module.declare_opt (shortname, longname, argument, description)
   local arg = ''
   if (argument == module.RequiredArgument) then
@@ -104,12 +105,15 @@ function module.declare_opt (shortname, longname, argument, description)
   end
 
 end
+
 function module.declare_short_opt(shortname, argument, description)
   module.declare_opt (shortname, '' , argument, description)
 end
+
 function module.declare_long_opt(longname, argument, description)
   module.declare_opt('' ,longname , argument, description)
 end
+
 function module.PrintUsage()
   local _usage = usage
   for _, opt in ipairs(help) do
@@ -120,6 +124,7 @@ function module.PrintUsage()
   print(_usage)
   quit()
 end
+
 function module.PrintVersion()
   print(version)
   quit()

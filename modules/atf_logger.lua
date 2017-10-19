@@ -1,9 +1,28 @@
+--- Module which is responsible for creating ATF log during test script run
+--
+-- *Dependencies:* `json`, `config`, `atf.stdlib.std.io`, `protocol_handler.ford_protocol_constants`
+--
+-- *Globals:* `qdatetime`, `timestamp`
+-- @module atf_logger
+-- @copyright [Ford Motor Company](https://smartdevicelink.com/partners/ford/) and [SmartDeviceLink Consortium](https://smartdevicelink.com/consortium/)
+-- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
+
 local json = require('json')
 local config = require('config')
 local io = require('atf.stdlib.std.io')
 local ford_constants = require("protocol_handler/ford_protocol_constants")
 local rpc_function_id = require('function_id')
 
+--- Singleton table which is used for perform all logging activities for ATF log.
+-- @table Logger
+-- @tfield boolean is_open Describe status of ATF log file
+-- @tfield string full_atf_log_file Name of full ATF log file
+-- @tfield string script_file_name Name of current script
+-- @tfield string atf_log_file Name of normal ATF log file
+-- @tfield number timestamp Current date + time (timestamp)
+-- @tfield string mobile_log_format Format template for mobile communication log record
+-- @tfield string hmi_log_format Format template for HMI communication log record
+-- @tfield number start_file_timestamp Date + time (timestamp) of start to write log file
 local Logger =
 {
   is_open = true,
@@ -15,7 +34,7 @@ local Logger =
   hmi_log_format = '',
   start_file_timestamp = 0,
   mt = {
-    __index={}
+    __index = {}
   }
 }
 
@@ -23,6 +42,9 @@ Logger.mobile_log_format = "%s (%s) [rpcFunction: %s, sessionId: %s, version: %s
       .. "encryption: %s, serviceType: %s, frameInfo: %s, messageId: %s] : %s \n"
 Logger.hmi_log_format = "%s (%s) : %s \n"
 
+--- Get function name from Mobile API
+-- @tparam number function_id Function identifier
+-- @treturn string Function name
 local function get_function_name(function_id)
   for name, id in pairs(rpc_function_id) do
     if id == function_id then
@@ -32,13 +54,21 @@ local function get_function_name(function_id)
   return "nil"
 end
 
-function Logger.formated_time(withoutDate)
-  if withoutDate == true then
+--- Create string representation of current time in set format
+-- @tparam ?boolean without_date Set date format
+--
+-- true: "hh:mm:ss,zzz";
+--
+-- false or nil: "dd MM yyyy hh:mm:ss, zzz"
+-- @treturn string Formated date representation
+function Logger.formated_time(without_date)
+  if without_date == true then
     return qdatetime.get_datetime("hh:mm:ss,zzz")
   end
   return qdatetime.get_datetime("dd MM yyyy hh:mm:ss, zzz")
 end
 
+--- Check message is it HMI tract
 local function is_hmi_tract(tract, message)
   local str = string.format("%s", tract)
   if string.find(str, "HMI") or
@@ -50,6 +80,9 @@ local function is_hmi_tract(tract, message)
   return false
 end
 
+--- Store message from mobile application to SDL into ATF log file
+-- @tparam string tract Tract information
+-- @tparam string message String representation of message from mobile application to SDL
 function Logger:MOBtoSDL(tract, message)
   local log_str = string.format(Logger.mobile_log_format,"MOB->SDL ", Logger.formated_time(),
     get_function_name(message.rpcFunctionId), message.sessionId, message.version, message.frameType,
@@ -62,6 +95,8 @@ function Logger:MOBtoSDL(tract, message)
   end
 end
 
+--- Store auxiliary message about start of new test step for test scenario into ATF log file
+-- @tparam string test_case_name Test step name
 function Logger:StartTestCase(test_case_name)
   self.atf_log_file:write(string.format("\n\n===== %s : \n", test_case_name))
   if config.storeFullATFLogs then
@@ -69,6 +104,9 @@ function Logger:StartTestCase(test_case_name)
   end
 end
 
+--- Store message from SDL to mobile application into ATF log file
+-- @tparam string tract Tract information
+-- @tparam string message String representation of message from SDL to mobile application
 function Logger:SDLtoMOB(tract, message)
   local payload = message.payload
   if type(payload) == "table" then
@@ -85,6 +123,9 @@ function Logger:SDLtoMOB(tract, message)
   end
 end
 
+--- Store message from HMI to SDL into ATF log file
+-- @tparam string tract Tract information
+-- @tparam string message String representation of message from HMI to SDL
 function Logger:HMItoSDL(tract, message)
   local log_str = string.format(Logger.hmi_log_format, "HMI->SDL", Logger.formated_time(), message)
   if is_hmi_tract(tract, message) then
@@ -95,6 +136,9 @@ function Logger:HMItoSDL(tract, message)
   end
 end
 
+--- Store message from SDL to HMI into ATF log file
+-- @tparam string tract Tract information
+-- @tparam string message String representation of message from SDL to HMI
 function Logger:SDLtoHMI(tract, message)
   local log_str = string.format(Logger.hmi_log_format, "SDL->HMI", Logger.formated_time(), message)
   if is_hmi_tract(tract, message) then
@@ -105,12 +149,14 @@ function Logger:SDLtoHMI(tract, message)
   end
 end
 
+--- Build script name on basis of script file name
 local function get_script_name(script_file_name)
   local tbl = table.pack(string.match(script_file_name, '(.-)([^/]-([^%.]+))$'))
   local name = tbl[#tbl-1]:gsub('%.'..tbl[#tbl]..'$', '')
   return name
 end
 
+--- Build log file name with full absolute path and create all folders on file system for it
 local function get_log_file_name(timestamp, log_file_type)
   local dir_name = './' .. Logger.script_file_name
   local script_name = get_script_name(dir_name)
@@ -128,6 +174,8 @@ local function get_log_file_name(timestamp, log_file_type)
   return full_log_name
 end
 
+--- Initialization of ATF logger
+-- @tparam string script_name Test script name
 function Logger.init_log(script_name)
   Logger.script_file_name = script_name
   Logger.start_file_timestamp = timestamp()
@@ -151,20 +199,27 @@ function Logger.init_log(script_name)
   end
 
   setmetatable(Logger, Logger.mt)
-  is_open = true
+  Logger.is_open = true
   return Logger
 end
 
+--- Store auxiliary message about start of new test step of test scenario into ATF log file (only if `config.excludeReport` is set to `false`)
+-- @tparam string test_case Test step name
 function Logger.LOGTestCaseStart(test_case)
   if config.excludeReport then return end
   Logger:StartTestCase(test_case)
 end
 
+--- Store message on baasis on tract information into ATF log file
+-- @tparam string tract Tract information
+-- @tparam string message String representation of message
 function Logger.LOG(tract, message)
   if config.excludeReport then return end
   Logger[tract](Logger, tract, message)
 end
 
+--- Store auxiliary message about finish of test scenario into ATF log file
+-- @tparam number count Test scenario executing time in seconds
 function Logger.LOGTestFinish(count)
   Logger.atf_log_file:write(string.format("\n\n===== Total executing time is %s =====\n", count))
   if config.storeFullATFLogs then
