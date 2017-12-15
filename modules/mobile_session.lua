@@ -114,7 +114,7 @@ end
 function mt.__index:StartRPC(custom_hb_processor)
   custom_hb_processor = custom_hb_processor
     or function (_,_)
-        self.mobile_session_impl:AddHeartbeatExpectation()
+      -- empty
     end
   return self.mobile_session_impl:StartRPC():Do(custom_hb_processor)
 end
@@ -173,6 +173,9 @@ function MS.MobileSession(test, connection, regAppParams)
   function res.CorrelationId.get()
     return  res.correlationId
   end
+
+  --- Flag which defines whether mobile session activates heartbeat
+  res.activateHeartbeat = true
   --- Flag which defines whether mobile session sends heartbeat to SDL
   res.sendHeartbeatToSDL = true
   --- Flag which defines whether mobile session answers on heartbeat from SDL
@@ -180,7 +183,13 @@ function MS.MobileSession(test, connection, regAppParams)
   --- Flag which defines whether mobile session ignore ACK of heartbeat from SDL
   res.ignoreSDLHeartBeatACK = false
 
---- Property which defines whether mobile session sends heartbeat to SDL
+  --- Property which defines whether mobile session activates heartbeat
+  res.ActivateHeartbeat = {}
+  function res.ActivateHeartbeat.get()
+    return res.activateHeartbeat
+  end
+
+  --- Property which defines whether mobile session sends heartbeat to SDL
   res.SendHeartbeatToSDL = {}
   function res.SendHeartbeatToSDL.get()
     return res.sendHeartbeatToSDL
@@ -199,7 +208,8 @@ function MS.MobileSession(test, connection, regAppParams)
   end
 
   res.mobile_session_impl = mobile_session_impl.MobileSessionImpl(
-  res.SessionId, res.CorrelationId, test, connection, res.SendHeartbeatToSDL, res.AnswerHeartbeatFromSDL, res.IgnoreSDLHeartBeatAck, regAppParams )
+      res.SessionId, res.CorrelationId, test, connection, res.ActivateHeartbeat,
+      res.SendHeartbeatToSDL, res.AnswerHeartbeatFromSDL, res.IgnoreSDLHeartBeatAck, regAppParams )
   setmetatable(res, mt)
   return res
 end
