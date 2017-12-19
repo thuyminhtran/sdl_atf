@@ -99,7 +99,9 @@ end
 
 --- Start heartbeat from mobile side
 function mt.__index:StartHeartbeat()
-  self.heartbeat_monitor:StartHeartbeat()
+  if self.activateHeartbeat.get() then
+    self.heartbeat_monitor:StartHeartbeat()
+  end
 end
 
 --- Set timeout for heartbeat
@@ -108,26 +110,20 @@ function mt.__index:SetHeartbeatTimeout(timeout)
   self.heartbeat_monitor:SetHeartbeatTimeout(timeout)
 end
 
---- Create  and register heartbeat expectation
-function mt.__index:AddHeartbeatExpectation()
-  self.heartbeat_monitor:AddHeartbeatExpectation()
-end
-
 --- Start RPC service and heartBeat
 -- @treturn Expectation Expectation for StartService ACK
 function mt.__index:StartRPC()
   local ret = self:StartService(7)
-  ret:Do(function()
-      -- Heartbeat
-      if self.version > 2 then
-        self.heartbeat_monitor:StartHeartbeat()
-      end
-    end)
   ret:Do(function(s, data)
-      if s.status == FAILED then return end
-      self.sessionId.set(data.sessionId)
-      self.hashCode = data.binaryData
-    end)
+    if s.status == FAILED then return end
+    self.sessionId.set(data.sessionId)
+    self.hashCode = data.binaryData
+
+    -- Heartbeat
+    if self.version > 2 then
+      self:StartHeartbeat()
+    end
+  end)
   return ret
 end
 
@@ -158,6 +154,11 @@ function mt.__index:Send(message)
 
   self.connection:Send({message})
   xmlReporter.AddMessage("e","Send",{message})
+
+  if self.activateHeartbeat.get() then
+    self.heartbeat_monitor:OnMessageSent(message)
+  end
+
   return message
 end
 
@@ -180,12 +181,14 @@ end
 -- @tparam number correlation_id Initial correlation identifier
 -- @tparam Test test Test which open mobile session
 -- @tparam MobileConnection connection Base connection for open mobile session
+-- @tparam table activateHeartbeat  Access table for activation of heartbeat to SDL flag
 -- @tparam table sendHeartbeatToSDL Access table for send heartbeat to SDL flag
 -- @tparam table answerHeartbeatFromSDL Access table for answer heartbeat from SDL flag
 -- @tparam table ignoreHeartBeatAck Access table for ignore heartbeat ACK from SDL flag
 -- @tparam table regAppParams Mobile application parameters
 -- @treturn MobileSessionImpl Constructed instance
-function MSI.MobileSessionImpl(session_id, correlation_id, test, connection, sendHeartbeatToSDL, answerHeartbeatFromSDL, ignoreHeartBeatAck, regAppParams)
+function MSI.MobileSessionImpl(session_id, correlation_id, test, connection, activateHeartbeat,
+    sendHeartbeatToSDL, answerHeartbeatFromSDL, ignoreHeartBeatAck, regAppParams)
   local res = { }
   --- Test which open mobile session
   res.test = test
@@ -212,6 +215,8 @@ function MSI.MobileSessionImpl(session_id, correlation_id, test, connection, sen
   res.rpc_services = rpc_services.RPCService(res)
   --- Mobile expectations handler
   res.mobile_expectations = mobileExpectations.MobileExpectations(res)
+    --- Access table for activation state of heartbeat to SDL flag
+  res.activateHeartbeat = activateHeartbeat
   --- Access table for send heartbeat to SDL flag
   res.sendHeartbeatToSDL = sendHeartbeatToSDL
   --- Access table for answer heartbeat from SDL flag
@@ -220,7 +225,6 @@ function MSI.MobileSessionImpl(session_id, correlation_id, test, connection, sen
   res.ignoreHeartBeatAck = ignoreHeartBeatAck
   --- Heartbeat monitor
   res.heartbeat_monitor = heartbeatMonitor.HeartBeatMonitor(res)
-
   setmetatable(res, mt)
   return res
 end
