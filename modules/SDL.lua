@@ -136,18 +136,14 @@ function SDL:StopSDL()
   self.autoStarted = false
   local status = self:CheckStatusSDL()
   if status == self.RUNNING then
-    local result = os.execute ('./tools/StopSDL.sh')
-    if result then
-      if config.storeFullSDLLogs == true then
-        sdl_logger.close()
-      end
-      return true
-    end
+    os.execute('./tools/StopSDL.sh')
   else
     local msg = "SDL had already stopped"
     xmlReporter.AddMessage("StopSDL", {["message"] = msg})
     print(console.setattr(msg, "cyan", 1))
-    return nil, msg
+  end
+  if config.storeFullSDLLogs == true then
+    sdl_logger.close()
   end
 end
 
