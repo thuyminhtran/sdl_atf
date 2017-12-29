@@ -21,22 +21,18 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 --- Flag which defines whether ATF checks all validations for particular expectation or just till the first which fails
 config.checkAllValidations = false
+--- Define timeout to wait of unexpected events
+config.unexpectedEventTimeout = 2000
 --- Define default version of Ford protocol
---
 -- 1 - basic
---
 -- 2 - RPC, encription
---
 -- 3 - video/audio streaming, heartbeat
---
 -- 4 - SDL 4.0
 config.defaultProtocolVersion = 3
 --- Define path to SDL binary
---
 -- Example: "/home/user/sdl_build/bin"
 config.pathToSDL = ""
 --- Define path to SDL interfaces
---
 -- Example: "/home/user/sdl_panasonic/src/components/interfaces"
 config.pathToSDLInterfaces = ""
 --- Define SDL modification

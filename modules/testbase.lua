@@ -128,6 +128,29 @@ function control.runNextCase()
     xmlReporter.AddCase(Test.current_case_name)
     atf_logger.LOGTestCaseStart(Test.current_case_name)
     testcase(Test)
+
+    local function wait(pConnection)
+      local timeout = config.unexpectedEventTimeout
+      local event = events.Event()
+      event.matches = function(e1, e2) return e1 == e2 end
+
+      local ret = Expectation("Wait", pConnection)
+      ret.event = event
+      event_dispatcher:AddEvent(pConnection, event, ret)
+      Test:AddExpectation(ret)
+      ret:Timeout(timeout + 5000)
+      local function toRun()
+        event_dispatcher:RaiseEvent(pConnection, event)
+      end
+      RUN_AFTER(toRun, timeout)
+    end
+
+    for _, v in Test.expectations_list:List() do
+      if v.timesLE == 0 and v.timesGE == 0 then
+        wait(v.connection)
+      end
+    end
+
   else
     if SDL.autoStarted then
       SDL:StopSDL()
