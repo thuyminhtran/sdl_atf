@@ -8,6 +8,7 @@
 
 expectations = require('expectations')
 events = require('events')
+local config = require('config')
 
 --- Type which is responsible for dispatching events with expectations
 -- @type EventDispatcher
@@ -146,8 +147,8 @@ function mt.__index:RaiseEvent(connection, data)
       if exp.verifyData then
         for k, v in pairs(exp.verifyData) do
             v(exp, data)
-            if (exp.status == expectations.FAILED) then
-                break
+            if (config.allFailedValidations == false) and (exp.isAtLeastOneFail == true) then
+              break
             end
         end
       end

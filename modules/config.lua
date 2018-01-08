@@ -19,6 +19,8 @@ config.mobileHost = "localhost"
 config.mobilePort = 12345
 --- Define timeout for Heartbeat in msec
 config.heartbeatTimeout = 7000
+--- Flag which defines whether ATF show all failed validations for particular expectation or just a first one
+config.allFailedValidations = false
 --- Define default version of Ford protocol
 --
 -- 1 - basic

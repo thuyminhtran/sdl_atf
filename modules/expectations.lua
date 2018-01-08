@@ -9,6 +9,7 @@
 -- @license <https://github.com/smartdevicelink/sdl_core/blob/master/LICENSE>
 
 local cardinalities = require('cardinalities')
+local config = require('config')
 
 local Expectations = { }
 --- Predefined table that represents failed expectation
@@ -95,6 +96,11 @@ function Expectations.Expectation(name, connection)
 
   --- Perform base validation of expectation and set result into `Test`
   function mt.__index:validate()
+    if self.isAtLeastOneFail == true then
+      if config.allFailedValidations == false or self.occurences == self.timesGE then
+        self.status = Expectations.FAILED
+      end
+    end
     -- Check Timeout status
     if not self.status and timestamp() - self.ts > self.timeout then
       self.status = Expectations.FAILED
@@ -127,10 +133,12 @@ function Expectations.Expectation(name, connection)
     if not self.verifyData then self.verifyData = {} end
     self.verifyData[#self.verifyData + 1] = function(self, data)
       local valid, msg = func(self, data)
-
       if not valid then
-        self.status = Expectations.FAILED
-        self.errorMessage["ValidIf"] = msg
+        self.isAtLeastOneFail = true
+        if not self.errorMessage["ValidIf"] then
+          self.errorMessage["ValidIf"] = ""
+        end
+        self.errorMessage["ValidIf"] = self.errorMessage["ValidIf"] .. "\n" .. msg
       else
         if msg ~= nil and msg ~= "" then
           self.errorMessage["WARNING"] = msg
@@ -155,7 +163,8 @@ function Expectations.Expectation(name, connection)
     errorMessage = { }, -- If failed, error message to display
     actions = { }, -- Sequence of actions to be executed when complied
     pinned = false, -- True if the expectation is pinned
-    list = nil -- ExpectationsList the expectation belongs to
+    list = nil, -- ExpectationsList the expectation belongs to
+    isAtLeastOneFail = false -- True if at least one validation fails
   }
 
   setmetatable(e, mt)
