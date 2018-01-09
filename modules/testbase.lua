@@ -132,17 +132,17 @@ function control.runNextCase()
     local function wait(pConnection)
       local timeout = config.unexpectedEventTimeout
       local event = events.Event()
-      event.matches = function(e1, e2) return e1 == e2 end
+      event.matches = function(event1, event2) return event1 == event2 end
 
       local ret = Expectation("Wait", pConnection)
       ret.event = event
+      ret:Timeout(timeout + 5000)
       event_dispatcher:AddEvent(pConnection, event, ret)
       Test:AddExpectation(ret)
-      ret:Timeout(timeout + 5000)
       local function toRun()
         event_dispatcher:RaiseEvent(pConnection, event)
       end
-      RUN_AFTER(toRun, timeout)
+      Test:RunAfter(toRun, timeout)
     end
 
     for _, v in Test.expectations_list:List() do
@@ -246,6 +246,21 @@ function control:checkstatus()
   CheckStatus()
 end
 
+--- Execute 'func' after defined timeout
+local function runAfter(self, func, timeout)
+  local d = qt.dynamic()
+  d.timeout = function(pTimer)
+    func()
+    self.timers[pTimer] = nil
+  end
+
+  local timer = timers.Timer()
+  self.timers[timer] = true
+  qt.connect(timer, "timeout()", d, "timeout()")
+  timer:setSingleShot(true)
+  timer:start(timeout)
+end
+
 --- Testbase module initialization
 local function main()
   setmetatable(Test, mt)
@@ -254,6 +269,7 @@ local function main()
 
   rawset(Test, "FailTestCase", FailTestCase)
   rawset(Test, "SkipTest", SkipTest)
+  rawset(Test, "RunAfter", runAfter)
 
   event_dispatcher = ed.EventDispatcher()
   event_dispatcher:OnPostEvent(CheckStatus)

@@ -21,7 +21,7 @@ config.mobilePort = 12345
 config.heartbeatTimeout = 7000
 --- Flag which defines whether ATF checks all validations for particular expectation or just till the first which fails
 config.checkAllValidations = false
---- Define timeout to wait of unexpected events
+--- Define timeout to wait for the events that are not expected
 config.unexpectedEventTimeout = 2000
 --- Define default version of Ford protocol
 -- 1 - basic
