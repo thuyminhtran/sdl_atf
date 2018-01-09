@@ -147,7 +147,7 @@ function mt.__index:RaiseEvent(connection, data)
       if exp.verifyData then
         for k, v in pairs(exp.verifyData) do
             v(exp, data)
-            if (config.allFailedValidations == false) and (exp.isAtLeastOneFail == true) then
+            if (config.checkAllValidations == false) and (exp.isAtLeastOneFail == true) then
               break
             end
         end

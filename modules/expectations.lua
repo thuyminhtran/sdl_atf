@@ -97,7 +97,7 @@ function Expectations.Expectation(name, connection)
   --- Perform base validation of expectation and set result into `Test`
   function mt.__index:validate()
     if self.isAtLeastOneFail == true then
-      if config.allFailedValidations == false or self.occurences == self.timesGE then
+      if config.checkAllValidations == false or self.timesGE == nil or self.occurences == self.timesGE then
         self.status = Expectations.FAILED
       end
     end
