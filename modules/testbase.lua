@@ -130,7 +130,7 @@ function control.runNextCase()
     testcase(Test)
 
     local function wait(pConnection)
-      local timeout = config.unexpectedEventTimeout
+      local timeout = config.zeroOccurrenceTimeout
       local event = events.Event()
       event.matches = function(event1, event2) return event1 == event2 end
 
