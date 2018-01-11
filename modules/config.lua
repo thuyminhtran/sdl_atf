@@ -19,24 +19,20 @@ config.mobileHost = "localhost"
 config.mobilePort = 12345
 --- Define timeout for Heartbeat in msec
 config.heartbeatTimeout = 7000
+--- Define timeout to wait for the events that should not occur
+config.zeroOccurrenceTimeout = 2000
 --- Flag which defines whether ATF checks all validations for particular expectation or just till the first which fails
 config.checkAllValidations = false
 --- Define default version of Ford protocol
---
 -- 1 - basic
---
 -- 2 - RPC, encription
---
 -- 3 - video/audio streaming, heartbeat
---
 -- 4 - SDL 4.0
 config.defaultProtocolVersion = 3
 --- Define path to SDL binary
---
 -- Example: "/home/user/sdl_build/bin"
 config.pathToSDL = ""
 --- Define path to SDL interfaces
---
 -- Example: "/home/user/sdl_panasonic/src/components/interfaces"
 config.pathToSDLInterfaces = ""
 --- Define SDL modification
