@@ -128,7 +128,9 @@ function control.runNextCase()
     xmlReporter.AddCase(Test.current_case_name)
     atf_logger.LOGTestCaseStart(Test.current_case_name)
     testcase(Test)
-
+    --- Perform delay for the time defined in 'zeroOccurrenceTimeout' configuration parameter
+    --  Create expectation on a custom event and then raise this event after timeout
+    --  @tparam Connection pConnection Network connection (Mobile or HMI)
     local function wait(pConnection)
       local timeout = config.zeroOccurrenceTimeout
       local event = events.Event()
@@ -139,6 +141,7 @@ function control.runNextCase()
       ret:Timeout(timeout + 5000)
       event_dispatcher:AddEvent(pConnection, event, ret)
       Test:AddExpectation(ret)
+      --- Raise an event
       local function toRun()
         event_dispatcher:RaiseEvent(pConnection, event)
       end
