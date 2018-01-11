@@ -160,6 +160,7 @@ local function CheckStatus()
   -- Check the test status
   local success = true
   local errorMessage = {}
+  local warningMessage = {}
   if SDL:CheckStatusSDL() == CRASH then
     if SDL.exitOnCrash == true then
       success = false
@@ -179,8 +180,11 @@ local function CheckStatus()
     for k, v in pairs(e.errorMessage) do
       errorMessage[e.name .. ": " .. k] = v
     end
+    for k, v in pairs(e.warningMessage) do
+      warningMessage[e.name .. ": " .. k] = v
+    end
   end
-  fmt.PrintCaseResult(Test.current_case_time, Test.current_case_name, success, errorMessage, timestamp() - Test.ts)
+  fmt.PrintCaseResult(Test.current_case_time, Test.current_case_name, success, errorMessage, warningMessage, timestamp() - Test.ts)
   xmlReporter.CaseMessageTotal(Test.current_case_name,{ ["result"] = success, ["timestamp"] = (timestamp() - Test.ts)} )
   if (not success) then xmlReporter.AddMessage("ErrorMessage", {["Status"] = "FAILD"}, errorMessage ) end
   Test.expectations_list:Clear()

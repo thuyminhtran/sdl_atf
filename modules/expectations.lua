@@ -138,10 +138,15 @@ function Expectations.Expectation(name, connection)
         if not self.errorMessage["ValidIf"] then
           self.errorMessage["ValidIf"] = ""
         end
-        self.errorMessage["ValidIf"] = self.errorMessage["ValidIf"] .. "\n" .. msg
+        if msg ~= nil and msg ~= "" then
+          self.errorMessage["ValidIf"] = self.errorMessage["ValidIf"] .. "\n" .. tostring(msg)
+        end
       else
         if msg ~= nil and msg ~= "" then
-          self.errorMessage["WARNING"] = msg
+          if not self.warningMessage["WARNING"] then
+            self.warningMessage["WARNING"] = ""
+          end
+          self.warningMessage["WARNING"] = self.warningMessage["WARNING"] .. "\n" .. tostring(msg)
         end
       end
     end
@@ -161,6 +166,7 @@ function Expectations.Expectation(name, connection)
     connection = connection, -- Network connection
     occurences = 0, -- Expectation complience times
     errorMessage = { }, -- If failed, error message to display
+    warningMessage = { }, -- Warning message to display
     actions = { }, -- Sequence of actions to be executed when complied
     pinned = false, -- True if the expectation is pinned
     list = nil, -- ExpectationsList the expectation belongs to
